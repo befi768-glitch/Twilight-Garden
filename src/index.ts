@@ -122,9 +122,16 @@ async function main(): Promise<void> {
           }
         }
       }
-    } catch (err) {
-      logger.error('Command error', { command: commandName, error: String(err) });
-      await message.reply('❌ Đã xảy ra lỗi. Vui lòng thử lại.').catch(() => {});
+    } catch (err: any) {
+      logger.error('Command error', {
+        command: commandName,
+        error: String(err),
+        message: err?.message,
+        stack: err?.stack,
+        code: err?.code,
+      });
+      const preview = err?.message ? `[${err.message.slice(0, 100)}]` : '';
+      await message.reply(`❌ Đã xảy ra lỗi ${preview}. Vui lòng thử lại.`).catch(() => {});
     }
   });
 
