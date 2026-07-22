@@ -11,13 +11,13 @@ import { AchievementService } from './services/AchievementService';
 import { logger } from './utils/logger';
 import { createEmbed } from './utils/embed';
 
-const TOKEN = process.env.DISCORD_TOKEN;
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
-
-if (!TOKEN || !CLIENT_ID) {
+if (!process.env.DISCORD_TOKEN || !process.env.DISCORD_CLIENT_ID) {
   console.error('❌  Missing required env vars: DISCORD_TOKEN and/or DISCORD_CLIENT_ID');
   process.exit(1);
 }
+
+const TOKEN = process.env.DISCORD_TOKEN as string;
+const CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
 
 async function registerSlashCommands(guildIds: string[]): Promise<void> {
   const rest = new REST({ version: '10' }).setToken(TOKEN);
