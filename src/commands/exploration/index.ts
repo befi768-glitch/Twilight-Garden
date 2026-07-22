@@ -6,6 +6,7 @@ import { GuildService } from '../../services/GuildService';
 import { encounterWildlife } from '../../systems/wildlife';
 import { explorationEmbed, errorEmbed } from '../../utils/embed';
 import { AreaType } from '../../models/types';
+import { checkCooldown, setCooldown, formatCooldown } from '../../utils/cooldown';
 
 const HELP = [
   '**Lệnh Khám Phá:**',
@@ -36,6 +37,9 @@ export const command: Command = {
       const areaId = args[1]?.toLowerCase() as AreaType;
       if (!areaId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.khampha di <mãKV>` — Dùng `.khampha khuvuc` để xem danh sách.')] });
       if (!AREAS[areaId]) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy khu vực \`${areaId}\`. Dùng \`.khampha khuvuc\` để xem.`)] });
+      const cd = checkCooldown(message.author.id, 'khampha', 30_000);
+      if (cd > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Bạn cần nghỉ ngơi! Còn **${formatCooldown(cd)}** trước khi khám phá tiếp.`)] });
+      setCooldown(message.author.id, 'khampha');
       try {
         const result = await ExplorationService.explore(player.id, areaId, world);
 
@@ -48,9 +52,11 @@ export const command: Command = {
         }
 
         const area = AREAS[areaId];
+        // FIX: fetch fresh player after explore so energy display reflects actual deducted value
+        const freshPlayer = await PlayerService.getById(player.id);
         const embed = explorationEmbed(`Đã khám phá: ${area.emoji} ${area.name}`, result.message + wildlifeMsg)
           .addFields(
-            { name: '⚡ Năng lượng còn lại', value: String(player.energyCurrent - area.energyCost), inline: true },
+            { name: '⚡ Năng lượng còn lại', value: String(freshPlayer?.energyCurrent ?? player.energyCurrent - area.energyCost), inline: true },
             { name: '🌤️ Thời tiết', value: world.currentWeather, inline: true },
           );
         return void message.reply({ embeds: [embed] });

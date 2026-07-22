@@ -7,6 +7,7 @@ import { GuildService } from '../../services/GuildService';
 import { afterHarvest } from '../../systems/garden';
 import { gardenEmbed, errorEmbed, successEmbed } from '../../utils/embed';
 import { progressBar, rarityEmoji } from '../../utils/helpers';
+import { checkCooldown, setCooldown, formatCooldown } from '../../utils/cooldown';
 
 const HELP = [
   '**Lệnh Vườn:**',
@@ -94,6 +95,9 @@ export const command: Command = {
     }
 
     if (sub === 'tưới') {
+      const cd = checkCooldown(message.author.id, `water_${slot}`, 10_000);
+      if (cd > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Còn **${formatCooldown(cd)}** trước khi tưới lại ô ${slot}.`)] });
+      setCooldown(message.author.id, `water_${slot}`);
       try {
         const plant = await GardenService.water(player.id, slot);
         const def = GardenService.getPlantDef(plant.plantType);
@@ -117,6 +121,9 @@ export const command: Command = {
     }
 
     if (sub === 'thu') {
+      const cdH = checkCooldown(message.author.id, `harvest_${slot}`, 5_000);
+      if (cdH > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Còn **${formatCooldown(cdH)}** trước khi thu hoạch lại ô ${slot}.`)] });
+      setCooldown(message.author.id, `harvest_${slot}`);
       try {
         // FIX: fetch plant BEFORE harvesting so we have the plantType for quest tracking
         const plantBeforeHarvest = await GardenService.getPlantBySlot(player.id, slot);

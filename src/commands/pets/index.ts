@@ -5,6 +5,7 @@ import { PetService, PETS } from '../../services/PetService';
 import { afterAdopt } from '../../systems/pets';
 import { petEmbed, errorEmbed, successEmbed } from '../../utils/embed';
 import { progressBar, rarityEmoji, formatCoins } from '../../utils/helpers';
+import { checkCooldown, setCooldown, formatCooldown } from '../../utils/cooldown';
 
 const HELP = [
   '**Lệnh Thú Cưng:**',
@@ -47,7 +48,7 @@ export const command: Command = {
 
     if (sub === 'nuoi') {
       const petType = args[1];
-      const name = args.slice(2).join(' ');
+      const name = args.slice(2).join(' ').trim();
       if (!petType || !name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.thuocung nuoi <loai> <tên>` — Dùng `.thuocung catalog` để xem các loại.')] });
       try {
         const pet = await PetService.adopt(player.id, petType, name);
@@ -67,6 +68,9 @@ export const command: Command = {
     if (!pet) return void message.reply({ embeds: [errorEmbed('Không tìm thấy thú cưng. Dùng `.thuocung danhsach` để xem mã thú.')] });
 
     if (sub === 'cho_an') {
+      const cd = checkCooldown(message.author.id, `pet_feed_${pet.id}`, 15_000);
+      if (cd > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Còn **${formatCooldown(cd)}** trước khi cho ăn lại.`)] });
+      setCooldown(message.author.id, `pet_feed_${pet.id}`);
       try {
         const updated = await PetService.feed(player.id, pet.id);
         return void message.reply({ embeds: [successEmbed(`Đã cho **${pet.name}** ăn! 🍖 Độ đói: ${progressBar(updated.hunger, 100)} | Trạng thái: ${updated.status}`)] });
@@ -76,6 +80,9 @@ export const command: Command = {
     }
 
     if (sub === 'choi') {
+      const cd = checkCooldown(message.author.id, `pet_play_${pet.id}`, 20_000);
+      if (cd > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Còn **${formatCooldown(cd)}** trước khi chơi lại.`)] });
+      setCooldown(message.author.id, `pet_play_${pet.id}`);
       try {
         const result = await PetService.play(player.id, pet.id);
         let msg = `Đã chơi với **${pet.name}**! +${result.xpGained} XP`;
@@ -87,6 +94,9 @@ export const command: Command = {
     }
 
     if (sub === 'chua') {
+      const cd = checkCooldown(message.author.id, `pet_heal_${pet.id}`, 30_000);
+      if (cd > 0) return void message.reply({ embeds: [errorEmbed(`⏳ Còn **${formatCooldown(cd)}** trước khi chữa bệnh lại.`)] });
+      setCooldown(message.author.id, `pet_heal_${pet.id}`);
       try {
         const updated = await PetService.heal(player.id, pet.id);
         return void message.reply({ embeds: [successEmbed(`Đã chữa bệnh cho **${pet.name}**! Sức khỏe: 100% | Trạng thái: ${updated.status}`)] });
@@ -96,8 +106,8 @@ export const command: Command = {
     }
 
     if (sub === 'doi_ten') {
-      const newName = args.slice(2).join(' ');
-      if (!newName) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.thuocung doi_ten <mãThú> <tên mới>`')] });
+      const newName = args.slice(2).join(' ').trim().slice(0, 32);
+      if (!newName) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.thuocung doi_ten <mãThú> <tên mới>` — Tên không được để trống.')] });
       await PetService.rename(player.id, pet.id, newName);
       return void message.reply({ embeds: [successEmbed(`Đã đổi tên thú thành **${newName}**!`)] });
     }

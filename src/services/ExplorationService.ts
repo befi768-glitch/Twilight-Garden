@@ -11,7 +11,9 @@ export const AREAS: Record<AreaType, Area> = {
     description: 'Điểm xuất phát. Những ngôi nhà nhỏ ấm cúng, chợ nhộn nhịp và những người bạn thân thiện.',
     minLevel: 1, energyCost: 5,
     events: [
-      { id: 'market_deal', name: 'Ưu Đãi Chợ', description: 'Một thương nhân đề nghị giảm giá đặc biệt.', probability: 0.3, type: 'find', reward: { coins: randomInt(10, 30) } },
+      // FIX: rewardFn dùng cho phần thưởng ngẫu nhiên — tránh randomInt() bị gọi 1 lần
+      // lúc module load và đóng băng thành 1 con số cố định suốt vòng đời bot
+      { id: 'market_deal', name: 'Ưu Đãi Chợ', description: 'Một thương nhân đề nghị giảm giá đặc biệt.', probability: 0.3, type: 'find', reward: { coins: 0 }, rewardFn: () => ({ coins: randomInt(10, 30) }) },
       { id: 'lost_cat', name: 'Mèo Lạc', description: 'Bạn giúp tìm lại con mèo bị lạc. Chủ nhân rất biết ơn.', probability: 0.2, type: 'npc', reward: { coins: 25, xp: 20 } },
       { id: 'festival_scraps', name: 'Đồ Lễ Hội', description: 'Ai đó đánh rơi đồ lễ hội.', probability: 0.15, type: 'find', reward: { items: [{ itemId: 'healing_herb', quantity: 2 }] } },
     ],
@@ -124,7 +126,8 @@ export class ExplorationService {
     await PlayerService.moveToArea(playerId, areaId);
 
     const event = ExplorationService.pickEvent(area, worldState);
-    const reward = { ...event.reward };
+    // FIX: use rewardFn() if defined so rewards with randomness are computed fresh each call
+    const reward = (event as any).rewardFn ? (event as any).rewardFn() : { ...event.reward };
 
     if (worldState.currentWeather === 'magical') {
       if (reward.coins) reward.coins = Math.ceil(reward.coins * 1.5);

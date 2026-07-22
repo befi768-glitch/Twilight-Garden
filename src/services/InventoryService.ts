@@ -24,23 +24,32 @@ export class InventoryService {
   }
 
   static async addItem(playerId: string, itemId: string, quantity: number, metadata?: Record<string, unknown>): Promise<void> {
-    const existing = await InventoryService.getItem(playerId, itemId);
-    if (existing) {
-      // FIX: atomic SQL increment — avoids read-modify-write race condition
-      await db
-        .update(schema.inventory)
-        .set({ quantity: sql`${schema.inventory.quantity} + ${quantity}` })
-        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
-    } else {
-      await db.insert(schema.inventory).values({
-        id: randomUUID(),
-        playerId,
-        itemId,
-        quantity,
-        acquiredAt: new Date(),
-        metadata: metadata ?? null,
-      });
-    }
+    // FIX: wrap in transaction — prevents two concurrent addItem calls for a brand-new
+    // item both seeing existing=null and both trying to INSERT (duplicate key crash)
+    await db.transaction(async (tx) => {
+      const result = await tx
+        .select()
+        .from(schema.inventory)
+        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)))
+        .limit(1);
+
+      if (result.length > 0) {
+        // FIX: atomic SQL increment — avoids read-modify-write race condition
+        await tx
+          .update(schema.inventory)
+          .set({ quantity: sql`${schema.inventory.quantity} + ${quantity}` })
+          .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+      } else {
+        await tx.insert(schema.inventory).values({
+          id: randomUUID(),
+          playerId,
+          itemId,
+          quantity,
+          acquiredAt: new Date(),
+          metadata: metadata ?? null,
+        });
+      }
+    });
   }
 
   static async removeItem(playerId: string, itemId: string, quantity: number): Promise<void> {

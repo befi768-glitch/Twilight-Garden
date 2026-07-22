@@ -48,15 +48,15 @@ export const command: Command = {
     }
 
     if (sub === 'doi_ten') {
-      const name = args.slice(1).join(' ').slice(0, 40);
-      if (!name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha doi_ten <tên>`')] });
+      const name = args.slice(1).join(' ').trim().slice(0, 40);
+      if (!name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha doi_ten <tên>` — Tên không được để trống.')] });
       await HomeService.setName(player.id, name);
       return void message.reply({ embeds: [successEmbed('Đã đổi tên nhà!')] });
     }
 
     if (sub === 'mo_ta') {
-      const desc = args.slice(1).join(' ').slice(0, 200);
-      if (!desc) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha mo_ta <mô tả>`')] });
+      const desc = args.slice(1).join(' ').trim().slice(0, 200);
+      if (!desc) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha mo_ta <mô tả>` — Mô tả không được để trống.')] });
       await HomeService.setDescription(player.id, desc);
       return void message.reply({ embeds: [successEmbed('Đã cập nhật mô tả nhà!')] });
     }
