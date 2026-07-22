@@ -22,8 +22,16 @@ if (!process.env.DISCORD_TOKEN || !process.env.DISCORD_CLIENT_ID) {
 const TOKEN = process.env.DISCORD_TOKEN as string;
 
 async function main(): Promise<void> {
-  await setupDatabase();
-  await connectDatabase();
+  logger.info('Connecting to database...');
+  await setupDatabase().catch((err) => {
+    logger.error('setupDatabase failed', { error: String(err), message: err?.message });
+    throw err;
+  });
+  await connectDatabase().catch((err) => {
+    logger.error('connectDatabase failed', { error: String(err), message: err?.message });
+    throw err;
+  });
+  logger.info('Database ready');
 
   const client = new TwilightClient();
   loadCommands(client);
@@ -124,6 +132,10 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  logger.error('Fatal error', { error: String(err) });
+  const details = err instanceof AggregateError
+    ? { type: 'AggregateError', errors: err.errors?.map((e: any) => String(e)) }
+    : { type: err?.constructor?.name, message: err?.message, stack: err?.stack };
+  logger.error('Fatal error', details);
+  console.error('FATAL:', JSON.stringify(details, null, 2));
   process.exit(1);
 });
