@@ -1,1 +1,1 @@
-// Guild service
+// Server — setup, cấu hình, kênh thông báo

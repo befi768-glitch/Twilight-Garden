@@ -1,1 +1,1 @@
-// TypeScript types & interfaces
+// TypeScript types & interfaces cho toàn bộ hệ thống

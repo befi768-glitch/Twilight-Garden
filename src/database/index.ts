@@ -1,1 +1,1 @@
-// Database connection
+// Database connection — Drizzle + PostgreSQL
