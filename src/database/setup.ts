@@ -213,60 +213,155 @@ const CREATE_TABLES: string[] = [
 // ADD COLUMN IF NOT EXISTS is safe to run repeatedly — each step is idempotent.
 // These handle databases that existed before a column was added to the schema.
 const MIGRATION_STEPS: string[] = [
-  // FIX: drop NOT NULL on legacy user_id columns and backfill player_id — runs safely on any DB
-  // (old schema used user_id; new schema uses player_id; both may coexist during migration)
+  // ── CRITICAL FIX: drop NOT NULL on legacy user_id columns ──────────────────
+  // Old schema used user_id (NOT NULL); new schema uses player_id.
+  // Each table gets TWO separate steps so they run in separate transactions:
+  //   Step A — ALTER TABLE only (commits independently; never rolled back by Step B)
+  //   Step B — backfill UPDATE (allowed to fail if old user_id values are gone)
+  // Previously these were combined in one DO block, so an FK violation on the
+  // UPDATE rolled back the ALTER TABLE too, leaving NOT NULL still in place.
+
+  // plants — Step A: drop NOT NULL + set fallback default
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='plants' AND column_name='user_id') THEN
+      ALTER TABLE plants ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE plants ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE plants SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // plants — Step B: backfill (FK-safe: only copies rows whose user_id is a valid player)
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='plants' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='plants' AND column_name='player_id') THEN
+      UPDATE plants SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // pets — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pets' AND column_name='user_id') THEN
+      ALTER TABLE pets ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE pets ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE pets SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // pets — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pets' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pets' AND column_name='player_id') THEN
+      UPDATE pets SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // player_quests — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_quests' AND column_name='user_id') THEN
+      ALTER TABLE player_quests ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE player_quests ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE player_quests SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // player_quests — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_quests' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_quests' AND column_name='player_id') THEN
+      UPDATE player_quests SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // npc_relations — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='npc_relations' AND column_name='user_id') THEN
+      ALTER TABLE npc_relations ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE npc_relations ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE npc_relations SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // npc_relations — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='npc_relations' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='npc_relations' AND column_name='player_id') THEN
+      UPDATE npc_relations SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // wildlife_discoveries — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='wildlife_discoveries' AND column_name='user_id') THEN
+      ALTER TABLE wildlife_discoveries ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE wildlife_discoveries ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE wildlife_discoveries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // wildlife_discoveries — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='wildlife_discoveries' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='wildlife_discoveries' AND column_name='player_id') THEN
+      UPDATE wildlife_discoveries SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // player_achievements — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_achievements' AND column_name='user_id') THEN
+      ALTER TABLE player_achievements ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE player_achievements ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE player_achievements SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // player_achievements — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_achievements' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_achievements' AND column_name='player_id') THEN
+      UPDATE player_achievements SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // homes — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='homes' AND column_name='user_id') THEN
+      ALTER TABLE homes ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE homes ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE homes SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // homes — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='homes' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='homes' AND column_name='player_id') THEN
+      UPDATE homes SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // journal_entries — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='journal_entries' AND column_name='user_id') THEN
+      ALTER TABLE journal_entries ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE journal_entries ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE journal_entries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
     END IF;
   END $$`,
+  // journal_entries — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='journal_entries' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='journal_entries' AND column_name='player_id') THEN
+      UPDATE journal_entries SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
+    END IF;
+  END $$`,
+
+  // exploration_logs — Step A
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='exploration_logs' AND column_name='user_id') THEN
+      ALTER TABLE exploration_logs ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE exploration_logs ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE exploration_logs SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  // exploration_logs — Step B
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='exploration_logs' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='exploration_logs' AND column_name='player_id') THEN
+      UPDATE exploration_logs SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
     END IF;
   END $$`,
 
@@ -289,12 +384,19 @@ const MIGRATION_STEPS: string[] = [
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS acquired_at TIMESTAMP NOT NULL DEFAULT NOW()`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS metadata JSONB`,
-  // FIX: old schema used user_id instead of player_id — drop NOT NULL so new inserts don't fail,
-  // then backfill player_id from user_id for any existing rows.
+  // inventory — Step A: drop NOT NULL + set fallback default (committed independently)
   `DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='inventory' AND column_name='user_id') THEN
+      ALTER TABLE inventory ALTER COLUMN user_id SET DEFAULT '';
       ALTER TABLE inventory ALTER COLUMN user_id DROP NOT NULL;
-      UPDATE inventory SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  // inventory — Step B: backfill (FK-safe; allowed to fail without affecting Step A)
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='inventory' AND column_name='user_id')
+       AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='inventory' AND column_name='player_id') THEN
+      UPDATE inventory SET player_id = user_id
+        WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players);
     END IF;
   END $$`,
 
