@@ -5,6 +5,9 @@ import { PlayerService } from './PlayerService';
 import { InventoryService } from './InventoryService';
 import { randomUUID } from 'crypto';
 
+/** Tax rate applied when selling items (8%) */
+const SELL_TAX_RATE = 0.08;
+
 /** Static item catalogue */
 export const ITEMS: Record<string, ItemDefinition> = {
   // Hạt giống
@@ -90,7 +93,7 @@ export class EconomyService {
     if (!hasItem) throw new Error('Không đủ số lượng vật phẩm trong túi đồ.');
 
     await InventoryService.removeItem(playerId, itemId, quantity);
-    const earned = Math.floor(item.sellPrice * quantity * 0.92); // 8% thuế giao dịch
+    const earned = Math.floor(item.sellPrice * quantity * (1 - SELL_TAX_RATE));
     await PlayerService.updateCoins(playerId, earned);
 
     await EconomyService.logTransaction(playerId, null, 'earn', earned, itemId, quantity, `Bán ${quantity}x ${item.name}`);
@@ -124,23 +127,27 @@ export class EconomyService {
 
   /** Bid on an auction */
   static async bid(auctionId: string, bidderId: string, amount: number): Promise<void> {
-    const result = await db.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).limit(1);
-    if (!result.length) throw new Error('Không tìm thấy phiên đấu giá.');
-    const auction = result[0];
-    if (auction.status !== 'active') throw new Error('Phiên đấu giá này không còn hoạt động.');
-    if (new Date() > auction.endsAt) throw new Error('Phiên đấu giá đã kết thúc.');
-    if (amount <= auction.currentBid) throw new Error('Giá đặt phải cao hơn giá hiện tại.');
+    // FIX: wrap entire bid in a transaction to prevent race conditions where
+    // two simultaneous bids could double-refund or double-charge coins
+    await db.transaction(async (tx) => {
+      const result = await tx.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).limit(1);
+      if (!result.length) throw new Error('Không tìm thấy phiên đấu giá.');
+      const auction = result[0];
+      if (auction.status !== 'active') throw new Error('Phiên đấu giá này không còn hoạt động.');
+      if (new Date() > auction.endsAt) throw new Error('Phiên đấu giá đã kết thúc.');
+      if (amount <= auction.currentBid) throw new Error('Giá đặt phải cao hơn giá hiện tại.');
 
-    const hasEnough = await PlayerService.hasEnoughCoins(bidderId, amount);
-    if (!hasEnough) throw new Error('Không đủ xu để đặt giá.');
+      const hasEnough = await PlayerService.hasEnoughCoins(bidderId, amount);
+      if (!hasEnough) throw new Error('Không đủ xu để đặt giá.');
 
-    // Refund previous bidder
-    if (auction.highestBidderId) {
-      await PlayerService.updateCoins(auction.highestBidderId, auction.currentBid);
-    }
-    // Hold bid amount
-    await PlayerService.updateCoins(bidderId, -amount);
-    await db.update(schema.auctions).set({ currentBid: amount, highestBidderId: bidderId }).where(eq(schema.auctions.id, auctionId));
+      // Refund previous bidder
+      if (auction.highestBidderId) {
+        await PlayerService.updateCoins(auction.highestBidderId, auction.currentBid);
+      }
+      // Hold bid amount
+      await PlayerService.updateCoins(bidderId, -amount);
+      await tx.update(schema.auctions).set({ currentBid: amount, highestBidderId: bidderId }).where(eq(schema.auctions.id, auctionId));
+    });
   }
 
   /** Resolve expired auctions */

@@ -62,19 +62,31 @@ export const command: Command = {
       return void message.reply({ embeds: [gardenEmbed('Danh Sách Cây Trồng', lines.join('\n\n'))] });
     }
 
+    // --- Validate slot against player's actual garden size ---
     const slot = parseInt(args[1] ?? '');
-    if (!slot || slot < 1 || slot > 20) return void message.reply({ embeds: [errorEmbed('Vui lòng nhập số ô hợp lệ (1–20).')] });
+    if (!slot || slot < 1) return void message.reply({ embeds: [errorEmbed('Vui lòng nhập số ô hợp lệ (bắt đầu từ 1).')] });
+
+    // Fetch home to know max allowed slots
+    const { HomeService } = await import('../../services/HomeService');
+    const home = await HomeService.getHome(player.id);
+    const maxSlots = home?.gardenSlots ?? 6;
+    if (slot > maxSlots) {
+      return void message.reply({ embeds: [errorEmbed(`Ô ${slot} vượt quá số ô vườn của bạn (tối đa: ${maxSlots}). Nâng cấp nhà để mở thêm ô!`)] });
+    }
 
     if (sub === 'trồng') {
       const plantId = args[2]?.toLowerCase();
       if (!plantId) return void message.reply({ embeds: [errorEmbed(`Thiếu loại cây. Dùng \`.vuon danh_sach\` để xem các loại.`)] });
       const def = GardenService.getPlantDef(plantId);
       if (!def) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy cây \`${plantId}\`. Dùng \`.vuon danh_sach\` để xem.`)] });
-      const hasSeed = await InventoryService.hasItem(player.id, plantId + '_seed', 1);
+
+      // FIX: seed IDs are "seed_<plantId>", not "<plantId>_seed"
+      const seedItemId = `seed_${plantId}`;
+      const hasSeed = await InventoryService.hasItem(player.id, seedItemId, 1);
       if (!hasSeed) return void message.reply({ embeds: [errorEmbed(`Bạn cần **Hạt giống ${def.name}** trong túi đồ. Mua tại \`.kinhte shop\`!`)] });
       try {
         await GardenService.plant(player.id, plantId, slot, world);
-        await InventoryService.removeItem(player.id, plantId + '_seed', 1);
+        await InventoryService.removeItem(player.id, seedItemId, 1);
         return void message.reply({ embeds: [successEmbed(`Đã trồng **${def.emoji} ${def.name}** vào ô ${slot}!`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
@@ -106,8 +118,13 @@ export const command: Command = {
 
     if (sub === 'thu') {
       try {
+        // FIX: fetch plant BEFORE harvesting so we have the plantType for quest tracking
+        const plantBeforeHarvest = await GardenService.getPlantBySlot(player.id, slot);
+        if (!plantBeforeHarvest) return void message.reply({ embeds: [errorEmbed('Không có cây nào ở ô này.')] });
+
         const result = await GardenService.harvest(player.id, slot);
-        await afterHarvest(player.id, result.yield.toString(), result.yield, result.mutant, message.guildId!);
+        // FIX: pass plantBeforeHarvest.plantType (e.g. "moonflower"), not result.yield.toString() (e.g. "3")
+        await afterHarvest(player.id, plantBeforeHarvest.plantType, result.yield, result.mutant, message.guildId!);
         let msg = `Thu hoạch được **${result.yield}x** sản phẩm từ ô ${slot}!`;
         if (result.mutant) msg += `\n✨ **ĐỘT BIẾN:** ${result.mutationType?.toUpperCase()} — giá trị cực cao!`;
         return void message.reply({ embeds: [successEmbed(msg)] });

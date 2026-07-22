@@ -62,16 +62,25 @@ export function startTickEngine(guildIds: string[]): void {
   // Tick every 15 minutes
   cron.schedule('*/15 * * * *', async () => {
     for (const guildId of guildIds) {
-      await worldTick(guildId);
+      // FIX: wrap each guild separately so one failure doesn't stop the rest
+      try {
+        await worldTick(guildId);
+      } catch (err) {
+        logger.error(`World tick failed for guild ${guildId}`, { error: String(err) });
+      }
     }
   });
 
   // Daily reset at midnight UTC
   cron.schedule('0 0 * * *', async () => {
     for (const guildId of guildIds) {
-      const world = await GuildService.getOrCreateWorldState(guildId);
-      await GuildService.updateWorldState(guildId, { dayNumber: world.dayNumber + 1 });
-      logger.info(`New day ${world.dayNumber + 1} for guild ${guildId}`);
+      try {
+        const world = await GuildService.getOrCreateWorldState(guildId);
+        await GuildService.updateWorldState(guildId, { dayNumber: world.dayNumber + 1 });
+        logger.info(`New day ${world.dayNumber + 1} for guild ${guildId}`);
+      } catch (err) {
+        logger.error(`Daily reset failed for guild ${guildId}`, { error: String(err) });
+      }
     }
   });
 

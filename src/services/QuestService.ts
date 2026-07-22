@@ -117,7 +117,12 @@ export class QuestService {
       const quest = QUESTS[pq.questId];
       if (!quest) continue;
       let updated = false;
-      const objectives = pq.objectives.map((obj) => {
+      // FIX: jsonb from DB may be returned as a raw string depending on driver config — parse safely
+      const rawObjectives = pq.objectives;
+      const parsedObjectives: QuestObjective[] = Array.isArray(rawObjectives)
+        ? rawObjectives
+        : JSON.parse(rawObjectives as unknown as string);
+      const objectives = parsedObjectives.map((obj) => {
         if (obj.type === type && (obj.target === target || obj.target === 'any') && obj.current < obj.required) {
           updated = true;
           return { ...obj, current: Math.min(obj.required, obj.current + amount) };

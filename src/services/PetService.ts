@@ -129,9 +129,10 @@ export class PetService {
 
   private static calcStatus(hunger: number, happiness: number, health: number): PetStatus {
     if (health < 30) return 'sick';
+    // FIX: check neglected BEFORE hungry/sad — otherwise hunger<10 always matches hungry first
+    if (hunger < 10 && happiness < 10) return 'neglected';
     if (hunger < 20) return 'hungry';
     if (happiness < 20) return 'sad';
-    if (hunger < 10 && happiness < 10) return 'neglected';
     if (happiness > 80 && hunger > 70) return 'happy';
     return 'healthy';
   }

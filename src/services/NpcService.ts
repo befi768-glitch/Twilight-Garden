@@ -168,6 +168,56 @@ export class NpcService {
     return { relationGain: gain, response: randomFrom(responses) };
   }
 
+  /** Execute an NPC trade by index */
+  static async executeTrade(playerId: string, npcId: string, tradeIndex: number): Promise<{ message: string }> {
+    const npc = NPCS[npcId];
+    if (!npc) throw new Error('Không tìm thấy NPC này.');
+
+    const trade = npc.trades[tradeIndex];
+    if (!trade) throw new Error('Giao dịch không hợp lệ.');
+
+    const relation = await NpcService.getOrCreateRelation(playerId, npcId);
+    if (relation.relationScore < trade.relationRequired) {
+      throw new Error(`Cần điểm quan hệ tối thiểu ${trade.relationRequired} với ${npc.name} để thực hiện giao dịch này (hiện tại: ${relation.relationScore}).`);
+    }
+
+    const { EconomyService } = await import('./EconomyService');
+
+    // Check player has what they need to give
+    const give = trade.give;
+    if ('itemId' in give) {
+      const hasItem = await InventoryService.hasItem(playerId, give.itemId, give.quantity);
+      if (!hasItem) {
+        const itemDef = EconomyService.getItem(give.itemId);
+        throw new Error(`Cần ${give.quantity}x ${itemDef?.name ?? give.itemId} để trao đổi.`);
+      }
+    } else {
+      const hasEnough = await PlayerService.hasEnoughCoins(playerId, give.coins);
+      if (!hasEnough) throw new Error(`Cần ${give.coins} xu để trao đổi.`);
+    }
+
+    // Execute: remove what player gives
+    if ('itemId' in give) {
+      await InventoryService.removeItem(playerId, give.itemId, give.quantity);
+    } else {
+      await PlayerService.updateCoins(playerId, -give.coins);
+    }
+
+    // Execute: add what player receives
+    const receive = trade.receive;
+    let receiveDesc: string;
+    if ('itemId' in receive) {
+      await InventoryService.addItem(playerId, receive.itemId, receive.quantity);
+      const itemDef = EconomyService.getItem(receive.itemId);
+      receiveDesc = `${receive.quantity}x ${itemDef?.name ?? receive.itemId}`;
+    } else {
+      await PlayerService.updateCoins(playerId, receive.coins);
+      receiveDesc = `${receive.coins} xu`;
+    }
+
+    return { message: `${npc.name} gật đầu hài lòng. Bạn nhận được **${receiveDesc}**!` };
+  }
+
   static async getAllRelations(playerId: string): Promise<PlayerNpcRelation[]> {
     const result = await db.select().from(schema.npcRelations).where(eq(schema.npcRelations.playerId, playerId));
     return result as unknown as PlayerNpcRelation[];
