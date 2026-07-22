@@ -5,18 +5,18 @@ import { PlayerService } from './PlayerService';
 import { randomUUID } from 'crypto';
 
 export const ACHIEVEMENTS: Record<string, Achievement> = {
-  first_plant: { id: 'first_plant', name: 'Green Thumb', emoji: '🌱', description: 'Plant your first seed.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'plantsGrown', value: 1 }, reward: { coins: 50, xp: 20 } },
-  harvest_10: { id: 'harvest_10', name: 'Seasoned Gardener', emoji: '🌾', description: 'Harvest 10 crops.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'cropsHarvested', value: 10 }, reward: { coins: 150, xp: 75 } },
-  harvest_100: { id: 'harvest_100', name: 'Master Cultivator', emoji: '🏡', description: 'Harvest 100 crops.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'cropsHarvested', value: 100 }, reward: { coins: 500, xp: 300 } },
-  explorer_1: { id: 'explorer_1', name: 'Wanderer', emoji: '🗺️', description: 'Explore 5 times.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'explorationCount', value: 5 }, reward: { coins: 100, xp: 50 } },
-  explorer_50: { id: 'explorer_50', name: 'Seasoned Explorer', emoji: '🧭', description: 'Explore 50 times.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'explorationCount', value: 50 }, reward: { coins: 400, xp: 250 } },
-  rich_1: { id: 'rich_1', name: 'Mooncoins Collector', emoji: '💰', description: 'Earn 1000 mooncoins.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'coinsEarned', value: 1000 }, reward: { coins: 200, xp: 100 } },
-  rich_2: { id: 'rich_2', name: 'Twilight Tycoon', emoji: '🤑', description: 'Earn 10000 mooncoins.', secret: false, rarity: 'rare', condition: { type: 'stat', target: 'coinsEarned', value: 10000 }, reward: { coins: 1000, xp: 500 } },
-  pet_adopter: { id: 'pet_adopter', name: 'Pet Parent', emoji: '🐾', description: 'Adopt your first pet.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'petsOwned', value: 1 }, reward: { coins: 100, xp: 50, title: 'Pet Parent' } },
-  wildlife_5: { id: 'wildlife_5', name: 'Wildlife Observer', emoji: '🔭', description: 'Discover 5 unique wildlife species.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'wildlifeFound', value: 5 }, reward: { coins: 300, xp: 200 } },
-  quest_10: { id: 'quest_10', name: 'Quest Master', emoji: '📜', description: 'Complete 10 quests.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'questsCompleted', value: 10 }, reward: { coins: 400, xp: 300 } },
-  secret_mutant: { id: 'secret_mutant', name: 'Mutation Whisperer', emoji: '✨', description: '???', secret: true, rarity: 'rare', condition: { type: 'event', target: 'mutant_harvest', value: 1 }, reward: { coins: 500, xp: 400, title: 'Mutant Whisperer' } },
-  secret_shadow: { id: 'secret_shadow', name: 'Shadow Tender', emoji: '🌑', description: '???', secret: true, rarity: 'legendary', condition: { type: 'plant', target: 'shadowbloom', value: 1 }, reward: { coins: 2000, xp: 1000, title: 'Shadow Tender' } },
+  first_plant: { id: 'first_plant', name: 'Ngón Tay Xanh', emoji: '🌱', description: 'Trồng hạt giống đầu tiên của bạn.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'plantsGrown', value: 1 }, reward: { coins: 50, xp: 20 } },
+  harvest_10: { id: 'harvest_10', name: 'Người Làm Vườn Dày Dạn', emoji: '🌾', description: 'Thu hoạch 10 vụ mùa.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'cropsHarvested', value: 10 }, reward: { coins: 150, xp: 75 } },
+  harvest_100: { id: 'harvest_100', name: 'Bậc Thầy Trồng Trọt', emoji: '🏡', description: 'Thu hoạch 100 vụ mùa.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'cropsHarvested', value: 100 }, reward: { coins: 500, xp: 300 } },
+  explorer_1: { id: 'explorer_1', name: 'Kẻ Lang Thang', emoji: '🗺️', description: 'Khám phá 5 lần.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'explorationCount', value: 5 }, reward: { coins: 100, xp: 50 } },
+  explorer_50: { id: 'explorer_50', name: 'Nhà Thám Hiểm Dày Dạn', emoji: '🧭', description: 'Khám phá 50 lần.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'explorationCount', value: 50 }, reward: { coins: 400, xp: 250 } },
+  rich_1: { id: 'rich_1', name: 'Người Thu Gom Xu Trăng', emoji: '💰', description: 'Kiếm được 1000 xu.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'coinsEarned', value: 1000 }, reward: { coins: 200, xp: 100 } },
+  rich_2: { id: 'rich_2', name: 'Đại Gia Hoàng Hôn', emoji: '🤑', description: 'Kiếm được 10000 xu.', secret: false, rarity: 'rare', condition: { type: 'stat', target: 'coinsEarned', value: 10000 }, reward: { coins: 1000, xp: 500 } },
+  pet_adopter: { id: 'pet_adopter', name: 'Cha/Mẹ Thú Cưng', emoji: '🐾', description: 'Nhận nuôi thú cưng đầu tiên.', secret: false, rarity: 'common', condition: { type: 'stat', target: 'petsOwned', value: 1 }, reward: { coins: 100, xp: 50, title: 'Cha/Mẹ Thú Cưng' } },
+  wildlife_5: { id: 'wildlife_5', name: 'Nhà Quan Sát Sinh Vật', emoji: '🔭', description: 'Khám phá 5 loài sinh vật độc đáo.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'wildlifeFound', value: 5 }, reward: { coins: 300, xp: 200 } },
+  quest_10: { id: 'quest_10', name: 'Bậc Thầy Nhiệm Vụ', emoji: '📜', description: 'Hoàn thành 10 nhiệm vụ.', secret: false, rarity: 'uncommon', condition: { type: 'stat', target: 'questsCompleted', value: 10 }, reward: { coins: 400, xp: 300 } },
+  secret_mutant: { id: 'secret_mutant', name: 'Người Thì Thầm Đột Biến', emoji: '✨', description: '???', secret: true, rarity: 'rare', condition: { type: 'event', target: 'mutant_harvest', value: 1 }, reward: { coins: 500, xp: 400, title: 'Người Thì Thầm Đột Biến' } },
+  secret_shadow: { id: 'secret_shadow', name: 'Người Chăm Bóng Tối', emoji: '🌑', description: '???', secret: true, rarity: 'legendary', condition: { type: 'plant', target: 'shadowbloom', value: 1 }, reward: { coins: 2000, xp: 1000, title: 'Người Chăm Bóng Tối' } },
 };
 
 export class AchievementService {

@@ -5,17 +5,17 @@ import { chance, randomFrom, clamp } from '../utils/helpers';
 import { randomUUID } from 'crypto';
 
 export const PETS: Record<string, PetDefinition> = {
-  fox: { id: 'fox', name: 'Twilight Fox', emoji: '🦊', rarity: 'uncommon', description: 'A clever fox with a russet coat that shimmers at dusk.', maxLevel: 50, abilities: ['Treasure Nose', 'Quick Dash'], passiveBonus: '+10% exploration loot', adoptCost: 300 },
-  owl: { id: 'owl', name: 'Moon Owl', emoji: '🦉', rarity: 'rare', description: 'A wise owl with eyes that glow like lanterns.', maxLevel: 50, abilities: ['Night Vision', 'Silent Hunt'], passiveBonus: '+15% XP gain at night', adoptCost: 500 },
-  rabbit: { id: 'rabbit', name: 'Starlight Rabbit', emoji: '🐇', rarity: 'common', description: 'A fluffy rabbit with silver-tipped ears.', maxLevel: 50, abilities: ['Lucky Dig', 'Swift Hop'], passiveBonus: '+5% coin drops', adoptCost: 150 },
-  wolf: { id: 'wolf', name: 'Shadow Wolf', emoji: '🐺', rarity: 'epic', description: 'A fearless wolf born in the heart of the dark forest.', maxLevel: 50, abilities: ['Pack Howl', 'Feral Strike'], passiveBonus: '+20% combat effectiveness', adoptCost: 800 },
-  deer: { id: 'deer', name: 'Crystal Deer', emoji: '🦌', rarity: 'rare', description: 'Antlers made of translucent crystal catch moonlight beautifully.', maxLevel: 50, abilities: ['Gentle Grace', 'Forest Path'], passiveBonus: '+10% garden growth speed', adoptCost: 600 },
-  dragon: { id: 'dragon', name: 'Twilight Wyvern', emoji: '🐉', rarity: 'legendary', description: 'A small dragon that breathes stardust instead of fire.', maxLevel: 100, abilities: ['Star Breath', 'Arcane Wings', 'Dragon Sense'], passiveBonus: '+25% all stats', adoptCost: 2000 },
-  cat: { id: 'cat', name: 'Moonshadow Cat', emoji: '🐈', rarity: 'common', description: 'A sleek cat that melts into shadows and emerges with secrets.', maxLevel: 50, abilities: ['Shadow Sneak', 'Nine Lives'], passiveBonus: '+8% energy regen', adoptCost: 100 },
-  phoenix: { id: 'phoenix', name: 'Ember Phoenix', emoji: '🔥', rarity: 'mythic', description: 'Born from moonfire. Incredibly rare — only seen once a season.', maxLevel: 100, abilities: ['Rebirth Flame', 'Blazing Trail', 'Sunfire Aura'], passiveBonus: '+30% all rewards', adoptCost: 5000 },
+  fox: { id: 'fox', name: 'Cáo Hoàng Hôn', emoji: '🦊', rarity: 'uncommon', description: 'Con cáo khôn ngoan với bộ lông hung đỏ lấp lánh lúc hoàng hôn.', maxLevel: 50, abilities: ['Mũi Thám Thính', 'Lao Nhanh'], passiveBonus: '+10% chiến lợi phẩm khám phá', adoptCost: 300 },
+  owl: { id: 'owl', name: 'Cú Mặt Trăng', emoji: '🦉', rarity: 'rare', description: 'Con cú khôn ngoan với đôi mắt sáng như đèn lồng.', maxLevel: 50, abilities: ['Nhìn Đêm', 'Săn Im Lặng'], passiveBonus: '+15% XP vào ban đêm', adoptCost: 500 },
+  rabbit: { id: 'rabbit', name: 'Thỏ Ánh Sao', emoji: '🐇', rarity: 'common', description: 'Con thỏ bông có đôi tai viền bạc xinh xắn.', maxLevel: 50, abilities: ['Đào May Mắn', 'Nhảy Nhanh'], passiveBonus: '+5% xu rơi', adoptCost: 150 },
+  wolf: { id: 'wolf', name: 'Sói Bóng Tối', emoji: '🐺', rarity: 'epic', description: 'Con sói dũng mãnh sinh ra từ trái tim rừng tối.', maxLevel: 50, abilities: ['Hú Bầy', 'Cắn Hoang Dã'], passiveBonus: '+20% hiệu quả chiến đấu', adoptCost: 800 },
+  deer: { id: 'deer', name: 'Nai Pha Lê', emoji: '🦌', rarity: 'rare', description: 'Gạc làm bằng pha lê trong suốt bắt ánh trăng tuyệt đẹp.', maxLevel: 50, abilities: ['Duyên Dáng', 'Đường Rừng'], passiveBonus: '+10% tốc độ tăng trưởng vườn', adoptCost: 600 },
+  dragon: { id: 'dragon', name: 'Kỳ Lân Hoàng Hôn', emoji: '🐉', rarity: 'legendary', description: 'Rồng nhỏ thở bụi sao thay vì lửa.', maxLevel: 100, abilities: ['Hơi Thở Sao', 'Cánh Huyền Bí', 'Giác Quan Rồng'], passiveBonus: '+25% toàn bộ chỉ số', adoptCost: 2000 },
+  cat: { id: 'cat', name: 'Mèo Bóng Trăng', emoji: '🐈', rarity: 'common', description: 'Con mèo thanh mảnh tan vào bóng tối và xuất hiện với những bí mật.', maxLevel: 50, abilities: ['Trốn Bóng', 'Chín Mạng'], passiveBonus: '+8% hồi năng lượng', adoptCost: 100 },
+  phoenix: { id: 'phoenix', name: 'Phượng Hoàng Lửa', emoji: '🔥', rarity: 'mythic', description: 'Sinh ra từ lửa trăng. Cực kỳ hiếm — chỉ xuất hiện một lần mỗi mùa.', maxLevel: 100, abilities: ['Lửa Tái Sinh', 'Vết Rực', 'Hào Quang Nắng'], passiveBonus: '+30% toàn bộ phần thưởng', adoptCost: 5000 },
 };
 
-const DECAY_INTERVAL_HOURS = 2; // hunger/happiness decay every 2 hours
+const DECAY_INTERVAL_HOURS = 2;
 
 export class PetService {
   static getPetDef(petType: string): PetDefinition | null {
@@ -38,11 +38,11 @@ export class PetService {
 
   static async adopt(playerId: string, petType: string, name: string): Promise<Pet> {
     const def = PETS[petType];
-    if (!def) throw new Error('Unknown pet type');
+    if (!def) throw new Error('Không tìm thấy loại thú cưng này.');
 
     const { PlayerService } = await import('./PlayerService');
     const hasEnough = await PlayerService.hasEnoughCoins(playerId, def.adoptCost);
-    if (!hasEnough) throw new Error(`Not enough mooncoins. Adoption costs ${def.adoptCost} 🌙`);
+    if (!hasEnough) throw new Error(`Không đủ xu. Phí nhận nuôi là ${def.adoptCost} 🌙`);
 
     await PlayerService.updateCoins(playerId, -def.adoptCost);
 
@@ -63,11 +63,11 @@ export class PetService {
 
   static async feed(playerId: string, petId: string): Promise<Pet> {
     const pet = await PetService.getPet(petId);
-    if (!pet || pet.playerId !== playerId) throw new Error('Pet not found');
+    if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
 
     const { InventoryService } = await import('./InventoryService');
     const hasFood = await InventoryService.hasItem(playerId, 'pet_food', 1);
-    if (!hasFood) throw new Error('No pet food in inventory. Buy some from the shop!');
+    if (!hasFood) throw new Error('Không có thức ăn thú cưng trong túi đồ. Mua tại cửa hàng nhé!');
 
     await InventoryService.removeItem(playerId, 'pet_food', 1);
 
@@ -82,7 +82,7 @@ export class PetService {
 
   static async play(playerId: string, petId: string): Promise<{ xpGained: number; levelUp: boolean }> {
     const pet = await PetService.getPet(petId);
-    if (!pet || pet.playerId !== playerId) throw new Error('Pet not found');
+    if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
 
     const newHappiness = clamp(pet.happiness + 20, 0, 100);
     const newBond = clamp(pet.bond + 5, 0, 100);
@@ -99,11 +99,11 @@ export class PetService {
   /** Heal a sick pet using a healing herb */
   static async heal(playerId: string, petId: string): Promise<Pet> {
     const pet = await PetService.getPet(petId);
-    if (!pet || pet.playerId !== playerId) throw new Error('Pet not found');
+    if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
 
     const { InventoryService } = await import('./InventoryService');
     const hasHerb = await InventoryService.hasItem(playerId, 'healing_herb', 1);
-    if (!hasHerb) throw new Error('Need a healing herb to heal your pet');
+    if (!hasHerb) throw new Error('Cần thảo dược chữa lành để chữa bệnh cho thú cưng.');
 
     await InventoryService.removeItem(playerId, 'healing_herb', 1);
     await db.update(schema.pets).set({ health: 100, status: 'healthy' }).where(eq(schema.pets.id, petId));
@@ -138,13 +138,13 @@ export class PetService {
 
   static async rename(playerId: string, petId: string, newName: string): Promise<void> {
     const pet = await PetService.getPet(petId);
-    if (!pet || pet.playerId !== playerId) throw new Error('Pet not found');
+    if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
     await db.update(schema.pets).set({ name: newName.slice(0, 30) }).where(eq(schema.pets.id, petId));
   }
 
   static async release(playerId: string, petId: string): Promise<void> {
     const pet = await PetService.getPet(petId);
-    if (!pet || pet.playerId !== playerId) throw new Error('Pet not found');
+    if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
     await db.delete(schema.pets).where(eq(schema.pets.id, petId));
   }
 }

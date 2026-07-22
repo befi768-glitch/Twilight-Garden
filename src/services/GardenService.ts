@@ -7,54 +7,54 @@ import { randomUUID } from 'crypto';
 /** Static plant catalogue */
 export const PLANTS: Record<string, PlantDefinition> = {
   moonflower: {
-    id: 'moonflower', name: 'Moonflower', emoji: '🌙', rarity: 'uncommon',
+    id: 'moonflower', name: 'Hoa Trăng', emoji: '🌙', rarity: 'uncommon',
     growTimeMinutes: 60, baseYield: 3, sellPrice: 45, seedPrice: 20,
-    description: 'Blooms only under moonlight. Glows softly in the dark.',
+    description: 'Chỉ nở dưới ánh trăng. Tỏa sáng dịu dàng trong bóng tối.',
     mutationChance: 0.05, seasonBonus: ['autumn', 'winter'], weatherBonus: ['cloudy', 'foggy'],
   },
   starbloom: {
-    id: 'starbloom', name: 'Starbloom', emoji: '⭐', rarity: 'rare',
+    id: 'starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', rarity: 'rare',
     growTimeMinutes: 120, baseYield: 2, sellPrice: 80, seedPrice: 50,
-    description: 'A flower that twinkles like a distant star.',
+    description: 'Một loài hoa lấp lánh như ngôi sao xa xôi.',
     mutationChance: 0.08, seasonBonus: ['winter'], weatherBonus: ['magical'],
   },
   twilight_rose: {
-    id: 'twilight_rose', name: 'Twilight Rose', emoji: '🌹', rarity: 'common',
+    id: 'twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', rarity: 'common',
     growTimeMinutes: 30, baseYield: 4, sellPrice: 20, seedPrice: 8,
-    description: 'A classic garden rose with a faint purple hue at dusk.',
+    description: 'Hoa hồng cổ điển với sắc tím nhẹ vào lúc hoàng hôn.',
     mutationChance: 0.03, seasonBonus: ['spring', 'summer'], weatherBonus: ['sunny'],
   },
   crystalvine: {
-    id: 'crystalvine', name: 'Crystalvine', emoji: '💎', rarity: 'epic',
+    id: 'crystalvine', name: 'Dây Pha Lê', emoji: '💎', rarity: 'epic',
     growTimeMinutes: 180, baseYield: 1, sellPrice: 200, seedPrice: 120,
-    description: 'Its leaves are translucent like glass and shimmer in the light.',
+    description: 'Lá trong suốt như thủy tinh, lóng lánh dưới ánh sáng.',
     mutationChance: 0.12, seasonBonus: ['winter'], weatherBonus: ['magical', 'stormy'],
   },
   dreamcap: {
-    id: 'dreamcap', name: 'Dreamcap Mushroom', emoji: '🍄', rarity: 'uncommon',
+    id: 'dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', rarity: 'uncommon',
     growTimeMinutes: 45, baseYield: 5, sellPrice: 35, seedPrice: 15,
-    description: 'Grows best in misty forests. Said to bring vivid dreams.',
+    description: 'Phát triển tốt trong rừng sương mù. Tương truyền mang lại những giấc mơ kỳ diệu.',
     mutationChance: 0.04, seasonBonus: ['autumn'], weatherBonus: ['foggy', 'rainy'],
   },
   sunpetal: {
-    id: 'sunpetal', name: 'Sunpetal', emoji: '🌻', rarity: 'common',
+    id: 'sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', rarity: 'common',
     growTimeMinutes: 25, baseYield: 5, sellPrice: 15, seedPrice: 5,
-    description: 'A cheerful flower that always faces the sun.',
+    description: 'Loài hoa vui tươi luôn hướng về phía mặt trời.',
     mutationChance: 0.02, seasonBonus: ['spring', 'summer'], weatherBonus: ['sunny'],
   },
   shadowbloom: {
-    id: 'shadowbloom', name: 'Shadowbloom', emoji: '🌑', rarity: 'legendary',
+    id: 'shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', rarity: 'legendary',
     growTimeMinutes: 300, baseYield: 1, sellPrice: 500, seedPrice: 300,
-    description: 'Absorbs light around it. Extremely rare and powerful.',
+    description: 'Hút ánh sáng xung quanh. Cực kỳ hiếm và quyền năng.',
     mutationChance: 0.15, seasonBonus: ['winter'], weatherBonus: ['stormy', 'foggy'],
   },
 };
 
 const MUTATIONS: Record<string, { name: string; emoji: string; yieldMultiplier: number; priceMultiplier: number }> = {
-  golden: { name: 'Golden', emoji: '✨', yieldMultiplier: 2.5, priceMultiplier: 3 },
-  giant: { name: 'Giant', emoji: '🔮', yieldMultiplier: 4, priceMultiplier: 2 },
-  twin: { name: 'Twin', emoji: '👥', yieldMultiplier: 2, priceMultiplier: 1.5 },
-  glowing: { name: 'Glowing', emoji: '💫', yieldMultiplier: 1.5, priceMultiplier: 4 },
+  golden: { name: 'Vàng Rực', emoji: '✨', yieldMultiplier: 2.5, priceMultiplier: 3 },
+  giant: { name: 'Khổng Lồ', emoji: '🔮', yieldMultiplier: 4, priceMultiplier: 2 },
+  twin: { name: 'Song Sinh', emoji: '👥', yieldMultiplier: 2, priceMultiplier: 1.5 },
+  glowing: { name: 'Phát Sáng', emoji: '💫', yieldMultiplier: 1.5, priceMultiplier: 4 },
 };
 
 export class GardenService {
@@ -75,10 +75,10 @@ export class GardenService {
   /** Plant a seed in an empty slot */
   static async plant(playerId: string, plantType: string, slot: number, worldState: { currentSeason: string; currentWeather: string }): Promise<Plant> {
     const existing = await GardenService.getPlantBySlot(playerId, slot);
-    if (existing) throw new Error('Slot already occupied');
+    if (existing) throw new Error('Ô này đã có cây rồi.');
 
     const def = PLANTS[plantType];
-    if (!def) throw new Error('Unknown plant type');
+    if (!def) throw new Error('Không tìm thấy loại cây này.');
 
     // Season/weather bonus speeds growth
     let growMins = def.growTimeMinutes;
@@ -109,8 +109,8 @@ export class GardenService {
   /** Water a plant */
   static async water(playerId: string, slot: number): Promise<Plant> {
     const plant = await GardenService.getPlantBySlot(playerId, slot);
-    if (!plant) throw new Error('No plant in that slot');
-    if (plant.stage === 'mature' || plant.stage === 'flowering') throw new Error('Plant is already ready to harvest');
+    if (!plant) throw new Error('Không có cây nào ở ô này.');
+    if (plant.stage === 'mature' || plant.stage === 'flowering') throw new Error('Cây đã chín, hãy thu hoạch thôi!');
 
     const newWater = Math.min(100, plant.waterLevel + 30);
     await db
@@ -124,7 +124,7 @@ export class GardenService {
   /** Fertilize a plant */
   static async fertilize(playerId: string, slot: number): Promise<Plant> {
     const plant = await GardenService.getPlantBySlot(playerId, slot);
-    if (!plant) throw new Error('No plant in that slot');
+    if (!plant) throw new Error('Không có cây nào ở ô này.');
 
     const newFert = Math.min(100, plant.fertilizerLevel + 40);
     await db.update(schema.plants).set({ fertilizerLevel: newFert }).where(eq(schema.plants.id, plant.id));
@@ -161,8 +161,8 @@ export class GardenService {
   /** Harvest a mature plant */
   static async harvest(playerId: string, slot: number): Promise<{ yield: number; mutant: boolean; mutationType: string | null; sellValue: number }> {
     const plant = await GardenService.getPlantBySlot(playerId, slot);
-    if (!plant) throw new Error('No plant in that slot');
-    if (plant.stage !== 'flowering' && plant.stage !== 'mature') throw new Error('Plant is not ready to harvest yet');
+    if (!plant) throw new Error('Không có cây nào ở ô này.');
+    if (plant.stage !== 'flowering' && plant.stage !== 'mature') throw new Error('Cây chưa chín để thu hoạch.');
 
     const def = PLANTS[plant.plantType];
     let yieldAmount = def.baseYield;
@@ -197,7 +197,7 @@ export class GardenService {
   /** Remove a withered plant */
   static async remove(playerId: string, slot: number): Promise<void> {
     const plant = await GardenService.getPlantBySlot(playerId, slot);
-    if (!plant) throw new Error('No plant in that slot');
+    if (!plant) throw new Error('Không có cây nào ở ô này.');
     await db.delete(schema.plants).where(eq(schema.plants.id, plant.id));
   }
 

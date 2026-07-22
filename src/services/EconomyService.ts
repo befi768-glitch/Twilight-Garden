@@ -7,34 +7,34 @@ import { randomUUID } from 'crypto';
 
 /** Static item catalogue */
 export const ITEMS: Record<string, ItemDefinition> = {
-  // Seeds
-  seed_moonflower: { id: 'seed_moonflower', name: 'Moonflower Seed', emoji: '🌱', category: 'seed', rarity: 'uncommon', description: 'Plant in your garden.', sellPrice: 10, buyPrice: 20, usable: true, stackable: true, maxStack: 99 },
-  seed_starbloom: { id: 'seed_starbloom', name: 'Starbloom Seed', emoji: '🌱', category: 'seed', rarity: 'rare', description: 'Rare celestial seed.', sellPrice: 25, buyPrice: 50, usable: true, stackable: true, maxStack: 99 },
-  seed_twilight_rose: { id: 'seed_twilight_rose', name: 'Rose Seed', emoji: '🌱', category: 'seed', rarity: 'common', description: 'A simple rose seed.', sellPrice: 4, buyPrice: 8, usable: true, stackable: true, maxStack: 99 },
-  seed_crystalvine: { id: 'seed_crystalvine', name: 'Crystalvine Seed', emoji: '💠', category: 'seed', rarity: 'epic', description: 'Nearly impossible to find.', sellPrice: 60, buyPrice: 120, usable: true, stackable: true, maxStack: 99 },
-  seed_dreamcap: { id: 'seed_dreamcap', name: 'Dreamcap Spore', emoji: '🍄', category: 'seed', rarity: 'uncommon', description: 'Mushroom spore.', sellPrice: 8, buyPrice: 15, usable: true, stackable: true, maxStack: 99 },
-  seed_sunpetal: { id: 'seed_sunpetal', name: 'Sunpetal Seed', emoji: '🌻', category: 'seed', rarity: 'common', description: 'Basic sunny seed.', sellPrice: 3, buyPrice: 5, usable: true, stackable: true, maxStack: 99 },
-  seed_shadowbloom: { id: 'seed_shadowbloom', name: 'Shadowbloom Seed', emoji: '🌑', category: 'seed', rarity: 'legendary', description: 'Incredibly rare.', sellPrice: 150, buyPrice: 300, usable: true, stackable: true, maxStack: 10 },
+  // Hạt giống
+  seed_moonflower: { id: 'seed_moonflower', name: 'Hạt Hoa Trăng', emoji: '🌱', category: 'seed', rarity: 'uncommon', description: 'Trồng vào vườn để lấy Hoa Trăng.', sellPrice: 10, buyPrice: 20, usable: true, stackable: true, maxStack: 99 },
+  seed_starbloom: { id: 'seed_starbloom', name: 'Hạt Tinh Hoa Sao', emoji: '🌱', category: 'seed', rarity: 'rare', description: 'Hạt giống thiên thể hiếm có.', sellPrice: 25, buyPrice: 50, usable: true, stackable: true, maxStack: 99 },
+  seed_twilight_rose: { id: 'seed_twilight_rose', name: 'Hạt Hồng Hoàng Hôn', emoji: '🌱', category: 'seed', rarity: 'common', description: 'Hạt hoa hồng đơn giản, dễ trồng.', sellPrice: 4, buyPrice: 8, usable: true, stackable: true, maxStack: 99 },
+  seed_crystalvine: { id: 'seed_crystalvine', name: 'Hạt Dây Pha Lê', emoji: '💠', category: 'seed', rarity: 'epic', description: 'Gần như không thể tìm thấy ngoài tự nhiên.', sellPrice: 60, buyPrice: 120, usable: true, stackable: true, maxStack: 99 },
+  seed_dreamcap: { id: 'seed_dreamcap', name: 'Bào Tử Nấm Mộng Mơ', emoji: '🍄', category: 'seed', rarity: 'uncommon', description: 'Bào tử nấm đặc biệt.', sellPrice: 8, buyPrice: 15, usable: true, stackable: true, maxStack: 99 },
+  seed_sunpetal: { id: 'seed_sunpetal', name: 'Hạt Cánh Hoa Nắng', emoji: '🌻', category: 'seed', rarity: 'common', description: 'Hạt hoa phổ thông, dễ trồng dưới nắng.', sellPrice: 3, buyPrice: 5, usable: true, stackable: true, maxStack: 99 },
+  seed_shadowbloom: { id: 'seed_shadowbloom', name: 'Hạt Hoa Bóng Tối', emoji: '🌑', category: 'seed', rarity: 'legendary', description: 'Cực kỳ hiếm. Chỉ nở trong đêm tối.', sellPrice: 150, buyPrice: 300, usable: true, stackable: true, maxStack: 10 },
 
-  // Crops
-  crop_moonflower: { id: 'crop_moonflower', name: 'Moonflower', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'A harvested moonflower.', sellPrice: 45, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_starbloom: { id: 'crop_starbloom', name: 'Starbloom', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'A harvested starbloom.', sellPrice: 80, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Twilight Rose', emoji: '🌹', category: 'crop', rarity: 'common', description: 'A harvested rose.', sellPrice: 20, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_crystalvine: { id: 'crop_crystalvine', name: 'Crystalvine Shard', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Crystallized vine.', sellPrice: 200, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_dreamcap: { id: 'crop_dreamcap', name: 'Dreamcap', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'A harvested dreamcap.', sellPrice: 35, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_sunpetal: { id: 'crop_sunpetal', name: 'Sunpetal', emoji: '🌻', category: 'crop', rarity: 'common', description: 'A harvested sunpetal.', sellPrice: 15, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Shadowbloom', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Rare shadow essence.', sellPrice: 500, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
+  // Nông sản
+  crop_moonflower: { id: 'crop_moonflower', name: 'Hoa Trăng', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'Hoa Trăng vừa thu hoạch.', sellPrice: 45, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_starbloom: { id: 'crop_starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'Tinh Hoa Sao vừa thu hoạch.', sellPrice: 80, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 20, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 200, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 35, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 15, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 500, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
 
-  // Tools & potions
-  watering_can: { id: 'watering_can', name: 'Watering Can', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Water your plants.', sellPrice: 10, buyPrice: 30, usable: true, stackable: false, maxStack: 1 },
-  fertilizer: { id: 'fertilizer', name: 'Fertilizer', emoji: '💩', category: 'material', rarity: 'common', description: 'Speeds up plant growth.', sellPrice: 5, buyPrice: 12, usable: true, stackable: true, maxStack: 99 },
-  growth_potion: { id: 'growth_potion', name: 'Growth Potion', emoji: '🧪', category: 'potion', rarity: 'uncommon', description: 'Instantly advances plant growth.', sellPrice: 30, buyPrice: 75, usable: true, stackable: true, maxStack: 10 },
-  moonstone: { id: 'moonstone', name: 'Moonstone', emoji: '🔮', category: 'gem', rarity: 'rare', description: 'A gem infused with moonlight.', sellPrice: 150, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
-  healing_herb: { id: 'healing_herb', name: 'Healing Herb', emoji: '🌿', category: 'food', rarity: 'common', description: 'Restores energy.', sellPrice: 8, buyPrice: 15, usable: true, stackable: true, maxStack: 50 },
-  pet_food: { id: 'pet_food', name: 'Pet Food', emoji: '🥩', category: 'food', rarity: 'common', description: 'Feed your pet.', sellPrice: 3, buyPrice: 8, usable: true, stackable: true, maxStack: 99 },
-  taming_charm: { id: 'taming_charm', name: 'Taming Charm', emoji: '🪄', category: 'tool', rarity: 'uncommon', description: 'Used to tame wildlife.', sellPrice: 20, buyPrice: 50, usable: true, stackable: true, maxStack: 10 },
-  treasure_map: { id: 'treasure_map', name: 'Treasure Map', emoji: '🗺️', category: 'key', rarity: 'rare', description: 'Leads to hidden treasure.', sellPrice: 100, buyPrice: null, usable: true, stackable: true, maxStack: 5 },
-  ancient_relic: { id: 'ancient_relic', name: 'Ancient Relic', emoji: '🏺', category: 'misc', rarity: 'epic', description: 'A relic from a forgotten age.', sellPrice: 300, buyPrice: null, usable: false, stackable: true, maxStack: 10 },
+  // Công cụ & thuốc
+  watering_can: { id: 'watering_can', name: 'Bình Tưới Nước', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Dùng để tưới cây trong vườn.', sellPrice: 10, buyPrice: 30, usable: true, stackable: false, maxStack: 1 },
+  fertilizer: { id: 'fertilizer', name: 'Phân Bón', emoji: '💩', category: 'material', rarity: 'common', description: 'Thúc đẩy cây tăng trưởng nhanh hơn.', sellPrice: 5, buyPrice: 12, usable: true, stackable: true, maxStack: 99 },
+  growth_potion: { id: 'growth_potion', name: 'Thuốc Tăng Trưởng', emoji: '🧪', category: 'potion', rarity: 'uncommon', description: 'Lập tức thúc đẩy cây phát triển ngay.', sellPrice: 30, buyPrice: 75, usable: true, stackable: true, maxStack: 10 },
+  moonstone: { id: 'moonstone', name: 'Đá Mặt Trăng', emoji: '🔮', category: 'gem', rarity: 'rare', description: 'Viên đá quý thấm đầy ánh trăng.', sellPrice: 150, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
+  healing_herb: { id: 'healing_herb', name: 'Thảo Dược Chữa Lành', emoji: '🌿', category: 'food', rarity: 'common', description: 'Hồi phục năng lượng.', sellPrice: 8, buyPrice: 15, usable: true, stackable: true, maxStack: 50 },
+  pet_food: { id: 'pet_food', name: 'Thức Ăn Thú Cưng', emoji: '🥩', category: 'food', rarity: 'common', description: 'Cho thú cưng ăn.', sellPrice: 3, buyPrice: 8, usable: true, stackable: true, maxStack: 99 },
+  taming_charm: { id: 'taming_charm', name: 'Bùa Thuần Hóa', emoji: '🪄', category: 'tool', rarity: 'uncommon', description: 'Dùng để thuần hóa sinh vật hoang dã.', sellPrice: 20, buyPrice: 50, usable: true, stackable: true, maxStack: 10 },
+  treasure_map: { id: 'treasure_map', name: 'Bản Đồ Kho Báu', emoji: '🗺️', category: 'key', rarity: 'rare', description: 'Dẫn đến kho báu bí ẩn.', sellPrice: 100, buyPrice: null, usable: true, stackable: true, maxStack: 5 },
+  ancient_relic: { id: 'ancient_relic', name: 'Cổ Vật Cổ Đại', emoji: '🏺', category: 'misc', rarity: 'epic', description: 'Di vật từ một nền văn minh đã lãng quên.', sellPrice: 300, buyPrice: null, usable: false, stackable: true, maxStack: 10 },
 };
 
 /** Items available in the basic shop */
@@ -63,17 +63,17 @@ export class EconomyService {
   /** Buy an item from the shop */
   static async buyFromShop(playerId: string, itemId: string, quantity: number): Promise<{ spent: number; newBalance: number }> {
     const shopEntry = SHOP_ITEMS.find((s) => s.itemId === itemId);
-    if (!shopEntry) throw new Error('Item not available in shop');
+    if (!shopEntry) throw new Error('Vật phẩm này không có trong cửa hàng.');
 
     const totalCost = shopEntry.price * quantity;
     const hasEnough = await PlayerService.hasEnoughCoins(playerId, totalCost);
-    if (!hasEnough) throw new Error('Not enough mooncoins');
+    if (!hasEnough) throw new Error('Không đủ xu để mua.');
 
     await PlayerService.updateCoins(playerId, -totalCost);
     await InventoryService.addItem(playerId, itemId, quantity);
 
     // Log transaction
-    await EconomyService.logTransaction(null, playerId, 'spend', totalCost, itemId, quantity, `Bought ${quantity}x ${ITEMS[itemId]?.name ?? itemId} from shop`);
+    await EconomyService.logTransaction(null, playerId, 'spend', totalCost, itemId, quantity, `Mua ${quantity}x ${ITEMS[itemId]?.name ?? itemId} từ cửa hàng`);
 
     const player = await PlayerService.getById(playerId);
     return { spent: totalCost, newBalance: player?.coins ?? 0 };
@@ -82,16 +82,16 @@ export class EconomyService {
   /** Sell an item */
   static async sellItem(playerId: string, itemId: string, quantity: number): Promise<{ earned: number; newBalance: number }> {
     const item = ITEMS[itemId];
-    if (!item) throw new Error('Unknown item');
+    if (!item) throw new Error('Không tìm thấy vật phẩm này.');
 
     const hasItem = await InventoryService.hasItem(playerId, itemId, quantity);
-    if (!hasItem) throw new Error('Not enough items in inventory');
+    if (!hasItem) throw new Error('Không đủ số lượng vật phẩm trong túi đồ.');
 
     await InventoryService.removeItem(playerId, itemId, quantity);
     const earned = item.sellPrice * quantity;
     await PlayerService.updateCoins(playerId, earned);
 
-    await EconomyService.logTransaction(playerId, null, 'earn', earned, itemId, quantity, `Sold ${quantity}x ${item.name}`);
+    await EconomyService.logTransaction(playerId, null, 'earn', earned, itemId, quantity, `Bán ${quantity}x ${item.name}`);
 
     const player = await PlayerService.getById(playerId);
     return { earned, newBalance: player?.coins ?? 0 };
@@ -100,17 +100,17 @@ export class EconomyService {
   /** Transfer coins between players */
   static async transfer(fromId: string, toId: string, amount: number): Promise<void> {
     const hasEnough = await PlayerService.hasEnoughCoins(fromId, amount);
-    if (!hasEnough) throw new Error('Not enough mooncoins');
+    if (!hasEnough) throw new Error('Không đủ xu để chuyển.');
 
     await PlayerService.updateCoins(fromId, -amount);
     await PlayerService.updateCoins(toId, amount);
-    await EconomyService.logTransaction(fromId, toId, 'transfer', amount, null, null, `Transfer`);
+    await EconomyService.logTransaction(fromId, toId, 'transfer', amount, null, null, 'Chuyển xu');
   }
 
   /** Create an auction listing */
   static async createAuction(sellerId: string, itemId: string, quantity: number, startPrice: number, durationHours: number): Promise<string> {
     const hasItem = await InventoryService.hasItem(sellerId, itemId, quantity);
-    if (!hasItem) throw new Error('Not enough items');
+    if (!hasItem) throw new Error('Không đủ số lượng vật phẩm.');
 
     await InventoryService.removeItem(sellerId, itemId, quantity);
 
@@ -123,14 +123,14 @@ export class EconomyService {
   /** Bid on an auction */
   static async bid(auctionId: string, bidderId: string, amount: number): Promise<void> {
     const result = await db.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).limit(1);
-    if (!result.length) throw new Error('Auction not found');
+    if (!result.length) throw new Error('Không tìm thấy phiên đấu giá.');
     const auction = result[0];
-    if (auction.status !== 'active') throw new Error('Auction is not active');
-    if (new Date() > auction.endsAt) throw new Error('Auction has ended');
-    if (amount <= auction.currentBid) throw new Error('Bid must be higher than current bid');
+    if (auction.status !== 'active') throw new Error('Phiên đấu giá này không còn hoạt động.');
+    if (new Date() > auction.endsAt) throw new Error('Phiên đấu giá đã kết thúc.');
+    if (amount <= auction.currentBid) throw new Error('Giá đặt phải cao hơn giá hiện tại.');
 
     const hasEnough = await PlayerService.hasEnoughCoins(bidderId, amount);
-    if (!hasEnough) throw new Error('Not enough mooncoins');
+    if (!hasEnough) throw new Error('Không đủ xu để đặt giá.');
 
     // Refund previous bidder
     if (auction.highestBidderId) {
