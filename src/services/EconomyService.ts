@@ -8,13 +8,13 @@ import { randomUUID } from 'crypto';
 /** Static item catalogue */
 export const ITEMS: Record<string, ItemDefinition> = {
   // Hạt giống
-  seed_moonflower: { id: 'seed_moonflower', name: 'Hạt Hoa Trăng', emoji: '🌱', category: 'seed', rarity: 'uncommon', description: 'Trồng vào vườn để lấy Hoa Trăng.', sellPrice: 18, buyPrice: 110, usable: true, stackable: true, maxStack: 99 },
-  seed_starbloom: { id: 'seed_starbloom', name: 'Hạt Tinh Hoa Sao', emoji: '🌱', category: 'seed', rarity: 'rare', description: 'Hạt giống thiên thể hiếm có.', sellPrice: 45, buyPrice: 280, usable: true, stackable: true, maxStack: 99 },
-  seed_twilight_rose: { id: 'seed_twilight_rose', name: 'Hạt Hồng Hoàng Hôn', emoji: '🌱', category: 'seed', rarity: 'common', description: 'Hạt hoa hồng đơn giản, dễ trồng.', sellPrice: 6, buyPrice: 40, usable: true, stackable: true, maxStack: 99 },
-  seed_crystalvine: { id: 'seed_crystalvine', name: 'Hạt Dây Pha Lê', emoji: '💠', category: 'seed', rarity: 'epic', description: 'Gần như không thể tìm thấy ngoài tự nhiên.', sellPrice: 100, buyPrice: 650, usable: true, stackable: true, maxStack: 99 },
-  seed_dreamcap: { id: 'seed_dreamcap', name: 'Bào Tử Nấm Mộng Mơ', emoji: '🍄', category: 'seed', rarity: 'uncommon', description: 'Bào tử nấm đặc biệt.', sellPrice: 14, buyPrice: 80, usable: true, stackable: true, maxStack: 99 },
-  seed_sunpetal: { id: 'seed_sunpetal', name: 'Hạt Cánh Hoa Nắng', emoji: '🌻', category: 'seed', rarity: 'common', description: 'Hạt hoa phổ thông, dễ trồng dưới nắng.', sellPrice: 5, buyPrice: 25, usable: true, stackable: true, maxStack: 99 },
-  seed_shadowbloom: { id: 'seed_shadowbloom', name: 'Hạt Hoa Bóng Tối', emoji: '🌑', category: 'seed', rarity: 'legendary', description: 'Cực kỳ hiếm. Chỉ nở trong đêm tối.', sellPrice: 250, buyPrice: 1600, usable: true, stackable: true, maxStack: 10 },
+  seed_moonflower: { id: 'seed_moonflower', name: 'Hạt Hoa Trăng', emoji: '🌱', category: 'seed', rarity: 'uncommon', description: 'Trồng vào vườn để lấy Hoa Trăng.', sellPrice: 74, buyPrice: 110, usable: true, stackable: true, maxStack: 99 },
+  seed_starbloom: { id: 'seed_starbloom', name: 'Hạt Tinh Hoa Sao', emoji: '🌱', category: 'seed', rarity: 'rare', description: 'Hạt giống thiên thể hiếm có.', sellPrice: 140, buyPrice: 280, usable: true, stackable: true, maxStack: 99 },
+  seed_twilight_rose: { id: 'seed_twilight_rose', name: 'Hạt Hồng Hoàng Hôn', emoji: '🌱', category: 'seed', rarity: 'common', description: 'Hạt hoa hồng đơn giản, dễ trồng.', sellPrice: 27, buyPrice: 40, usable: true, stackable: true, maxStack: 99 },
+  seed_crystalvine: { id: 'seed_crystalvine', name: 'Hạt Dây Pha Lê', emoji: '💠', category: 'seed', rarity: 'epic', description: 'Gần như không thể tìm thấy ngoài tự nhiên.', sellPrice: 180, buyPrice: 650, usable: true, stackable: true, maxStack: 99 },
+  seed_dreamcap: { id: 'seed_dreamcap', name: 'Bào Tử Nấm Mộng Mơ', emoji: '🍄', category: 'seed', rarity: 'uncommon', description: 'Bào tử nấm đặc biệt.', sellPrice: 54, buyPrice: 80, usable: true, stackable: true, maxStack: 99 },
+  seed_sunpetal: { id: 'seed_sunpetal', name: 'Hạt Cánh Hoa Nắng', emoji: '🌻', category: 'seed', rarity: 'common', description: 'Hạt hoa phổ thông, dễ trồng dưới nắng.', sellPrice: 17, buyPrice: 25, usable: true, stackable: true, maxStack: 99 },
+  seed_shadowbloom: { id: 'seed_shadowbloom', name: 'Hạt Hoa Bóng Tối', emoji: '🌑', category: 'seed', rarity: 'legendary', description: 'Cực kỳ hiếm. Chỉ nở trong đêm tối.', sellPrice: 400, buyPrice: 1600, usable: true, stackable: true, maxStack: 10 },
 
   // Nông sản
   crop_moonflower: { id: 'crop_moonflower', name: 'Hoa Trăng', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'Hoa Trăng vừa thu hoạch.', sellPrice: 55, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
@@ -26,13 +26,13 @@ export const ITEMS: Record<string, ItemDefinition> = {
   crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 600, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
 
   // Công cụ & thuốc
-  watering_can: { id: 'watering_can', name: 'Bình Tưới Nước', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Dùng để tưới cây trong vườn.', sellPrice: 25, buyPrice: 150, usable: true, stackable: false, maxStack: 1 },
-  fertilizer: { id: 'fertilizer', name: 'Phân Bón', emoji: '💩', category: 'material', rarity: 'common', description: 'Thúc đẩy cây tăng trưởng nhanh hơn.', sellPrice: 10, buyPrice: 65, usable: true, stackable: true, maxStack: 99 },
-  growth_potion: { id: 'growth_potion', name: 'Thuốc Tăng Trưởng', emoji: '🧪', category: 'potion', rarity: 'uncommon', description: 'Lập tức thúc đẩy cây phát triển ngay.', sellPrice: 70, buyPrice: 380, usable: true, stackable: true, maxStack: 10 },
+  watering_can: { id: 'watering_can', name: 'Bình Tưới Nước', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Dùng để tưới cây trong vườn.', sellPrice: 100, buyPrice: 150, usable: true, stackable: false, maxStack: 1 },
+  fertilizer: { id: 'fertilizer', name: 'Phân Bón', emoji: '💩', category: 'material', rarity: 'common', description: 'Thúc đẩy cây tăng trưởng nhanh hơn.', sellPrice: 44, buyPrice: 65, usable: true, stackable: true, maxStack: 99 },
+  growth_potion: { id: 'growth_potion', name: 'Thuốc Tăng Trưởng', emoji: '🧪', category: 'potion', rarity: 'uncommon', description: 'Lập tức thúc đẩy cây phát triển ngay.', sellPrice: 255, buyPrice: 380, usable: true, stackable: true, maxStack: 10 },
   moonstone: { id: 'moonstone', name: 'Đá Mặt Trăng', emoji: '🔮', category: 'gem', rarity: 'rare', description: 'Viên đá quý thấm đầy ánh trăng.', sellPrice: 320, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
-  healing_herb: { id: 'healing_herb', name: 'Thảo Dược Chữa Lành', emoji: '🌿', category: 'food', rarity: 'common', description: 'Hồi phục năng lượng.', sellPrice: 18, buyPrice: 65, usable: true, stackable: true, maxStack: 50 },
-  pet_food: { id: 'pet_food', name: 'Thức Ăn Thú Cưng', emoji: '🥩', category: 'food', rarity: 'common', description: 'Cho thú cưng ăn.', sellPrice: 6, buyPrice: 40, usable: true, stackable: true, maxStack: 99 },
-  taming_charm: { id: 'taming_charm', name: 'Bùa Thuần Hóa', emoji: '🪄', category: 'tool', rarity: 'uncommon', description: 'Dùng để thuần hóa sinh vật hoang dã.', sellPrice: 45, buyPrice: 260, usable: true, stackable: true, maxStack: 10 },
+  healing_herb: { id: 'healing_herb', name: 'Thảo Dược Chữa Lành', emoji: '🌿', category: 'food', rarity: 'common', description: 'Hồi phục năng lượng.', sellPrice: 44, buyPrice: 65, usable: true, stackable: true, maxStack: 50 },
+  pet_food: { id: 'pet_food', name: 'Thức Ăn Thú Cưng', emoji: '🥩', category: 'food', rarity: 'common', description: 'Cho thú cưng ăn.', sellPrice: 27, buyPrice: 40, usable: true, stackable: true, maxStack: 99 },
+  taming_charm: { id: 'taming_charm', name: 'Bùa Thuần Hóa', emoji: '🪄', category: 'tool', rarity: 'uncommon', description: 'Dùng để thuần hóa sinh vật hoang dã.', sellPrice: 174, buyPrice: 260, usable: true, stackable: true, maxStack: 10 },
   treasure_map: { id: 'treasure_map', name: 'Bản Đồ Kho Báu', emoji: '🗺️', category: 'key', rarity: 'rare', description: 'Dẫn đến kho báu bí ẩn.', sellPrice: 250, buyPrice: null, usable: true, stackable: true, maxStack: 5 },
   ancient_relic: { id: 'ancient_relic', name: 'Cổ Vật Cổ Đại', emoji: '🏺', category: 'misc', rarity: 'epic', description: 'Di vật từ một nền văn minh đã lãng quên.', sellPrice: 700, buyPrice: null, usable: false, stackable: true, maxStack: 10 },
 };
