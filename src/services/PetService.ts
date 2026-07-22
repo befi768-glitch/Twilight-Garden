@@ -58,7 +58,13 @@ export class PetService {
       adoptedAt: new Date(),
     });
 
-    return (await PetService.getPet(id))!;
+    const pet = (await PetService.getPet(id))!;
+
+    // Track collect-type quest objectives (e.g. pet_lover)
+    const { QuestService } = await import('./QuestService');
+    await QuestService.updateObjective(playerId, 'collect', 'pet', 1);
+
+    return pet;
   }
 
   static async feed(playerId: string, petId: string): Promise<Pet> {

@@ -36,8 +36,12 @@ export async function worldTick(guildId: string): Promise<void> {
     // Tick plant growth for all players
     const players = await db.select().from(schema.players);
     for (const player of players) {
-      await GardenService.tickGrowth(player.id);
-      await AchievementService.checkStatAchievements(player.id);
+      try {
+        await GardenService.tickGrowth(player.id);
+        await AchievementService.checkStatAchievements(player.id);
+      } catch (pErr) {
+        logger.error(`Tick failed for player ${player.id}`, { error: String(pErr) });
+      }
     }
 
     // Decay pet stats

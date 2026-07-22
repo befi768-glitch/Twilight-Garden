@@ -156,13 +156,21 @@ export class EconomyService {
   static async resolveAuctions(): Promise<void> {
     const expired = await db.select().from(schema.auctions).where(and(eq(schema.auctions.status, 'active'), lt(schema.auctions.endsAt, new Date())));
     for (const auction of expired) {
-      if (auction.highestBidderId) {
-        await InventoryService.addItem(auction.highestBidderId, auction.itemId, auction.quantity);
-        await PlayerService.updateCoins(auction.sellerId, auction.currentBid);
-        await db.update(schema.auctions).set({ status: 'sold' }).where(eq(schema.auctions.id, auction.id));
-      } else {
-        await InventoryService.addItem(auction.sellerId, auction.itemId, auction.quantity);
-        await db.update(schema.auctions).set({ status: 'expired' }).where(eq(schema.auctions.id, auction.id));
+      try {
+        await db.transaction(async (_tx) => {
+          if (auction.highestBidderId) {
+            await InventoryService.addItem(auction.highestBidderId, auction.itemId, auction.quantity);
+            await PlayerService.updateCoins(auction.sellerId, auction.currentBid);
+            await db.update(schema.auctions).set({ status: 'sold' }).where(eq(schema.auctions.id, auction.id));
+          } else {
+            await InventoryService.addItem(auction.sellerId, auction.itemId, auction.quantity);
+            await db.update(schema.auctions).set({ status: 'expired' }).where(eq(schema.auctions.id, auction.id));
+          }
+        });
+      } catch (err: any) {
+        // Log and skip — don't let one broken auction block others
+        const { logger } = await import('../utils/logger');
+        logger.error(`Failed to resolve auction ${auction.id}`, { error: err?.message });
       }
     }
   }

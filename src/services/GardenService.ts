@@ -110,6 +110,7 @@ export class GardenService {
   static async water(playerId: string, slot: number): Promise<Plant> {
     const plant = await GardenService.getPlantBySlot(playerId, slot);
     if (!plant) throw new Error('Không có cây nào ở ô này.');
+    if (plant.stage === 'withered') throw new Error('Cây đã chết rồi, hãy nhổ bỏ bằng `.vuon nhổ`!');
     if (plant.stage === 'mature' || plant.stage === 'flowering') throw new Error('Cây đã chín, hãy thu hoạch thôi!');
 
     const newWater = Math.min(100, plant.waterLevel + 30);

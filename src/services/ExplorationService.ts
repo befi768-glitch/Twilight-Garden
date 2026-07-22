@@ -137,7 +137,12 @@ export class ExplorationService {
     if (reward.coins) await PlayerService.updateCoins(playerId, reward.coins);
     if (reward.xp) await PlayerService.addXp(playerId, reward.xp);
     if (reward.items) {
-      for (const item of reward.items) await InventoryService.addItem(playerId, item.itemId, item.quantity);
+      const { QuestService } = await import('./QuestService');
+      for (const item of reward.items) {
+        await InventoryService.addItem(playerId, item.itemId, item.quantity);
+        // Track collect-type quest objectives (e.g. moonstone_collector)
+        await QuestService.updateObjective(playerId, 'collect', item.itemId, item.quantity);
+      }
     }
 
     await db.insert(schema.explorationLogs).values({

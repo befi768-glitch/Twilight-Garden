@@ -154,6 +154,10 @@ export class QuestService {
     if (quest.rewards.reputationBonus) await PlayerService.addReputation(playerId, quest.rewards.reputationBonus);
     await PlayerService.incrementStat(playerId, 'questsCompleted');
 
+    // Check achievements immediately after quest completion
+    const { AchievementService } = await import('./AchievementService');
+    await AchievementService.checkStatAchievements(playerId);
+
     return quest;
   }
 
