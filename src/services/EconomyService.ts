@@ -22,7 +22,7 @@ export const ITEMS: Record<string, ItemDefinition> = {
   crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 30, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
   crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 975, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
   crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 60, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 18, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 13, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
   crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 2400, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
 
   // Công cụ & thuốc

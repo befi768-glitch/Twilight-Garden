@@ -38,7 +38,7 @@ export const PLANTS: Record<string, PlantDefinition> = {
   },
   sunpetal: {
     id: 'sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', rarity: 'common',
-    growTimeMinutes: 25, baseYield: 3, sellPrice: 18, seedPrice: 25,
+    growTimeMinutes: 25, baseYield: 3, sellPrice: 13, seedPrice: 25,   // 13×3=39 vs seed 25 → +56% ✓
     description: 'Loài hoa vui tươi luôn hướng về phía mặt trời.',
     mutationChance: 0.02, seasonBonus: ['spring', 'summer'], weatherBonus: ['sunny'],
   },
