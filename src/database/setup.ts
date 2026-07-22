@@ -213,92 +213,69 @@ const CREATE_TABLES: string[] = [
 // ADD COLUMN IF NOT EXISTS is safe to run repeatedly — each step is idempotent.
 // These handle databases that existed before a column was added to the schema.
 const MIGRATION_STEPS: string[] = [
-  // ── STEP 0: Ensure legacy columns exist on all tables that need them ─────────
-  // On a fresh DB created by CREATE_TABLES above, user_id and guild_id columns
-  // don't exist in many tables. ADD COLUMN IF NOT EXISTS is a no-op on old DBs
-  // that already have the column. These steps MUST run BEFORE the ALTER COLUMN
-  // steps below, otherwise those fail with "column does not exist" on fresh DBs.
+  // ── STEP 0: Auto-drop NOT NULL on ALL unknown legacy columns ──────────────────
+  // The production DB may have extra NOT NULL columns from old schema versions
+  // (user_id, guild_id, item_type, discord_id, etc.) that the new code doesn't set.
+  // This DO block scans information_schema for each table and drops NOT NULL on
+  // every column that isn't in the "required NOT NULL" whitelist for that table.
+  // Each column is handled in its own EXCEPTION block so one failure won't stop the rest.
+  // This replaces the old per-column ALTER TABLE approach and handles any future
+  // unknown legacy columns automatically.
+  `DO $$
+DECLARE
+  col_rec RECORD;
+  tbl TEXT;
+  required TEXT[];
+  tables_config JSONB := '[
+    {"table": "inventory",            "required": ["id","player_id","item_id","quantity","acquired_at"]},
+    {"table": "plants",               "required": ["id","player_id","slot_index","plant_type","stage","growth_percent","water_level","fertilizer_level","health","is_mutant","planted_at"]},
+    {"table": "pets",                 "required": ["id","player_id","pet_type","name","level","xp","hunger","happiness","bond","health","status","skills","adopted_at"]},
+    {"table": "player_quests",        "required": ["id","player_id","quest_id","status","objectives","started_at"]},
+    {"table": "npc_relations",        "required": ["id","player_id","npc_id","relation_score","relation","gifts_given"]},
+    {"table": "wildlife_discoveries", "required": ["id","player_id","wildlife_id","first_seen_at","times_seen","tamed"]},
+    {"table": "player_achievements",  "required": ["id","player_id","achievement_id","unlocked_at","notified"]},
+    {"table": "homes",                "required": ["id","player_id","level","name","description","decorations","storage_slots","garden_slots","defense_rating"]},
+    {"table": "journal_entries",      "required": ["id","player_id","type","target_id","title","content","discovered_at"]},
+    {"table": "exploration_logs",     "required": ["id","player_id","area","event","result","explored_at"]}
+  ]'::JSONB;
+  config_item JSONB;
+BEGIN
+  FOR config_item IN SELECT jsonb_array_elements(tables_config)
+  LOOP
+    tbl := config_item->>'table';
+    SELECT ARRAY(SELECT jsonb_array_elements_text(config_item->'required')) INTO required;
 
-  // user_id (legacy — old schema stored user identity here before player_id)
-  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE plants ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE pets ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE player_quests ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE npc_relations ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE wildlife_discoveries ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE homes ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+    FOR col_rec IN
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = tbl
+        AND is_nullable = 'NO'
+        AND column_name != ALL(required)
+    LOOP
+      BEGIN
+        EXECUTE format('ALTER TABLE %I ALTER COLUMN %I DROP NOT NULL', tbl, col_rec.column_name);
+      EXCEPTION WHEN OTHERS THEN
+        -- Ignore errors (column may not support DROP NOT NULL or may have been dropped)
+        NULL;
+      END;
+    END LOOP;
+  END LOOP;
+END $$`,
 
-  // guild_id (legacy — old schema stored guild context here too)
-  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE plants ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE pets ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE player_quests ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE npc_relations ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE wildlife_discoveries ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE homes ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-  `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
-
-  // Drop NOT NULL from guild_id on tables that no longer need it
-  `ALTER TABLE inventory ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE plants ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE pets ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE player_quests ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE npc_relations ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE wildlife_discoveries ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE player_achievements ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE homes ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE journal_entries ALTER COLUMN guild_id DROP NOT NULL`,
-  `ALTER TABLE exploration_logs ALTER COLUMN guild_id DROP NOT NULL`,
-
-  // ── STEP 1: drop NOT NULL on legacy user_id columns ────────────────────────
-  // Old schema used user_id (NOT NULL); new schema uses player_id only.
-  // Each fix is a BARE ALTER TABLE — no DO blocks, no PL/pgSQL transactions.
-  // This guarantees DROP NOT NULL is never rolled back by a later UPDATE failure.
-
-  `ALTER TABLE inventory ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE inventory ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE inventory SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE plants ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE plants ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE plants SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE pets ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE pets ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE pets SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE player_quests ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE player_quests ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE player_quests SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE npc_relations ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE npc_relations ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE npc_relations SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE wildlife_discoveries ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE wildlife_discoveries ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE wildlife_discoveries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE player_achievements ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE player_achievements ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE player_achievements SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE homes ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE homes ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE homes SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE journal_entries ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE journal_entries ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE journal_entries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
-
-  `ALTER TABLE exploration_logs ALTER COLUMN user_id SET DEFAULT ''`,
-  `ALTER TABLE exploration_logs ALTER COLUMN user_id DROP NOT NULL`,
-  `UPDATE exploration_logs SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id IN (SELECT id FROM players)`,
+  // ── STEP 1: Backfill player_id from user_id where missing ──────────────────
+  // Old schema stored identity in user_id; new schema uses player_id.
+  // After dropping NOT NULL above, backfill player_id from user_id for old rows.
+  `UPDATE inventory SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE plants SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE pets SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE player_quests SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE npc_relations SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE wildlife_discoveries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE player_achievements SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE homes SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE journal_entries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
+  `UPDATE exploration_logs SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL AND user_id != '' AND user_id IN (SELECT id FROM players)`,
 
   // plants
   `ALTER TABLE plants ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
