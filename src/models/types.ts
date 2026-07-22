@@ -201,6 +201,8 @@ export interface ExplorationEvent {
   probability: number;
   reward: ExplorationReward;
   type: 'combat' | 'find' | 'npc' | 'mystery' | 'treasure';
+  /** Optional: gọi mỗi lần explore để tạo phần thưởng ngẫu nhiên — ghi đè reward */
+  rewardFn?: () => ExplorationReward;
 }
 
 export interface ExplorationReward {
