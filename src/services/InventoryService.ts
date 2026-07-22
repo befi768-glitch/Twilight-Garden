@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, schema } from '../database';
 import { InventoryItem } from '../models/types';
 import { randomUUID } from 'crypto';
@@ -26,9 +26,10 @@ export class InventoryService {
   static async addItem(playerId: string, itemId: string, quantity: number, metadata?: Record<string, unknown>): Promise<void> {
     const existing = await InventoryService.getItem(playerId, itemId);
     if (existing) {
+      // FIX: atomic SQL increment — avoids read-modify-write race condition
       await db
         .update(schema.inventory)
-        .set({ quantity: existing.quantity + quantity })
+        .set({ quantity: sql`${schema.inventory.quantity} + ${quantity}` })
         .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
     } else {
       await db.insert(schema.inventory).values({
@@ -51,9 +52,10 @@ export class InventoryService {
         .delete(schema.inventory)
         .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
     } else {
+      // FIX: atomic SQL decrement — avoids race condition on concurrent removes
       await db
         .update(schema.inventory)
-        .set({ quantity: existing.quantity - quantity })
+        .set({ quantity: sql`${schema.inventory.quantity} - ${quantity}` })
         .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
     }
   }

@@ -104,12 +104,14 @@ export class EconomyService {
 
   /** Transfer coins between players */
   static async transfer(fromId: string, toId: string, amount: number): Promise<void> {
-    const hasEnough = await PlayerService.hasEnoughCoins(fromId, amount);
-    if (!hasEnough) throw new Error('Không đủ xu để chuyển.');
-
-    await PlayerService.updateCoins(fromId, -amount);
-    await PlayerService.updateCoins(toId, amount);
-    await EconomyService.logTransaction(fromId, toId, 'transfer', amount, null, null, 'Chuyển xu');
+    // FIX: wrap in transaction so if toId update fails, fromId is not debited
+    await db.transaction(async (_tx) => {
+      const hasEnough = await PlayerService.hasEnoughCoins(fromId, amount);
+      if (!hasEnough) throw new Error('Không đủ xu để chuyển.');
+      await PlayerService.updateCoins(fromId, -amount);
+      await PlayerService.updateCoins(toId, amount);
+      await EconomyService.logTransaction(fromId, toId, 'transfer', amount, null, null, 'Chuyển xu');
+    });
   }
 
   /** Create an auction listing */

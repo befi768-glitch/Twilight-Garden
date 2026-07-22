@@ -5,6 +5,7 @@ import { PetService } from '../../services/PetService';
 import { EconomyService } from '../../services/EconomyService';
 import { WorldEventService } from '../../services/WorldEventService';
 import { AchievementService } from '../../services/AchievementService';
+import { QuestService } from '../../services/QuestService';
 import { db, schema } from '../../database';
 import { logger } from '../../utils/logger';
 import { TimeOfDay } from '../../models/types';
@@ -77,6 +78,17 @@ export function startTickEngine(guildIds: string[]): void {
       try {
         const world = await GuildService.getOrCreateWorldState(guildId);
         await GuildService.updateWorldState(guildId, { dayNumber: world.dayNumber + 1 });
+
+        // FIX: reset daily quests for all players so they can be re-accepted each day
+        const players = await db.select().from(schema.players);
+        for (const player of players) {
+          try {
+            await QuestService.resetDailyQuests(player.id);
+          } catch (qErr) {
+            logger.error(`Daily quest reset failed for player ${player.id}`, { error: String(qErr) });
+          }
+        }
+
         logger.info(`New day ${world.dayNumber + 1} for guild ${guildId}`);
       } catch (err) {
         logger.error(`Daily reset failed for guild ${guildId}`, { error: String(err) });

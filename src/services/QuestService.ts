@@ -157,6 +157,24 @@ export class QuestService {
     return quest;
   }
 
+  /** Reset completed daily quests so they can be re-accepted next day */
+  static async resetDailyQuests(playerId: string): Promise<void> {
+    const dailyQuestIds = Object.values(QUESTS)
+      .filter((q) => q.type === 'daily')
+      .map((q) => q.id);
+    if (!dailyQuestIds.length) return;
+    // Delete completed daily quests — they'll re-appear as available tomorrow
+    for (const questId of dailyQuestIds) {
+      await db.delete(schema.playerQuests).where(
+        and(
+          eq(schema.playerQuests.playerId, playerId),
+          eq(schema.playerQuests.questId, questId),
+          eq(schema.playerQuests.status, 'completed'),
+        ),
+      );
+    }
+  }
+
   static async getAvailableQuests(playerId: string): Promise<Quest[]> {
     const player = await PlayerService.getById(playerId);
     if (!player) return [];

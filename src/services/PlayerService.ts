@@ -106,14 +106,21 @@ export class PlayerService {
     return true;
   }
 
-  /** Regenerate energy (called periodically) */
+  /** Regenerate energy (called periodically) — max once every 15 minutes per player */
   static async regenEnergy(playerId: string): Promise<void> {
     const player = await PlayerService.getById(playerId);
     if (!player) return;
-    if (player.energyCurrent < player.energyMax) {
-      const newEnergy = Math.min(player.energyMax, player.energyCurrent + 10);
-      await db.update(schema.players).set({ energyCurrent: newEnergy }).where(eq(schema.players.id, playerId));
-    }
+    if (player.energyCurrent >= player.energyMax) return;
+
+    // FIX: time-gated regen — prevent calling rapidly to exploit free energy
+    const REGEN_COOLDOWN_MS = 15 * 60 * 1000; // 15 minutes
+    const lastRegen = player.energyRegenAt ? new Date(player.energyRegenAt).getTime() : 0;
+    if (Date.now() - lastRegen < REGEN_COOLDOWN_MS) return;
+
+    const newEnergy = Math.min(player.energyMax, player.energyCurrent + 10);
+    await db.update(schema.players)
+      .set({ energyCurrent: newEnergy, energyRegenAt: new Date() })
+      .where(eq(schema.players.id, playerId));
   }
 
   /** Move player to a different area */

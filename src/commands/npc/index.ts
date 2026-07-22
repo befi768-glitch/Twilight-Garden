@@ -15,6 +15,7 @@ const HELP = [
   '`.npc danhsach` — Xem tất cả NPC',
   '`.npc noi <mãNPC>` — Nói chuyện với NPC',
   '`.npc tang <mãNPC> <mãVật>` — Tặng quà cho NPC',
+  '`.npc trao <mãNPC>` — Xem và thực hiện giao dịch với NPC',
   '`.npc quanhe` — Xem quan hệ với NPC',
 ].join('\n');
 
@@ -66,6 +67,37 @@ export const command: Command = {
       try {
         const result = await NpcService.giftItem(player.id, npcId, itemId);
         return void message.reply({ embeds: [successEmbed(`${result.response}\n+${result.relationGain} quan hệ với **${npc.name}**!`)] });
+      } catch (err) {
+        return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
+      }
+    }
+
+    if (sub === 'trao') {
+      const npcId = args[1];
+      const tradeIndexStr = args[2];
+      if (!npcId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.npc trao <mãNPC> [số]` — Bỏ số để xem danh sách giao dịch.')] });
+      const npc = NPCS[npcId];
+      if (!npc) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy NPC \`${npcId}\`.`)] });
+
+      // No index provided — show trade list
+      if (tradeIndexStr === undefined) {
+        if (!npc.trades.length) return void message.reply({ embeds: [errorEmbed(`${npc.name} không có giao dịch nào.`)] });
+        const relation = await NpcService.getOrCreateRelation(player.id, npcId);
+        const lines = npc.trades.map((t, i) => {
+          const giveDesc = 'itemId' in t.give ? `${t.give.quantity}x \`${t.give.itemId}\`` : `${t.give.coins} xu`;
+          const recvDesc = 'itemId' in t.receive ? `${t.receive.quantity}x \`${t.receive.itemId}\`` : `${t.receive.coins} xu`;
+          const lock = relation.relationScore < t.relationRequired ? ` 🔒(cần ${t.relationRequired} quan hệ)` : '';
+          return `**[${i}]** Cho: ${giveDesc} → Nhận: ${recvDesc}${lock}`;
+        });
+        return void message.reply({ embeds: [createEmbed({ title: `🤝 Giao Dịch với ${npc.name}`, description: lines.join('\n'), color: 0x16a085 })] });
+      }
+
+      // Index provided — execute trade
+      const tradeIndex = parseInt(tradeIndexStr);
+      if (isNaN(tradeIndex)) return void message.reply({ embeds: [errorEmbed('Số giao dịch không hợp lệ.')] });
+      try {
+        const result = await NpcService.executeTrade(player.id, npcId, tradeIndex);
+        return void message.reply({ embeds: [successEmbed(result.message)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
