@@ -5,14 +5,14 @@ import { chance, randomFrom, clamp } from '../utils/helpers';
 import { randomUUID } from 'crypto';
 
 export const PETS: Record<string, PetDefinition> = {
-  fox: { id: 'fox', name: 'Cáo Hoàng Hôn', emoji: '🦊', rarity: 'uncommon', description: 'Con cáo khôn ngoan với bộ lông hung đỏ lấp lánh lúc hoàng hôn.', maxLevel: 50, abilities: ['Mũi Thám Thính', 'Lao Nhanh'], passiveBonus: '+10% chiến lợi phẩm khám phá', adoptCost: 300 },
-  owl: { id: 'owl', name: 'Cú Mặt Trăng', emoji: '🦉', rarity: 'rare', description: 'Con cú khôn ngoan với đôi mắt sáng như đèn lồng.', maxLevel: 50, abilities: ['Nhìn Đêm', 'Săn Im Lặng'], passiveBonus: '+15% XP vào ban đêm', adoptCost: 500 },
-  rabbit: { id: 'rabbit', name: 'Thỏ Ánh Sao', emoji: '🐇', rarity: 'common', description: 'Con thỏ bông có đôi tai viền bạc xinh xắn.', maxLevel: 50, abilities: ['Đào May Mắn', 'Nhảy Nhanh'], passiveBonus: '+5% xu rơi', adoptCost: 150 },
-  wolf: { id: 'wolf', name: 'Sói Bóng Tối', emoji: '🐺', rarity: 'epic', description: 'Con sói dũng mãnh sinh ra từ trái tim rừng tối.', maxLevel: 50, abilities: ['Hú Bầy', 'Cắn Hoang Dã'], passiveBonus: '+20% hiệu quả chiến đấu', adoptCost: 800 },
-  deer: { id: 'deer', name: 'Nai Pha Lê', emoji: '🦌', rarity: 'rare', description: 'Gạc làm bằng pha lê trong suốt bắt ánh trăng tuyệt đẹp.', maxLevel: 50, abilities: ['Duyên Dáng', 'Đường Rừng'], passiveBonus: '+10% tốc độ tăng trưởng vườn', adoptCost: 600 },
-  dragon: { id: 'dragon', name: 'Kỳ Lân Hoàng Hôn', emoji: '🐉', rarity: 'legendary', description: 'Rồng nhỏ thở bụi sao thay vì lửa.', maxLevel: 100, abilities: ['Hơi Thở Sao', 'Cánh Huyền Bí', 'Giác Quan Rồng'], passiveBonus: '+25% toàn bộ chỉ số', adoptCost: 2000 },
-  cat: { id: 'cat', name: 'Mèo Bóng Trăng', emoji: '🐈', rarity: 'common', description: 'Con mèo thanh mảnh tan vào bóng tối và xuất hiện với những bí mật.', maxLevel: 50, abilities: ['Trốn Bóng', 'Chín Mạng'], passiveBonus: '+8% hồi năng lượng', adoptCost: 100 },
-  phoenix: { id: 'phoenix', name: 'Phượng Hoàng Lửa', emoji: '🔥', rarity: 'mythic', description: 'Sinh ra từ lửa trăng. Cực kỳ hiếm — chỉ xuất hiện một lần mỗi mùa.', maxLevel: 100, abilities: ['Lửa Tái Sinh', 'Vết Rực', 'Hào Quang Nắng'], passiveBonus: '+30% toàn bộ phần thưởng', adoptCost: 5000 },
+  fox: { id: 'fox', name: 'Cáo Hoàng Hôn', emoji: '🦊', rarity: 'uncommon', description: 'Con cáo khôn ngoan với bộ lông hung đỏ lấp lánh lúc hoàng hôn.', maxLevel: 50, abilities: ['Mũi Thám Thính', 'Lao Nhanh'], passiveBonus: '+10% chiến lợi phẩm khám phá', adoptCost: 10000 },
+  owl: { id: 'owl', name: 'Cú Mặt Trăng', emoji: '🦉', rarity: 'rare', description: 'Con cú khôn ngoan với đôi mắt sáng như đèn lồng.', maxLevel: 50, abilities: ['Nhìn Đêm', 'Săn Im Lặng'], passiveBonus: '+15% XP vào ban đêm', adoptCost: 18000 },
+  rabbit: { id: 'rabbit', name: 'Thỏ Ánh Sao', emoji: '🐇', rarity: 'common', description: 'Con thỏ bông có đôi tai viền bạc xinh xắn.', maxLevel: 50, abilities: ['Đào May Mắn', 'Nhảy Nhanh'], passiveBonus: '+5% xu rơi', adoptCost: 6000 },
+  wolf: { id: 'wolf', name: 'Sói Bóng Tối', emoji: '🐺', rarity: 'epic', description: 'Con sói dũng mãnh sinh ra từ trái tim rừng tối.', maxLevel: 50, abilities: ['Hú Bầy', 'Cắn Hoang Dã'], passiveBonus: '+20% hiệu quả chiến đấu', adoptCost: 35000 },
+  deer: { id: 'deer', name: 'Nai Pha Lê', emoji: '🦌', rarity: 'rare', description: 'Gạc làm bằng pha lê trong suốt bắt ánh trăng tuyệt đẹp.', maxLevel: 50, abilities: ['Duyên Dáng', 'Đường Rừng'], passiveBonus: '+10% tốc độ tăng trưởng vườn', adoptCost: 20000 },
+  dragon: { id: 'dragon', name: 'Kỳ Lân Hoàng Hôn', emoji: '🐉', rarity: 'legendary', description: 'Rồng nhỏ thở bụi sao thay vì lửa.', maxLevel: 100, abilities: ['Hơi Thở Sao', 'Cánh Huyền Bí', 'Giác Quan Rồng'], passiveBonus: '+25% toàn bộ chỉ số', adoptCost: 80000 },
+  cat: { id: 'cat', name: 'Mèo Bóng Trăng', emoji: '🐈', rarity: 'common', description: 'Con mèo thanh mảnh tan vào bóng tối và xuất hiện với những bí mật.', maxLevel: 50, abilities: ['Trốn Bóng', 'Chín Mạng'], passiveBonus: '+8% hồi năng lượng', adoptCost: 5000 },
+  phoenix: { id: 'phoenix', name: 'Phượng Hoàng Lửa', emoji: '🔥', rarity: 'mythic', description: 'Sinh ra từ lửa trăng. Cực kỳ hiếm — chỉ xuất hiện một lần mỗi mùa.', maxLevel: 100, abilities: ['Lửa Tái Sinh', 'Vết Rực', 'Hào Quang Nắng'], passiveBonus: '+30% toàn bộ phần thưởng', adoptCost: 200000 },
 };
 
 const DECAY_INTERVAL_HOURS = 2;
