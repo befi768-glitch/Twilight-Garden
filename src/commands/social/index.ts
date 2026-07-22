@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Message } from 'discord.js';
 import { Command } from '../../client';
 import { PlayerService } from '../../services/PlayerService';
 import { EconomyService } from '../../services/EconomyService';
@@ -6,81 +6,79 @@ import { InventoryService } from '../../services/InventoryService';
 import { HomeService } from '../../services/HomeService';
 import { GardenService } from '../../services/GardenService';
 import { createEmbed, errorEmbed, successEmbed } from '../../utils/embed';
-import { formatCoins } from '../../utils/helpers';
+import { formatCoins, progressBar } from '../../utils/helpers';
+
+function parseMention(str: string): string | null {
+  const m = str?.match(/^<@!?(\d+)>$/);
+  return m ? m[1] : null;
+}
+
+const HELP = [
+  '**Social Commands:**',
+  '`.social give_coins @user <amount>` — Give coins',
+  '`.social give_item @user <itemId> [qty]` — Give an item',
+  '`.social visit @user` — Visit a player\'s home',
+].join('\n');
 
 export const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('social')
-    .setDescription('Social interactions — gift, visit, trade')
-    .addSubcommand((sub) =>
-      sub.setName('give_coins')
-        .setDescription('Give mooncoins to another player')
-        .addUserOption((o) => o.setName('player').setDescription('Recipient').setRequired(true))
-        .addIntegerOption((o) => o.setName('amount').setDescription('Amount to give').setRequired(true).setMinValue(1))
-    )
-    .addSubcommand((sub) =>
-      sub.setName('give_item')
-        .setDescription('Give an item to another player')
-        .addUserOption((o) => o.setName('player').setDescription('Recipient').setRequired(true))
-        .addStringOption((o) => o.setName('item').setDescription('Item ID').setRequired(true))
-        .addIntegerOption((o) => o.setName('quantity').setDescription('Quantity').setMinValue(1))
-    )
-    .addSubcommand((sub) =>
-      sub.setName('visit')
-        .setDescription("Visit another player's home")
-        .addUserOption((o) => o.setName('player').setDescription('Player to visit').setRequired(true))
-    ) as any,
+  name: 'social',
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
-    const sub = interaction.options.getSubcommand();
-    const player = await PlayerService.getOrCreate(interaction.user.id, interaction.guildId!, interaction.user.username);
+  async execute(message: Message, args: string[]) {
+    const sub = args[0]?.toLowerCase();
+    if (!sub) return void message.reply(HELP);
 
-    const targetUser = interaction.options.getUser('player', true);
-    if (targetUser.id === interaction.user.id) return interaction.editReply({ embeds: [errorEmbed('You cannot interact with yourself!')] });
+    await message.channel.sendTyping();
+    const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
-    const targetPlayer = await PlayerService.getByDiscord(targetUser.id, interaction.guildId!);
-    if (!targetPlayer) return interaction.editReply({ embeds: [errorEmbed(`**${targetUser.username}** has not started playing yet.`)] });
+    const targetId = parseMention(args[1]);
+    if (!targetId) return void message.reply({ embeds: [errorEmbed('Please mention a player. Example: `.social give_coins @user 100`')] });
+    if (targetId === message.author.id) return void message.reply({ embeds: [errorEmbed('You cannot interact with yourself!')] });
+
+    const targetPlayer = await PlayerService.getByDiscord(targetId, message.guildId!);
+    if (!targetPlayer) return void message.reply({ embeds: [errorEmbed('That player has not started playing yet.')] });
 
     if (sub === 'give_coins') {
-      const amount = interaction.options.getInteger('amount', true);
+      const amount = parseInt(args[2] ?? '');
+      if (!amount) return void message.reply({ embeds: [errorEmbed('Usage: `.social give_coins @user <amount>`')] });
       try {
         await EconomyService.transfer(player.id, targetPlayer.id, amount);
-        return interaction.editReply({ embeds: [successEmbed(`Gave **${formatCoins(amount)}** to **${targetUser.username}**! 🎁`)] });
+        return void message.reply({ embeds: [successEmbed(`Gave **${formatCoins(amount)}** to **${targetPlayer.username}**! 🎁`)] });
       } catch (err) {
-        return interaction.editReply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
+        return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
     if (sub === 'give_item') {
-      const itemId = interaction.options.getString('item', true);
-      const qty = interaction.options.getInteger('quantity') ?? 1;
+      const itemId = args[2];
+      const qty = parseInt(args[3] ?? '1') || 1;
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Usage: `.social give_item @user <itemId> [qty]`')] });
       const has = await InventoryService.hasItem(player.id, itemId, qty);
-      if (!has) return interaction.editReply({ embeds: [errorEmbed(`You don't have ${qty}x ${itemId} in your inventory.`)] });
+      if (!has) return void message.reply({ embeds: [errorEmbed(`You don't have ${qty}x ${itemId} in your inventory.`)] });
       await InventoryService.removeItem(player.id, itemId, qty);
       await InventoryService.addItem(targetPlayer.id, itemId, qty);
       const { ITEMS } = await import('../../services/EconomyService');
       const def = ITEMS[itemId];
-      return interaction.editReply({ embeds: [successEmbed(`Gave **${qty}x ${def?.emoji ?? ''} ${def?.name ?? itemId}** to **${targetUser.username}**! 🎁`)] });
+      return void message.reply({ embeds: [successEmbed(`Gave **${qty}x ${def?.emoji ?? ''} ${def?.name ?? itemId}** to **${targetPlayer.username}**! 🎁`)] });
     }
 
     if (sub === 'visit') {
       const home = await HomeService.getHome(targetPlayer.id);
-      if (!home) return interaction.editReply({ embeds: [errorEmbed(`${targetUser.username} doesn't have a home yet.`)] });
-      const garden = await GardenService.getPlants(targetPlayer.id);
-
+      if (!home) return void message.reply({ embeds: [errorEmbed(`${targetPlayer.username} doesn't have a home yet.`)] });
+      const plants = await GardenService.getPlants(targetPlayer.id);
+      const activePlants = plants.filter((p) => p.stage !== 'withered');
       const embed = createEmbed({
-        title: `🏡 ${home.name}`,
-        description: home.description,
+        title: `🏡 Visiting ${targetPlayer.username}'s Home`,
+        description: `**${home.name}**\n${home.description}`,
         color: 0xe67e22,
         fields: [
-          { name: '⭐ Home Level', value: String(home.level), inline: true },
-          { name: '🌱 Garden', value: `${garden.length} plants growing`, inline: true },
-          { name: '🌙 Coins', value: formatCoins(targetPlayer.coins), inline: true },
+          { name: '⭐ Level', value: String(home.level), inline: true },
+          { name: '🌱 Garden', value: `${activePlants.length} active plants`, inline: true },
+          { name: '📊 Owner Level', value: String(targetPlayer.level), inline: true },
         ],
-        footer: `Visiting ${targetUser.username}'s home`,
       });
-      return interaction.editReply({ embeds: [embed] });
+      return void message.reply({ embeds: [embed] });
     }
+
+    return void message.reply(HELP);
   },
 };

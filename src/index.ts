@@ -1,9 +1,9 @@
 import 'dotenv/config';
-import { Events, REST, Routes, ActivityType } from 'discord.js';
+import { Events, ActivityType } from 'discord.js';
 import { TwilightClient } from './client';
 import { connectDatabase } from './database';
 import { setupDatabase } from './database/setup';
-import { loadCommands, ALL_COMMANDS } from './commands';
+import { loadCommands } from './commands';
 import { startTickEngine } from './systems/time';
 import { startWeatherSystem } from './systems/weather';
 import { startSeasonSystem } from './systems/seasons';
@@ -12,24 +12,16 @@ import { AchievementService } from './services/AchievementService';
 import { logger } from './utils/logger';
 import { createEmbed } from './utils/embed';
 
+const PREFIX = '.';
+
 if (!process.env.DISCORD_TOKEN || !process.env.DISCORD_CLIENT_ID) {
   console.error('❌  Missing required env vars: DISCORD_TOKEN and/or DISCORD_CLIENT_ID');
   process.exit(1);
 }
 
 const TOKEN = process.env.DISCORD_TOKEN as string;
-const CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
-
-const rest = new REST({ version: '10' }).setToken(TOKEN);
-
-async function registerCommandsToGuild(guildId: string): Promise<void> {
-  const commandData = ALL_COMMANDS.map((c) => c.data.toJSON());
-  await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commandData });
-  logger.info(`Registered ${commandData.length} commands to guild ${guildId}`);
-}
 
 async function main(): Promise<void> {
-  // Setup and connect to database
   await setupDatabase();
   await connectDatabase();
 
@@ -39,50 +31,39 @@ async function main(): Promise<void> {
   // ─── Ready event ─────────────────────────────────────────────────────────
   client.once(Events.ClientReady, async (c) => {
     logger.info(`Logged in as ${c.user.tag}`);
-
-    // Set bot presence
     c.user.setActivity('🌙 Twilight Garden', { type: ActivityType.Playing });
 
-    // Register commands to every guild the bot is in (instant, no 1-hour wait)
     const guildIds = [...c.guilds.cache.keys()];
     for (const guildId of guildIds) {
-      await registerCommandsToGuild(guildId).catch((err) =>
-        logger.error(`Failed to register commands in guild ${guildId}`, { error: String(err) })
-      );
       await GuildService.getOrCreateWorldState(guildId);
     }
 
-    // Start game systems
     startTickEngine(guildIds);
     startWeatherSystem(guildIds);
     startSeasonSystem(guildIds);
 
-    logger.info(`Twilight Garden is running in ${guildIds.length} guild(s)`);
+    logger.info(`Twilight Garden is running in ${guildIds.length} guild(s) — prefix: ${PREFIX}`);
   });
 
   // ─── Guild join ────────────────────────────────────────────────────────────
   client.on(Events.GuildCreate, async (guild) => {
     logger.info(`Joined guild: ${guild.name} (${guild.id})`);
-    await registerCommandsToGuild(guild.id).catch((err) =>
-      logger.error(`Failed to register commands in new guild ${guild.id}`, { error: String(err) })
-    );
     await GuildService.getOrCreateWorldState(guild.id);
     await GuildService.getOrCreateConfig(guild.id);
 
-    // Send welcome message to system channel if available
     if (guild.systemChannel) {
       const embed = createEmbed({
         title: '🌙 Welcome to Twilight Garden!',
         description: [
           'A magical garden RPG game has arrived in your server!',
           '',
-          '**Getting Started:**',
-          '• `/player profile` — View your character',
-          '• `/garden plant` — Start growing plants',
-          '• `/economy shop` — Buy seeds and items',
-          '• `/explore go` — Venture into the world',
-          '• `/quest available` — Accept quests',
-          '• `/pet adopt` — Get a companion',
+          '**Getting Started (prefix: `.`)**',
+          '• `.player profile` — View your character',
+          '• `.garden plant` — Start growing plants',
+          '• `.economy shop` — Buy seeds and items',
+          '• `.explore go` — Venture into the world',
+          '• `.quest available` — Accept quests',
+          '• `.pet adopt` — Get a companion',
           '',
           '*Use any command to create your character automatically.*',
         ].join('\n'),
@@ -93,26 +74,28 @@ async function main(): Promise<void> {
     }
   });
 
-  // ─── Interaction handler ───────────────────────────────────────────────────
-  client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
-    if (!interaction.guildId) {
-      await interaction.reply({ content: 'Twilight Garden commands only work inside a server!', ephemeral: true });
+  // ─── Message handler ───────────────────────────────────────────────────────
+  client.on(Events.MessageCreate, async (message) => {
+    if (message.author.bot) return;
+    if (!message.content.startsWith(PREFIX)) return;
+    if (!message.guildId) {
+      await message.reply('Twilight Garden commands only work inside a server!');
       return;
     }
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) {
-      await interaction.reply({ content: 'Unknown command.', ephemeral: true });
-      return;
-    }
+    const args = message.content.slice(PREFIX.length).trim().split(/\s+/);
+    const commandName = args.shift()!.toLowerCase();
+    if (!commandName) return;
+
+    const command = client.commands.get(commandName);
+    if (!command) return;
 
     try {
-      await command.execute(interaction);
+      await command.execute(message, args);
 
       // Check for unnotified achievements after every command
       const { PlayerService } = await import('./services/PlayerService');
-      const player = await PlayerService.getByDiscord(interaction.user.id, interaction.guildId);
+      const player = await PlayerService.getByDiscord(message.author.id, message.guildId);
       if (player) {
         const unnotified = await AchievementService.getUnnotified(player.id);
         if (unnotified.length > 0) {
@@ -127,22 +110,16 @@ async function main(): Promise<void> {
               color: 0xffd700,
               footer: `${ach.rarity.toUpperCase()} Achievement`,
             });
-            await interaction.followUp({ embeds: [achEmbed], ephemeral: false }).catch(() => {});
+            await message.channel.send({ embeds: [achEmbed] }).catch(() => {});
           }
         }
       }
     } catch (err) {
-      logger.error('Command error', { command: interaction.commandName, error: String(err) });
-      const errorMsg = { content: '❌ An unexpected error occurred. Please try again.', ephemeral: true };
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(errorMsg).catch(() => {});
-      } else {
-        await interaction.reply(errorMsg).catch(() => {});
-      }
+      logger.error('Command error', { command: commandName, error: String(err) });
+      await message.reply('❌ An unexpected error occurred. Please try again.').catch(() => {});
     }
   });
 
-  // ─── Login ────────────────────────────────────────────────────────────────
   await client.login(TOKEN);
 }
 

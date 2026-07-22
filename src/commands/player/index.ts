@@ -1,27 +1,33 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Message } from 'discord.js';
 import { Command } from '../../client';
 import { PlayerService } from '../../services/PlayerService';
 import { createEmbed, errorEmbed } from '../../utils/embed';
-import { formatCoins, formatNumber, progressBar, xpToLevel, levelToXp, timeSince } from '../../utils/helpers';
+import { formatCoins, formatNumber, progressBar, levelToXp, timeSince } from '../../utils/helpers';
+
+function parseMention(str: string): string | null {
+  const m = str?.match(/^<@!?(\d+)>$/);
+  return m ? m[1] : null;
+}
 
 export const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('player')
-    .setDescription('View player profile and stats')
-    .addSubcommand((sub) => sub.setName('profile').setDescription('View your profile'))
-    .addSubcommand((sub) =>
-      sub.setName('view')
-        .setDescription('View another player\'s profile')
-        .addUserOption((o) => o.setName('user').setDescription('Player to view').setRequired(true))
-    ) as any,
+  name: 'player',
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
-    const sub = interaction.options.getSubcommand();
+  async execute(message: Message, args: string[]) {
+    const sub = args[0]?.toLowerCase() ?? 'profile';
+    await message.channel.sendTyping();
 
-    const discordUser = sub === 'view' ? interaction.options.getUser('user', true) : interaction.user;
-    const player = await PlayerService.getOrCreate(discordUser.id, interaction.guildId!, discordUser.username);
-    if (!player) return interaction.editReply({ embeds: [errorEmbed('Player not found.')] });
+    const targetId = sub === 'view' ? parseMention(args[1]) : null;
+    if (sub === 'view' && !targetId) return void message.reply({ embeds: [errorEmbed('Usage: `.player view @user`')] });
+
+    const discordUserId = targetId ?? message.author.id;
+    const discordUser = targetId
+      ? await message.client.users.fetch(targetId).catch(() => null)
+      : message.author;
+
+    if (!discordUser) return void message.reply({ embeds: [errorEmbed('User not found.')] });
+
+    const player = await PlayerService.getOrCreate(discordUserId, message.guildId!, discordUser.username);
+    if (!player) return void message.reply({ embeds: [errorEmbed('Player not found.')] });
 
     const stats = ((player as any).stats ?? {}) as Record<string, number>;
     const nextLevelXp = levelToXp(player.level + 1);
@@ -47,6 +53,6 @@ export const command: Command = {
       timestamp: true,
     });
 
-    return interaction.editReply({ embeds: [embed] });
+    return void message.reply({ embeds: [embed] });
   },
 };

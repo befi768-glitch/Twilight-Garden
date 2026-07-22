@@ -1,23 +1,18 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Message } from 'discord.js';
 import { Command } from '../../client';
 import { PlayerService } from '../../services/PlayerService';
 import { createEmbed } from '../../utils/embed';
 import { formatCoins, formatNumber } from '../../utils/helpers';
 
 export const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('leaderboard')
-    .setDescription('View server leaderboards')
-    .addSubcommand((sub) => sub.setName('richest').setDescription('Top players by mooncoins'))
-    .addSubcommand((sub) => sub.setName('level').setDescription('Top players by level/XP'))
-    .addSubcommand((sub) => sub.setName('reputation').setDescription('Top players by reputation')) as any,
+  name: 'leaderboard',
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
-    const sub = interaction.options.getSubcommand();
+  async execute(message: Message, args: string[]) {
+    const sub = args[0]?.toLowerCase() ?? 'richest';
+    await message.channel.sendTyping();
 
     const field = sub === 'richest' ? 'coins' : sub === 'level' ? 'xp' : 'reputation';
-    const players = await PlayerService.getLeaderboard(interaction.guildId!, field);
+    const players = await PlayerService.getLeaderboard(message.guildId!, field);
 
     const medals = ['🥇', '🥈', '🥉'];
     const lines = players.map((p, i) => {
@@ -33,6 +28,6 @@ export const command: Command = {
       reputation: '⭐ Best Reputation',
     };
 
-    return interaction.editReply({ embeds: [createEmbed({ title: titles[field], description: lines.join('\n') || '*No players yet.*', color: 0xf39c12 })] });
+    return void message.reply({ embeds: [createEmbed({ title: titles[field], description: lines.join('\n') || '*No players yet.*', color: 0xf39c12 })] });
   },
 };

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Message } from 'discord.js';
 import { Command } from '../../client';
 import { GuildService } from '../../services/GuildService';
 import { SEASON_INFO } from '../../systems/seasons';
@@ -10,13 +10,11 @@ const TIME_EMOJIS: Record<string, string> = {
 };
 
 export const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('world')
-    .setDescription('View the state of the twilight world'),
+  name: 'world',
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply();
-    const world = await GuildService.getOrCreateWorldState(interaction.guildId!);
+  async execute(message: Message, _args: string[]) {
+    await message.channel.sendTyping();
+    const world = await GuildService.getOrCreateWorldState(message.guildId!);
 
     const seasonInfo = SEASON_INFO[world.currentSeason as keyof typeof SEASON_INFO];
     const weatherDesc = WEATHER_DESCRIPTIONS[world.currentWeather as keyof typeof WEATHER_DESCRIPTIONS];
@@ -32,6 +30,6 @@ export const command: Command = {
         { name: '📝 Weather', value: weatherDesc, inline: false },
       );
 
-    return interaction.editReply({ embeds: [embed] });
+    return void message.reply({ embeds: [embed] });
   },
 };

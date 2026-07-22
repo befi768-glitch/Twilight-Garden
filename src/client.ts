@@ -3,15 +3,12 @@ import {
   Collection,
   GatewayIntentBits,
   Partials,
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  AutocompleteInteraction,
+  Message,
 } from 'discord.js';
 
 export interface Command {
-  data: SlashCommandBuilder | Omit<SlashCommandBuilder, 'addSubcommand' | 'addSubcommandGroup'>;
-  execute(interaction: ChatInputCommandInteraction): Promise<unknown>;
-  autocomplete?(interaction: AutocompleteInteraction): Promise<unknown>;
+  name: string;
+  execute(message: Message, args: string[]): Promise<void>;
 }
 
 export class TwilightClient extends Client {
@@ -22,6 +19,7 @@ export class TwilightClient extends Client {
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
       ],
       partials: [Partials.Message, Partials.Channel],
     });

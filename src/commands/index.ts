@@ -1,7 +1,6 @@
 import { TwilightClient } from '../client';
 import { logger } from '../utils/logger';
 
-// Import all commands
 import { command as gardenCmd } from './garden';
 import { command as economyCmd } from './economy';
 import { command as inventoryCmd } from './inventory';
@@ -30,9 +29,7 @@ const ALL_COMMANDS = [
 
 export function loadCommands(client: TwilightClient): void {
   for (const command of ALL_COMMANDS) {
-    client.commands.set(command.data.name, command);
-    logger.info(`Loaded command: /${command.data.name}`);
+    client.commands.set(command.name, command);
+    logger.info(`Loaded command: .${command.name}`);
   }
 }
-
-export { ALL_COMMANDS };

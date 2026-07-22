@@ -1,79 +1,81 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
+import { Message, PermissionFlagsBits } from 'discord.js';
 import { Command } from '../../client';
 import { GuildService } from '../../services/GuildService';
 import { WorldEventService, WORLD_EVENTS } from '../../services/WorldEventService';
 import { NewsService } from '../../services/NewsService';
 import { createEmbed, errorEmbed, successEmbed } from '../../utils/embed';
 
-export const command: Command = {
-  data: new SlashCommandBuilder()
-    .setName('admin')
-    .setDescription('Admin — bot configuration and management')
-    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
-    .addSubcommand((sub) =>
-      sub.setName('set_news_channel')
-        .setDescription('Set the news broadcast channel')
-        .addChannelOption((o) => o.setName('channel').setDescription('Channel for world news').setRequired(true))
-    )
-    .addSubcommand((sub) =>
-      sub.setName('set_notify_channel')
-        .setDescription('Set the notification channel')
-        .addChannelOption((o) => o.setName('channel').setDescription('Notification channel').setRequired(true))
-    )
-    .addSubcommand((sub) =>
-      sub.setName('force_event')
-        .setDescription('Force start a world event')
-        .addStringOption((o) =>
-          o.setName('event').setDescription('Event to start').setRequired(true)
-            .addChoices(...Object.values(WORLD_EVENTS).map((e) => ({ name: `${e.emoji} ${e.name}`, value: e.id })))
-        )
-    )
-    .addSubcommand((sub) =>
-      sub.setName('post_news')
-        .setDescription('Post a custom news item')
-        .addStringOption((o) => o.setName('title').setDescription('News title').setRequired(true))
-        .addStringOption((o) => o.setName('content').setDescription('News content').setRequired(true))
-    )
-    .addSubcommand((sub) => sub.setName('status').setDescription('View bot and server status')) as any,
+function parseChannelMention(str: string): string | null {
+  const m = str?.match(/^<#(\d+)>$/);
+  return m ? m[1] : null;
+}
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    await interaction.deferReply({ ephemeral: true });
-    const sub = interaction.options.getSubcommand();
+const HELP = [
+  '**Admin Commands (Manage Guild required):**',
+  '`.admin set_news_channel #channel` — Set news channel',
+  '`.admin set_notify_channel #channel` — Set notification channel',
+  '`.admin force_event <eventId>` — Force start a world event',
+  '`.admin post_news <title> | <content>` — Post custom news',
+  '`.admin status` — View bot/server status',
+].join('\n');
+
+export const command: Command = {
+  name: 'admin',
+
+  async execute(message: Message, args: string[]) {
+    // Check permissions
+    const member = message.member;
+    if (!member?.permissions.has(PermissionFlagsBits.ManageGuild)) {
+      return void message.reply({ embeds: [errorEmbed('You need **Manage Guild** permission to use admin commands.')] });
+    }
+
+    const sub = args[0]?.toLowerCase();
+    if (!sub) return void message.reply(HELP);
+
+    await message.channel.sendTyping();
 
     if (sub === 'set_news_channel') {
-      const channel = interaction.options.getChannel('channel', true);
-      await GuildService.setNewsChannel(interaction.guildId!, channel.id);
-      return interaction.editReply({ embeds: [successEmbed(`News channel set to <#${channel.id}>`)] });
+      const channelId = parseChannelMention(args[1]);
+      if (!channelId) return void message.reply({ embeds: [errorEmbed('Usage: `.admin set_news_channel #channel`')] });
+      await GuildService.setNewsChannel(message.guildId!, channelId);
+      return void message.reply({ embeds: [successEmbed(`News channel set to <#${channelId}>`)] });
     }
 
     if (sub === 'set_notify_channel') {
-      const channel = interaction.options.getChannel('channel', true);
-      await GuildService.setNotificationChannel(interaction.guildId!, channel.id);
-      return interaction.editReply({ embeds: [successEmbed(`Notification channel set to <#${channel.id}>`)] });
+      const channelId = parseChannelMention(args[1]);
+      if (!channelId) return void message.reply({ embeds: [errorEmbed('Usage: `.admin set_notify_channel #channel`')] });
+      await GuildService.setNotificationChannel(message.guildId!, channelId);
+      return void message.reply({ embeds: [successEmbed(`Notification channel set to <#${channelId}>`)] });
     }
 
     if (sub === 'force_event') {
-      const eventId = interaction.options.getString('event', true);
+      const eventId = args[1];
+      if (!eventId) return void message.reply({ embeds: [errorEmbed(`Usage: \`.admin force_event <eventId>\`\nAvailable: ${Object.keys(WORLD_EVENTS).join(', ')}`)] });
       try {
-        const active = await WorldEventService.startEvent(interaction.guildId!, eventId);
+        const active = await WorldEventService.startEvent(message.guildId!, eventId);
         const event = WORLD_EVENTS[eventId];
-        return interaction.editReply({ embeds: [successEmbed(`Started world event: **${event.emoji} ${event.name}**!\nEnds <t:${Math.floor(new Date(active.endsAt).getTime() / 1000)}:R>`)] });
+        return void message.reply({ embeds: [successEmbed(`Started world event: **${event.emoji} ${event.name}**!\nEnds <t:${Math.floor(new Date(active.endsAt).getTime() / 1000)}:R>`)] });
       } catch (err) {
-        return interaction.editReply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
+        return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
     if (sub === 'post_news') {
-      const title = interaction.options.getString('title', true);
-      const content = interaction.options.getString('content', true);
-      await NewsService.postNews(interaction.guildId!, title, content, 'world_event', 2);
-      return interaction.editReply({ embeds: [successEmbed(`Posted news: **${title}**`)] });
+      // Format: .admin post_news Title here | Content here
+      const rest = args.slice(1).join(' ');
+      const pipeIdx = rest.indexOf(' | ');
+      if (pipeIdx === -1) return void message.reply({ embeds: [errorEmbed('Usage: `.admin post_news <title> | <content>`')] });
+      const title = rest.slice(0, pipeIdx).trim();
+      const content = rest.slice(pipeIdx + 3).trim();
+      if (!title || !content) return void message.reply({ embeds: [errorEmbed('Usage: `.admin post_news <title> | <content>`')] });
+      await NewsService.postNews(message.guildId!, title, content, 'world_event', 2);
+      return void message.reply({ embeds: [successEmbed(`Posted news: **${title}**`)] });
     }
 
     if (sub === 'status') {
-      const world = await GuildService.getOrCreateWorldState(interaction.guildId!);
-      const config = await GuildService.getOrCreateConfig(interaction.guildId!);
-      return interaction.editReply({ embeds: [createEmbed({
+      const world = await GuildService.getOrCreateWorldState(message.guildId!);
+      const config = await GuildService.getOrCreateConfig(message.guildId!);
+      return void message.reply({ embeds: [createEmbed({
         title: '⚙️ Server Status',
         color: 0x3498db,
         fields: [
@@ -85,5 +87,7 @@ export const command: Command = {
         ],
       })] });
     }
+
+    return void message.reply(HELP);
   },
 };
