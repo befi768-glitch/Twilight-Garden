@@ -14,18 +14,18 @@ function parseMention(str: string): string | null {
 
 const HELP = [
   '**Lệnh Kinh Tế:**',
-  '`.economy sodu` — Xem số dư xu',
-  '`.economy shop` — Xem cửa hàng',
-  '`.economy mua <mãVật> [sốLượng]` — Mua vật phẩm',
-  '`.economy ban <mãVật> [sốLượng]` — Bán vật phẩm',
-  '`.economy cho @người <sốXu>` — Cho xu',
-  '`.economy daugia` — Xem đấu giá',
-  '`.economy tao_dg <mãVật> <slg> <giáKĐ> [giờ]` — Tạo đấu giá',
-  '`.economy dat_gia <mãDG> <sốXu>` — Đặt giá',
+  '`.kinhte sodu` — Xem số dư xu',
+  '`.kinhte shop` — Xem cửa hàng',
+  '`.kinhte mua <mãVật> [sốLượng]` — Mua vật phẩm',
+  '`.kinhte ban <mãVật> [sốLượng]` — Bán vật phẩm',
+  '`.kinhte cho @người <sốXu>` — Cho xu',
+  '`.kinhte daugia` — Xem đấu giá',
+  '`.kinhte tao_dg <mãVật> <slg> <giáKĐ> [giờ]` — Tạo đấu giá',
+  '`.kinhte dat_gia <mãDG> <sốXu>` — Đặt giá',
 ].join('\n');
 
 export const command: Command = {
-  name: 'economy',
+  name: 'kinhte',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -51,7 +51,7 @@ export const command: Command = {
     if (sub === 'mua') {
       const itemId = args[1];
       const qty = parseInt(args[2] ?? '1') || 1;
-      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.economy mua <mãVật> [sốLượng]`')] });
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte mua <mãVật> [sốLượng]`')] });
       try {
         await EconomyService.buyItem(player.id, itemId, qty);
         await afterBuy(player.id, itemId, qty);
@@ -65,7 +65,7 @@ export const command: Command = {
     if (sub === 'ban') {
       const itemId = args[1];
       const qty = parseInt(args[2] ?? '1') || 1;
-      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.economy ban <mãVật> [sốLượng]`')] });
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte ban <mãVật> [sốLượng]`')] });
       try {
         const total = await EconomyService.sellItem(player.id, itemId, qty);
         await afterSell(player.id, itemId, qty, total);
@@ -79,7 +79,7 @@ export const command: Command = {
     if (sub === 'cho') {
       const userId = parseMention(args[1]);
       const amount = parseInt(args[2] ?? '');
-      if (!userId || !amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.economy cho @người <sốXu>`')] });
+      if (!userId || !amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte cho @người <sốXu>`')] });
       const recipient = await PlayerService.getByDiscord(userId, message.guildId!);
       if (!recipient) return void message.reply({ embeds: [errorEmbed('Người chơi đó chưa bắt đầu chơi.')] });
       try {
@@ -105,7 +105,7 @@ export const command: Command = {
       const qty = parseInt(args[2] ?? '');
       const startPrice = parseInt(args[3] ?? '');
       const hours = parseInt(args[4] ?? '12') || 12;
-      if (!itemId || !qty || !startPrice) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.economy tao_dg <mãVật> <slg> <giáKĐ> [giờ]`')] });
+      if (!itemId || !qty || !startPrice) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte tao_dg <mãVật> <slg> <giáKĐ> [giờ]`')] });
       try {
         const auctionId = await EconomyService.createAuction(player.id, itemId, qty, startPrice, hours);
         const item = ITEMS[itemId];
@@ -118,7 +118,7 @@ export const command: Command = {
     if (sub === 'dat_gia') {
       const auctionId = args[1];
       const amount = parseInt(args[2] ?? '');
-      if (!auctionId || !amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.economy dat_gia <mãDG> <sốXu>`')] });
+      if (!auctionId || !amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte dat_gia <mãDG> <sốXu>`')] });
       try {
         await EconomyService.bid(auctionId, player.id, amount);
         return void message.reply({ embeds: [successEmbed(`Đã đặt giá 🌙${amount} cho phiên \`${auctionId.slice(0, 8)}\`!`)] });

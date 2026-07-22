@@ -11,14 +11,14 @@ import { AreaType } from '../../models/types';
 
 const HELP = [
   '**Lệnh Sinh Vật:**',
-  '`.wildlife dakhamppha` — Sinh vật đã khám phá',
-  '`.wildlife bestiarium` — Danh sách toàn bộ sinh vật',
-  '`.wildlife gap` — Thử gặp sinh vật ở khu vực hiện tại',
-  '`.wildlife than <mãSinhVật>` — Thử thuần hóa sinh vật',
+  '`.dong_vat dakhamppha` — Sinh vật đã khám phá',
+  '`.dong_vat bestiarium` — Danh sách toàn bộ sinh vật',
+  '`.dong_vat gap` — Thử gặp sinh vật ở khu vực hiện tại',
+  '`.dong_vat than <mãSinhVật>` — Thử thuần hóa sinh vật',
 ].join('\n');
 
 export const command: Command = {
-  name: 'wildlife',
+  name: 'dong_vat',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -63,7 +63,7 @@ export const command: Command = {
 
     if (sub === 'than') {
       const creatureId = args[1];
-      if (!creatureId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.wildlife than <mãSinhVật>` — Dùng `.wildlife bestiarium` để xem mã.')] });
+      if (!creatureId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.dong_vat than <mãSinhVật>` — Dùng `.dong_vat bestiarium` để xem mã.')] });
       try {
         const result = await WildlifeService.tame(player.id, creatureId);
         const embed = result.success

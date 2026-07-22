@@ -9,7 +9,7 @@ const NEWS_TYPE_EMOJIS: Record<string, string> = {
 };
 
 export const command: Command = {
-  name: 'news',
+  name: 'tin_tuc',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'moinhat';
@@ -42,6 +42,6 @@ export const command: Command = {
       })] });
     }
 
-    return void message.reply('Cách dùng: `.news moinhat` hoặc `.news vangmat`');
+    return void message.reply('Cách dùng: `.tin_tuc moinhat` hoặc `.tin_tuc vangmat`');
   },
 };

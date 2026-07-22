@@ -10,7 +10,7 @@ const TIME_EMOJIS: Record<string, string> = {
 };
 
 export const command: Command = {
-  name: 'world',
+  name: 'the_gioi',
 
   async execute(message: Message, _args: string[]) {
     await message.channel.sendTyping();

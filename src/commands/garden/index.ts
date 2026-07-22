@@ -10,17 +10,17 @@ import { progressBar, rarityEmoji } from '../../utils/helpers';
 
 const HELP = [
   '**Lệnh Vườn:**',
-  '`.garden xem` — Xem vườn của bạn',
-  '`.garden trồng <ô> <loạiCây>` — Trồng hạt giống',
-  '`.garden tưới <ô>` — Tưới nước cho cây',
-  '`.garden bón <ô>` — Bón phân cho cây',
-  '`.garden thu <ô>` — Thu hoạch cây trưởng thành',
-  '`.garden nhổ <ô>` — Nhổ bỏ cây',
-  '`.garden danh_sach` — Xem danh sách các loại cây',
+  '`.vuon xem` — Xem vườn của bạn',
+  '`.vuon trồng <ô> <loạiCây>` — Trồng hạt giống',
+  '`.vuon tưới <ô>` — Tưới nước cho cây',
+  '`.vuon bón <ô>` — Bón phân cho cây',
+  '`.vuon thu <ô>` — Thu hoạch cây trưởng thành',
+  '`.vuon nhổ <ô>` — Nhổ bỏ cây',
+  '`.vuon danh_sach` — Xem danh sách các loại cây',
 ].join('\n');
 
 export const command: Command = {
-  name: 'garden',
+  name: 'vuon',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -46,7 +46,7 @@ export const command: Command = {
         slots.push(`\`${i}\` ${def?.emoji ?? '🌿'} **${def?.name ?? p.plantType}**${mutTag} ${stageEmoji} ${progressBar(p.growthPercent, 100, 8)} ${Math.round(p.growthPercent)}%`);
       }
 
-      const embed = gardenEmbed('Vườn Hoàng Hôn Của Bạn', slots.join('\n') || '*Chưa có cây nào! Dùng `.garden trồng` để bắt đầu.*')
+      const embed = gardenEmbed('Vườn Hoàng Hôn Của Bạn', slots.join('\n') || '*Chưa có cây nào! Dùng `.vuon trồng` để bắt đầu.*')
         .addFields(
           { name: '🌤️ Thời tiết', value: world.currentWeather, inline: true },
           { name: '🍂 Mùa', value: world.currentSeason, inline: true },
@@ -67,9 +67,9 @@ export const command: Command = {
 
     if (sub === 'trồng') {
       const plantId = args[2]?.toLowerCase();
-      if (!plantId) return void message.reply({ embeds: [errorEmbed(`Thiếu loại cây. Dùng \`.garden danh_sach\` để xem các loại.`)] });
+      if (!plantId) return void message.reply({ embeds: [errorEmbed(`Thiếu loại cây. Dùng \`.vuon danh_sach\` để xem các loại.`)] });
       const def = GardenService.getPlantDef(plantId);
-      if (!def) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy cây \`${plantId}\`. Dùng \`.garden danh_sach\` để xem.`)] });
+      if (!def) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy cây \`${plantId}\`. Dùng \`.vuon danh_sach\` để xem.`)] });
       const hasSeed = await InventoryService.hasItem(player.id, plantId + '_seed', 1);
       if (!hasSeed) return void message.reply({ embeds: [errorEmbed(`Bạn cần **Hạt giống ${def.name}** trong túi đồ. Mua tại \`.economy shop\`!`)] });
       try {

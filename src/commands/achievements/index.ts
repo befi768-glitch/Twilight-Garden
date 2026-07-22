@@ -6,7 +6,7 @@ import { achievementEmbed } from '../../utils/embed';
 import { rarityEmoji } from '../../utils/helpers';
 
 export const command: Command = {
-  name: 'achievements',
+  name: 'thanhtich',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'cuatoi';
@@ -34,6 +34,6 @@ export const command: Command = {
       return void message.reply({ embeds: [achievementEmbed(`Tất Cả Thành Tích (${unlockedIds.size}/${Object.keys(ACHIEVEMENTS).length})`, lines.join('\n\n'))] });
     }
 
-    return void message.reply('Cách dùng: `.achievements cuatoi` hoặc `.achievements tatca`');
+    return void message.reply('Cách dùng: `.thanhtich cuatoi` hoặc `.thanhtich tatca`');
   },
 };

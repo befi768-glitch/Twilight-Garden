@@ -6,7 +6,7 @@ import { createEmbed, errorEmbed, successEmbed } from '../../utils/embed';
 import { rarityEmoji } from '../../utils/helpers';
 
 export const command: Command = {
-  name: 'event',
+  name: 'su_kien',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'hientai';
@@ -52,6 +52,6 @@ export const command: Command = {
       return void message.reply({ embeds: [createEmbed({ title: '🌍 Danh Sách Sự Kiện', description: lines.join('\n\n'), color: 0x9b59b6 })] });
     }
 
-    return void message.reply('Cách dùng: `.event hientai` / `.event thamgia` / `.event danhsach`');
+    return void message.reply('Cách dùng: `.su_kien hientai` / `.su_kien thamgia` / `.su_kien danhsach`');
   },
 };

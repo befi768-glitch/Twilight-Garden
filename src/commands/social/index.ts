@@ -15,13 +15,13 @@ function parseMention(str: string): string | null {
 
 const HELP = [
   '**Lệnh Xã Hội:**',
-  '`.social cho_xu @người <số>` — Cho xu',
-  '`.social cho_do @người <mãVật> [slg]` — Cho vật phẩm',
-  '`.social thamquan @người` — Thăm nhà người chơi',
+  '`.xa_hoi cho_xu @người <số>` — Cho xu',
+  '`.xa_hoi cho_do @người <mãVật> [slg]` — Cho vật phẩm',
+  '`.xa_hoi thamquan @người` — Thăm nhà người chơi',
 ].join('\n');
 
 export const command: Command = {
-  name: 'social',
+  name: 'xa_hoi',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -31,7 +31,7 @@ export const command: Command = {
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
     const targetId = parseMention(args[1]);
-    if (!targetId) return void message.reply({ embeds: [errorEmbed('Vui lòng tag người chơi. Ví dụ: `.social cho_xu @người 100`')] });
+    if (!targetId) return void message.reply({ embeds: [errorEmbed('Vui lòng tag người chơi. Ví dụ: `.xa_hoi cho_xu @người 100`')] });
     if (targetId === message.author.id) return void message.reply({ embeds: [errorEmbed('Bạn không thể tương tác với chính mình!')] });
 
     const targetPlayer = await PlayerService.getByDiscord(targetId, message.guildId!);
@@ -39,7 +39,7 @@ export const command: Command = {
 
     if (sub === 'cho_xu') {
       const amount = parseInt(args[2] ?? '');
-      if (!amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.social cho_xu @người <số>`')] });
+      if (!amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.xa_hoi cho_xu @người <số>`')] });
       try {
         await EconomyService.transfer(player.id, targetPlayer.id, amount);
         return void message.reply({ embeds: [successEmbed(`Đã cho **${formatCoins(amount)}** cho **${targetPlayer.username}**! 🎁`)] });
@@ -51,7 +51,7 @@ export const command: Command = {
     if (sub === 'cho_do') {
       const itemId = args[2];
       const qty = parseInt(args[3] ?? '1') || 1;
-      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.social cho_do @người <mãVật> [slg]`')] });
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.xa_hoi cho_do @người <mãVật> [slg]`')] });
       const has = await InventoryService.hasItem(player.id, itemId, qty);
       if (!has) return void message.reply({ embeds: [errorEmbed(`Bạn không có ${qty}x ${itemId} trong túi đồ.`)] });
       await InventoryService.removeItem(player.id, itemId, qty);

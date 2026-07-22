@@ -9,13 +9,13 @@ import { AreaType } from '../../models/types';
 
 const HELP = [
   '**Lệnh Khám Phá:**',
-  '`.explore khuvuc` — Xem danh sách khu vực',
-  '`.explore di <mãKV>` — Khám phá khu vực',
-  '`.explore lichsu` — Xem lịch sử khám phá',
+  '`.khampha khuvuc` — Xem danh sách khu vực',
+  '`.khampha di <mãKV>` — Khám phá khu vực',
+  '`.khampha lichsu` — Xem lịch sử khám phá',
 ].join('\n');
 
 export const command: Command = {
-  name: 'explore',
+  name: 'khampha',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -34,8 +34,8 @@ export const command: Command = {
 
     if (sub === 'di') {
       const areaId = args[1]?.toLowerCase() as AreaType;
-      if (!areaId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.explore di <mãKV>` — Dùng `.explore khuvuc` để xem danh sách.')] });
-      if (!AREAS[areaId]) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy khu vực \`${areaId}\`. Dùng \`.explore khuvuc\` để xem.`)] });
+      if (!areaId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.khampha di <mãKV>` — Dùng `.khampha khuvuc` để xem danh sách.')] });
+      if (!AREAS[areaId]) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy khu vực \`${areaId}\`. Dùng \`.khampha khuvuc\` để xem.`)] });
       try {
         const result = await ExplorationService.explore(player.id, areaId, world);
 
@@ -61,7 +61,7 @@ export const command: Command = {
 
     if (sub === 'lichsu') {
       const logs = await ExplorationService.getExplorationHistory(player.id, 8);
-      if (!logs.length) return void message.reply({ embeds: [explorationEmbed('Lịch Sử Khám Phá', '*Chưa khám phá lần nào. Dùng `.explore di` để bắt đầu phiêu lưu!*')] });
+      if (!logs.length) return void message.reply({ embeds: [explorationEmbed('Lịch Sử Khám Phá', '*Chưa khám phá lần nào. Dùng `.khampha di` để bắt đầu phiêu lưu!*')] });
       const lines = logs.map((l) => `**${l.area}** — ${l.event}\n> *<t:${Math.floor(new Date(l.exploredAt).getTime() / 1000)}:R>*`);
       return void message.reply({ embeds: [explorationEmbed('Lịch Sử Khám Phá', lines.join('\n\n'))] });
     }

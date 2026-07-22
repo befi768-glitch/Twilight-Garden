@@ -5,7 +5,7 @@ import { createEmbed } from '../../utils/embed';
 import { formatCoins, formatNumber } from '../../utils/helpers';
 
 export const command: Command = {
-  name: 'leaderboard',
+  name: 'bang_xh',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'giau';

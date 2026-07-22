@@ -7,7 +7,7 @@ import { createEmbed, errorEmbed } from '../../utils/embed';
 import { rarityEmoji } from '../../utils/helpers';
 
 export const command: Command = {
-  name: 'inventory',
+  name: 'tuido',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'xem';
@@ -36,7 +36,7 @@ export const command: Command = {
 
     if (sub === 'dung') {
       const itemId = args[1];
-      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.inventory dung <mãVật>`')] });
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.tuido dung <mãVật>`')] });
       const def = ITEMS[itemId];
       if (!def) return void message.reply({ embeds: [errorEmbed('Không tìm thấy vật phẩm.')] });
       if (!def.usable) return void message.reply({ embeds: [errorEmbed(`**${def.name}** không thể dùng trực tiếp.`)] });
@@ -53,12 +53,12 @@ export const command: Command = {
       }
 
       if (itemId === 'growth_potion') {
-        return void message.reply({ embeds: [createEmbed({ title: '💡 Thuốc Tăng Trưởng', description: 'Dùng vật phẩm này từ lệnh `.garden` trên một ô cây cụ thể.', color: 0x3498db })] });
+        return void message.reply({ embeds: [createEmbed({ title: '💡 Thuốc Tăng Trưởng', description: 'Dùng vật phẩm này từ lệnh `.vuon` trên một ô cây cụ thể.', color: 0x3498db })] });
       }
 
       return void message.reply({ embeds: [createEmbed({ title: '📦 Đã Dùng Vật Phẩm', description: `Đã dùng **${def.emoji} ${def.name}**.`, color: 0x2ecc71 })] });
     }
 
-    return void message.reply('Cách dùng: `.inventory xem` hoặc `.inventory dung <mãVật>`');
+    return void message.reply('Cách dùng: `.tuido xem` hoặc `.tuido dung <mãVật>`');
   },
 };

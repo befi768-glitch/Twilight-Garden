@@ -11,7 +11,7 @@ const TYPE_EMOJIS: Record<string, string> = {
 const VALID_TYPES = ['plant', 'wildlife', 'npc', 'area', 'event', 'achievement'];
 
 export const command: Command = {
-  name: 'journal',
+  name: 'nhat_ky',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'tatca';
@@ -20,7 +20,7 @@ export const command: Command = {
 
     const type = sub === 'loai' ? args[1]?.toLowerCase() : undefined;
     if (sub === 'loai' && (!type || !VALID_TYPES.includes(type))) {
-      return void message.reply(`Cách dùng: \`.journal loai <loại>\`\nCác loại: ${VALID_TYPES.join(', ')}`);
+      return void message.reply(`Cách dùng: \`.nhat_ky loai <loại>\`\nCác loại: ${VALID_TYPES.join(', ')}`);
     }
 
     const entries = await JournalService.getEntries(player.id, type);

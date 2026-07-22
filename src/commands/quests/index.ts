@@ -7,14 +7,14 @@ import { rarityEmoji, progressBar } from '../../utils/helpers';
 
 const HELP = [
   '**Lệnh Nhiệm Vụ:**',
-  '`.quest sansan` — Xem nhiệm vụ có thể nhận',
-  '`.quest danglam` — Xem nhiệm vụ đang thực hiện',
-  '`.quest nhan <mãNV>` — Nhận nhiệm vụ',
-  '`.quest lichsu` — Xem nhiệm vụ đã hoàn thành',
+  '`.nhiem_vu sansan` — Xem nhiệm vụ có thể nhận',
+  '`.nhiem_vu danglam` — Xem nhiệm vụ đang thực hiện',
+  '`.nhiem_vu nhan <mãNV>` — Nhận nhiệm vụ',
+  '`.nhiem_vu lichsu` — Xem nhiệm vụ đã hoàn thành',
 ].join('\n');
 
 export const command: Command = {
-  name: 'quest',
+  name: 'nhiem_vu',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -34,7 +34,7 @@ export const command: Command = {
 
     if (sub === 'danglam') {
       const active = await QuestService.getActiveQuests(player.id);
-      if (!active.length) return void message.reply({ embeds: [questEmbed('Nhiệm Vụ Đang Làm', '*Chưa nhận nhiệm vụ nào. Dùng `.quest nhan` để bắt đầu!*')] });
+      if (!active.length) return void message.reply({ embeds: [questEmbed('Nhiệm Vụ Đang Làm', '*Chưa nhận nhiệm vụ nào. Dùng `.nhiem_vu nhan` để bắt đầu!*')] });
       const lines = active.map((pq) => {
         const quest = QUESTS[pq.questId];
         const objLines = pq.objectives.map((o: any) => `  • ${o.description}: ${progressBar(o.current, o.required, 8)} ${o.current}/${o.required}`);
@@ -45,7 +45,7 @@ export const command: Command = {
 
     if (sub === 'nhan') {
       const questId = args[1];
-      if (!questId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.quest nhan <mãNV>` — Dùng `.quest sansan` để xem mã nhiệm vụ.')] });
+      if (!questId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nhiem_vu nhan <mãNV>` — Dùng `.nhiem_vu sansan` để xem mã nhiệm vụ.')] });
       try {
         await QuestService.acceptQuest(player.id, questId);
         const quest = QUESTS[questId];

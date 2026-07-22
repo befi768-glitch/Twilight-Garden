@@ -53,22 +53,22 @@ async function main(): Promise<void> {
 
     if (guild.systemChannel) {
       const embed = createEmbed({
-        title: '🌙 Welcome to Twilight Garden!',
+        title: '🌙 Chào Mừng Đến Twilight Garden!',
         description: [
-          'A magical garden RPG game has arrived in your server!',
+          'Game RPG làm vườn huyền bí đã đến server của bạn!',
           '',
-          '**Getting Started (prefix: `.`)**',
-          '• `.player profile` — View your character',
-          '• `.garden plant` — Start growing plants',
-          '• `.economy shop` — Buy seeds and items',
-          '• `.explore go` — Venture into the world',
-          '• `.quest available` — Accept quests',
-          '• `.pet adopt` — Get a companion',
+          '**Bắt Đầu (prefix: `.`)**',
+          '• `.nguoichoi` — Xem nhân vật của bạn',
+          '• `.vuon trong` — Bắt đầu trồng cây',
+          '• `.kinhte shop` — Mua hạt giống và vật phẩm',
+          '• `.khampha di` — Khám phá thế giới',
+          '• `.nhiem_vu sansan` — Nhận nhiệm vụ',
+          '• `.thuocung nuoi` — Nhận nuôi thú cưng',
           '',
-          '*Use any command to create your character automatically.*',
+          '*Dùng bất kỳ lệnh nào để tạo nhân vật tự động.*',
         ].join('\n'),
         color: 0x9b59b6,
-        footer: 'The twilight garden awaits...',
+        footer: 'Khu vườn hoàng hôn đang chờ bạn...',
       });
       await guild.systemChannel.send({ embeds: [embed] }).catch(() => {});
     }
@@ -79,7 +79,7 @@ async function main(): Promise<void> {
     if (message.author.bot) return;
     if (!message.content.startsWith(PREFIX)) return;
     if (!message.guildId) {
-      await message.reply('Twilight Garden commands only work inside a server!');
+      await message.reply('Lệnh Twilight Garden chỉ dùng được trong server!');
       return;
     }
 
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
             if (!ach) continue;
             await AchievementService.markNotified(player.id, pa.achievementId);
             const achEmbed = createEmbed({
-              title: `🏆 Achievement Unlocked!`,
+              title: `🏆 Thành Tích Mới!`,
               description: `${ach.emoji} **${ach.name}**\n${ach.description}\n\n+🌙${ach.reward.coins} · +✨${ach.reward.xp} XP`,
               color: 0xffd700,
               footer: `${ach.rarity.toUpperCase()} Achievement`,
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
       }
     } catch (err) {
       logger.error('Command error', { command: commandName, error: String(err) });
-      await message.reply('❌ An unexpected error occurred. Please try again.').catch(() => {});
+      await message.reply('❌ Đã xảy ra lỗi. Vui lòng thử lại.').catch(() => {});
     }
   });
 

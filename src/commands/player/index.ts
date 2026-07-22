@@ -10,14 +10,14 @@ function parseMention(str: string): string | null {
 }
 
 export const command: Command = {
-  name: 'player',
+  name: 'nguoichoi',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'thongtin';
     await message.channel.sendTyping();
 
     const targetId = (sub === 'xem') ? parseMention(args[1]) : null;
-    if (sub === 'xem' && !targetId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.player xem @người`')] });
+    if (sub === 'xem' && !targetId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nguoichoi xem @người`')] });
 
     const discordUserId = targetId ?? message.author.id;
     const discordUser = targetId

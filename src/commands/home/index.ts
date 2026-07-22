@@ -7,14 +7,14 @@ import { formatCoins } from '../../utils/helpers';
 
 const HELP = [
   '**Lệnh Nhà:**',
-  '`.home xem` — Xem nhà của bạn',
-  '`.home nangcap` — Nâng cấp nhà',
-  '`.home doi_ten <tên>` — Đổi tên nhà',
-  '`.home mo_ta <mô tả>` — Đặt mô tả nhà',
+  '`.nha xem` — Xem nhà của bạn',
+  '`.nha nangcap` — Nâng cấp nhà',
+  '`.nha doi_ten <tên>` — Đổi tên nhà',
+  '`.nha mo_ta <mô tả>` — Đặt mô tả nhà',
 ].join('\n');
 
 export const command: Command = {
-  name: 'home',
+  name: 'nha',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'xem';
@@ -49,14 +49,14 @@ export const command: Command = {
 
     if (sub === 'doi_ten') {
       const name = args.slice(1).join(' ').slice(0, 40);
-      if (!name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.home doi_ten <tên>`')] });
+      if (!name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha doi_ten <tên>`')] });
       await HomeService.setName(player.id, name);
       return void message.reply({ embeds: [successEmbed('Đã đổi tên nhà!')] });
     }
 
     if (sub === 'mo_ta') {
       const desc = args.slice(1).join(' ').slice(0, 200);
-      if (!desc) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.home mo_ta <mô tả>`')] });
+      if (!desc) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nha mo_ta <mô tả>`')] });
       await HomeService.setDescription(player.id, desc);
       return void message.reply({ embeds: [successEmbed('Đã cập nhật mô tả nhà!')] });
     }

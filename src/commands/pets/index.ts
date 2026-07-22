@@ -8,18 +8,18 @@ import { progressBar, rarityEmoji, formatCoins } from '../../utils/helpers';
 
 const HELP = [
   '**Lệnh Thú Cưng:**',
-  '`.pet danhsach` — Xem thú cưng của bạn',
-  '`.pet catalog` — Xem thú có thể nhận nuôi',
-  '`.pet nuoi <loai> <tên>` — Nhận nuôi thú cưng',
-  '`.pet cho_an <mãThú>` — Cho thú ăn',
-  '`.pet choi <mãThú>` — Chơi với thú',
-  '`.pet chua <mãThú>` — Chữa bệnh cho thú',
-  '`.pet doi_ten <mãThú> <tên>` — Đổi tên thú',
-  '`.pet thả <mãThú>` — Thả thú về tự nhiên',
+  '`.thuocung danhsach` — Xem thú cưng của bạn',
+  '`.thuocung catalog` — Xem thú có thể nhận nuôi',
+  '`.thuocung nuoi <loai> <tên>` — Nhận nuôi thú cưng',
+  '`.thuocung cho_an <mãThú>` — Cho thú ăn',
+  '`.thuocung choi <mãThú>` — Chơi với thú',
+  '`.thuocung chua <mãThú>` — Chữa bệnh cho thú',
+  '`.thuocung doi_ten <mãThú> <tên>` — Đổi tên thú',
+  '`.thuocung thả <mãThú>` — Thả thú về tự nhiên',
 ].join('\n');
 
 export const command: Command = {
-  name: 'pet',
+  name: 'thuocung',
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase();
@@ -37,7 +37,7 @@ export const command: Command = {
 
     if (sub === 'danhsach') {
       const pets = await PetService.getPets(player.id);
-      if (!pets.length) return void message.reply({ embeds: [petEmbed('Thú Cưng Của Bạn', '*Chưa có thú cưng! Dùng `.pet nuoi` để nhận nuôi thú đầu tiên.*')] });
+      if (!pets.length) return void message.reply({ embeds: [petEmbed('Thú Cưng Của Bạn', '*Chưa có thú cưng! Dùng `.thuocung nuoi` để nhận nuôi thú đầu tiên.*')] });
       const lines = pets.map((pet) => {
         const def = PetService.getPetDef(pet.petType);
         return `**${def?.emoji ?? '🐾'} ${pet.name}** (${def?.name ?? pet.petType}) — Cấp ${pet.level}\n🍖 Đói: ${progressBar(pet.hunger, 100, 8)} | 😊 Vui: ${progressBar(pet.happiness, 100, 8)}\nTrạng thái: **${pet.status}** | Mã: \`${pet.id.slice(0, 8)}\``;
@@ -48,7 +48,7 @@ export const command: Command = {
     if (sub === 'nuoi') {
       const petType = args[1];
       const name = args.slice(2).join(' ');
-      if (!petType || !name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.pet nuoi <loai> <tên>` — Dùng `.pet catalog` để xem các loại.')] });
+      if (!petType || !name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.thuocung nuoi <loai> <tên>` — Dùng `.thuocung catalog` để xem các loại.')] });
       try {
         const pet = await PetService.adopt(player.id, petType, name);
         await afterAdopt(player.id);
@@ -60,11 +60,11 @@ export const command: Command = {
     }
 
     const petIdInput = args[1] ?? '';
-    if (!petIdInput) return void message.reply({ embeds: [errorEmbed(`Cách dùng: \`.pet ${sub} <mãThú>\` — Dùng \`.pet danhsach\` để xem mã thú.`)] });
+    if (!petIdInput) return void message.reply({ embeds: [errorEmbed(`Cách dùng: \`.thuocung ${sub} <mãThú>\` — Dùng \`.thuocung danhsach\` để xem mã thú.`)] });
 
     const allPets = await PetService.getPets(player.id);
     const pet = allPets.find((p) => p.id.startsWith(petIdInput));
-    if (!pet) return void message.reply({ embeds: [errorEmbed('Không tìm thấy thú cưng. Dùng `.pet danhsach` để xem mã thú.')] });
+    if (!pet) return void message.reply({ embeds: [errorEmbed('Không tìm thấy thú cưng. Dùng `.thuocung danhsach` để xem mã thú.')] });
 
     if (sub === 'cho_an') {
       try {
@@ -97,7 +97,7 @@ export const command: Command = {
 
     if (sub === 'doi_ten') {
       const newName = args.slice(2).join(' ');
-      if (!newName) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.pet doi_ten <mãThú> <tên mới>`')] });
+      if (!newName) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.thuocung doi_ten <mãThú> <tên mới>`')] });
       await PetService.rename(player.id, pet.id, newName);
       return void message.reply({ embeds: [successEmbed(`Đã đổi tên thú thành **${newName}**!`)] });
     }
