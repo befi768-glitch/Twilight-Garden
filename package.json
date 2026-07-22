@@ -8,7 +8,8 @@
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "migrate": "ts-node src/database/migrate.ts",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "register": "ts-node --transpile-only src/deploy-commands.ts"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
