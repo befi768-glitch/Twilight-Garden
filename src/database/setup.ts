@@ -213,11 +213,13 @@ const CREATE_TABLES: string[] = [
 // ADD COLUMN IF NOT EXISTS is safe to run repeatedly — each step is idempotent.
 // These handle databases that existed before a column was added to the schema.
 const MIGRATION_STEPS: string[] = [
-  // ── STEP 0: Ensure user_id column exists on all tables that need it ──────────
-  // On a fresh DB created by CREATE_TABLES above, user_id columns don't exist.
-  // ADD COLUMN IF NOT EXISTS is a no-op on old DBs that already have the column.
-  // This must run BEFORE the ALTER COLUMN steps below, otherwise those steps
-  // fail with "column does not exist" on fresh databases.
+  // ── STEP 0: Ensure legacy columns exist on all tables that need them ─────────
+  // On a fresh DB created by CREATE_TABLES above, user_id and guild_id columns
+  // don't exist in many tables. ADD COLUMN IF NOT EXISTS is a no-op on old DBs
+  // that already have the column. These steps MUST run BEFORE the ALTER COLUMN
+  // steps below, otherwise those fail with "column does not exist" on fresh DBs.
+
+  // user_id (legacy — old schema stored user identity here before player_id)
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE plants ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE pets ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
@@ -228,6 +230,30 @@ const MIGRATION_STEPS: string[] = [
   `ALTER TABLE homes ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
   `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+
+  // guild_id (legacy — old schema stored guild context here too)
+  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE plants ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE pets ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE player_quests ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE npc_relations ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE wildlife_discoveries ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE homes ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS guild_id TEXT NOT NULL DEFAULT ''`,
+
+  // Drop NOT NULL from guild_id on tables that no longer need it
+  `ALTER TABLE inventory ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE plants ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE pets ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE player_quests ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE npc_relations ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE wildlife_discoveries ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE player_achievements ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE homes ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE journal_entries ALTER COLUMN guild_id DROP NOT NULL`,
+  `ALTER TABLE exploration_logs ALTER COLUMN guild_id DROP NOT NULL`,
 
   // ── STEP 1: drop NOT NULL on legacy user_id columns ────────────────────────
   // Old schema used user_id (NOT NULL); new schema uses player_id only.
