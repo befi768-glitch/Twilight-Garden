@@ -1,1 +1,6 @@
-// World system — trạng thái thế giới sống, tiếp tục khi người chơi offline
+import { GuildService } from '../../services/GuildService';
+import { WorldState } from '../../models/types';
+
+export async function getWorldState(guildId: string): Promise<WorldState> {
+  return GuildService.getOrCreateWorldState(guildId);
+}

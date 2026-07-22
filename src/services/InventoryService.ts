@@ -1,1 +1,69 @@
-// Kho đồ — thêm, xóa, kiểm tra, phân loại vật phẩm
+import { eq, and } from 'drizzle-orm';
+import { db, schema } from '../database';
+import { InventoryItem } from '../models/types';
+import { randomUUID } from 'crypto';
+
+export class InventoryService {
+  static async getInventory(playerId: string): Promise<InventoryItem[]> {
+    const result = await db.select().from(schema.inventory).where(eq(schema.inventory.playerId, playerId));
+    return result as unknown as InventoryItem[];
+  }
+
+  static async getItem(playerId: string, itemId: string): Promise<InventoryItem | null> {
+    const result = await db
+      .select()
+      .from(schema.inventory)
+      .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)))
+      .limit(1);
+    return result.length > 0 ? (result[0] as unknown as InventoryItem) : null;
+  }
+
+  static async hasItem(playerId: string, itemId: string, quantity = 1): Promise<boolean> {
+    const item = await InventoryService.getItem(playerId, itemId);
+    return (item?.quantity ?? 0) >= quantity;
+  }
+
+  static async addItem(playerId: string, itemId: string, quantity: number, metadata?: Record<string, unknown>): Promise<void> {
+    const existing = await InventoryService.getItem(playerId, itemId);
+    if (existing) {
+      await db
+        .update(schema.inventory)
+        .set({ quantity: existing.quantity + quantity })
+        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+    } else {
+      await db.insert(schema.inventory).values({
+        id: randomUUID(),
+        playerId,
+        itemId,
+        quantity,
+        acquiredAt: new Date(),
+        metadata: metadata ?? null,
+      });
+    }
+  }
+
+  static async removeItem(playerId: string, itemId: string, quantity: number): Promise<void> {
+    const existing = await InventoryService.getItem(playerId, itemId);
+    if (!existing || existing.quantity < quantity) throw new Error('Not enough items');
+
+    if (existing.quantity === quantity) {
+      await db
+        .delete(schema.inventory)
+        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+    } else {
+      await db
+        .update(schema.inventory)
+        .set({ quantity: existing.quantity - quantity })
+        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+    }
+  }
+
+  static async clearInventory(playerId: string): Promise<void> {
+    await db.delete(schema.inventory).where(eq(schema.inventory.playerId, playerId));
+  }
+
+  static async countItems(playerId: string): Promise<number> {
+    const inv = await InventoryService.getInventory(playerId);
+    return inv.reduce((sum, item) => sum + item.quantity, 0);
+  }
+}

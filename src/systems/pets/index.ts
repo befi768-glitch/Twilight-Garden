@@ -1,1 +1,8 @@
-// Pets system — sức khỏe, tâm trạng, hậu quả bỏ bê, kỹ năng thú cưng
+import { PetService } from '../../services/PetService';
+import { AchievementService } from '../../services/AchievementService';
+import { PlayerService } from '../../services/PlayerService';
+
+export async function afterAdopt(playerId: string): Promise<void> {
+  await PlayerService.incrementStat(playerId, 'petsOwned');
+  await AchievementService.checkStatAchievements(playerId);
+}
