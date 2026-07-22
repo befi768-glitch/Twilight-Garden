@@ -11,8 +11,8 @@ export const AREAS: Record<AreaType, Area> = {
     description: 'Điểm xuất phát. Những ngôi nhà nhỏ ấm cúng, chợ nhộn nhịp và những người bạn thân thiện.',
     minLevel: 1, energyCost: 5,
     events: [
-      { id: 'market_deal', name: 'Ưu Đãi Chợ', description: 'Một thương nhân đề nghị giảm giá đặc biệt.', probability: 0.3, type: 'find', reward: { coins: randomInt(30, 90) } },
-      { id: 'lost_cat', name: 'Mèo Lạc', description: 'Bạn giúp tìm lại con mèo bị lạc. Chủ nhân rất biết ơn.', probability: 0.2, type: 'npc', reward: { coins: 70, xp: 20 } },
+      { id: 'market_deal', name: 'Ưu Đãi Chợ', description: 'Một thương nhân đề nghị giảm giá đặc biệt.', probability: 0.3, type: 'find', reward: { coins: randomInt(10, 30) } },
+      { id: 'lost_cat', name: 'Mèo Lạc', description: 'Bạn giúp tìm lại con mèo bị lạc. Chủ nhân rất biết ơn.', probability: 0.2, type: 'npc', reward: { coins: 25, xp: 20 } },
       { id: 'festival_scraps', name: 'Đồ Lễ Hội', description: 'Ai đó đánh rơi đồ lễ hội.', probability: 0.15, type: 'find', reward: { items: [{ itemId: 'healing_herb', quantity: 2 }] } },
     ],
     monsters: [], items: ['healing_herb', 'seed_twilight_rose'],
@@ -23,7 +23,7 @@ export const AREAS: Record<AreaType, Area> = {
     minLevel: 3, energyCost: 15,
     events: [
       { id: 'herb_patch', name: 'Vườn Thảo Dược', description: 'Bạn tìm thấy bãi thảo dược chữa lành ẩn sâu trong rừng.', probability: 0.3, type: 'find', reward: { items: [{ itemId: 'healing_herb', quantity: 3 }], xp: 15 } },
-      { id: 'wolf_encounter', name: 'Gặp Sói Bóng Tối', description: 'Một con sói bóng tối chặn đường bạn.', probability: 0.2, type: 'combat', reward: { coins: 110, xp: 30 } },
+      { id: 'wolf_encounter', name: 'Gặp Sói Bóng Tối', description: 'Một con sói bóng tối chặn đường bạn.', probability: 0.2, type: 'combat', reward: { coins: 40, xp: 30 } },
       { id: 'ancient_tree', name: 'Cây Cổ Thụ', description: 'Bạn phát hiện cây cổ thụ lâu đời hơn ký ức. Nó rụng xuống một hạt giống lạ.', probability: 0.1, type: 'mystery', reward: { items: [{ itemId: 'seed_moonflower', quantity: 1 }], xp: 50 } },
       { id: 'mushroom_grove', name: 'Rừng Nấm', description: 'Một vòng tròn nấm mộng mơ kỳ diệu.', probability: 0.2, type: 'find', reward: { items: [{ itemId: 'seed_dreamcap', quantity: 2 }] } },
     ],
@@ -36,7 +36,7 @@ export const AREAS: Record<AreaType, Area> = {
     events: [
       { id: 'moonstone_shore', name: 'Bãi Đá Trăng', description: 'Bạn tìm thấy đá mặt trăng dọc theo bờ hồ.', probability: 0.2, type: 'find', reward: { items: [{ itemId: 'moonstone', quantity: 1 }], xp: 40 } },
       { id: 'spirit_fish', name: 'Cá Linh Hồn', description: 'Một con cá phát sáng nhảy lên và thả rơi một viên đá quý.', probability: 0.1, type: 'mystery', reward: { items: [{ itemId: 'moonstone', quantity: 2 }], xp: 60 } },
-      { id: 'fisherman_tip', name: 'Bí Mật Ngư Dân', description: 'Một ngư dân già chia sẻ bí mật của vùng hồ.', probability: 0.25, type: 'npc', reward: { coins: 130, xp: 25 } },
+      { id: 'fisherman_tip', name: 'Bí Mật Ngư Dân', description: 'Một ngư dân già chia sẻ bí mật của vùng hồ.', probability: 0.25, type: 'npc', reward: { coins: 50, xp: 25 } },
     ],
     monsters: [], items: ['moonstone'],
   },
@@ -47,7 +47,7 @@ export const AREAS: Record<AreaType, Area> = {
     events: [
       { id: 'crystal_vein', name: 'Mạch Pha Lê', description: 'Bạn khai thác được dây pha lê từ vách đá.', probability: 0.15, type: 'find', reward: { items: [{ itemId: 'crop_crystalvine', quantity: 1 }], xp: 80 } },
       { id: 'starfall', name: 'Sao Băng Rơi', description: 'Một ngôi sao rơi xuống gần đây — bạn nhặt được mảnh vỡ.', probability: 0.08, type: 'mystery', reward: { items: [{ itemId: 'moonstone', quantity: 3 }], xp: 120 } },
-      { id: 'mountain_eagle', name: 'Đại Bàng Núi', description: 'Một con đại bàng thả mồi — chiến lợi phẩm tốt.', probability: 0.2, type: 'combat', reward: { coins: 220, xp: 50 } },
+      { id: 'mountain_eagle', name: 'Đại Bàng Núi', description: 'Một con đại bàng thả mồi — chiến lợi phẩm tốt.', probability: 0.2, type: 'combat', reward: { coins: 80, xp: 50 } },
     ],
     monsters: ['đại bàng', 'thạch thần'], items: ['moonstone', 'ancient_relic'],
   },
@@ -56,8 +56,8 @@ export const AREAS: Record<AreaType, Area> = {
     description: 'Nấm phát quang thắp sáng những đường hầm bằng ánh sáng ma quái.',
     minLevel: 8, energyCost: 25,
     events: [
-      { id: 'treasure_chest', name: 'Rương Kho Báu', description: 'Một rương phủ bụi! Bên trong: xu và cổ vật.', probability: 0.1, type: 'treasure', reward: { coins: 420, items: [{ itemId: 'ancient_relic', quantity: 1 }], xp: 100 } },
-      { id: 'cave_bat', name: 'Đàn Dơi Hang', description: 'Đàn dơi làm tán loạn đồ đạc — bạn thu lại được ít xu.', probability: 0.25, type: 'combat', reward: { coins: 85, xp: 20 } },
+      { id: 'treasure_chest', name: 'Rương Kho Báu', description: 'Một rương phủ bụi! Bên trong: xu và cổ vật.', probability: 0.1, type: 'treasure', reward: { coins: 150, items: [{ itemId: 'ancient_relic', quantity: 1 }], xp: 100 } },
+      { id: 'cave_bat', name: 'Đàn Dơi Hang', description: 'Đàn dơi làm tán loạn đồ đạc — bạn thu lại được ít xu.', probability: 0.25, type: 'combat', reward: { coins: 30, xp: 20 } },
       { id: 'hidden_passage', name: 'Hành Lang Bí Mật', description: 'Bạn tìm thấy lối đi đến buồng sâu hơn.', probability: 0.08, type: 'mystery', reward: { items: [{ itemId: 'treasure_map', quantity: 1 }], xp: 150 } },
     ],
     monsters: ['dơi', 'nhện hang'], items: ['ancient_relic', 'treasure_map'],
@@ -68,7 +68,7 @@ export const AREAS: Record<AreaType, Area> = {
     minLevel: 15, energyCost: 35,
     events: [
       { id: 'relic_dig', name: 'Khai Quật Cổ Vật', description: 'Bạn khai quật được cổ vật cổ đại từ đống đổ nát.', probability: 0.2, type: 'find', reward: { items: [{ itemId: 'ancient_relic', quantity: 2 }], xp: 100 } },
-      { id: 'ghost_encounter', name: 'Gặp Hồn Ma', description: 'Một hồn ma thì thầm những kiến thức đã bị quên lãng.', probability: 0.1, type: 'mystery', reward: { xp: 200, coins: 140 } },
+      { id: 'ghost_encounter', name: 'Gặp Hồn Ma', description: 'Một hồn ma thì thầm những kiến thức đã bị quên lãng.', probability: 0.1, type: 'mystery', reward: { xp: 200, coins: 50 } },
       { id: 'shadow_trap', name: 'Bẫy Bóng Tối', description: 'Một bẫy ma pháp kích hoạt — nhưng bạn né được và tìm thấy phần thưởng.', probability: 0.15, type: 'mystery', reward: { items: [{ itemId: 'seed_shadowbloom', quantity: 1 }], xp: 250 } },
     ],
     monsters: ['xương khô', 'hồn ma'], items: ['ancient_relic', 'seed_shadowbloom'],
@@ -80,7 +80,7 @@ export const AREAS: Record<AreaType, Area> = {
     events: [
       { id: 'flower_find', name: 'Tìm Hoa Quý', description: 'Những loài hoa hiếm mọc hoang ở đây.', probability: 0.35, type: 'find', reward: { items: [{ itemId: 'seed_starbloom', quantity: 1 }], xp: 25 } },
       { id: 'butterfly_guide', name: 'Bướm Dẫn Đường', description: 'Một con bướm phát sáng dẫn bạn đến bãi hạt giống quý hiếm.', probability: 0.15, type: 'mystery', reward: { items: [{ itemId: 'seed_crystalvine', quantity: 1 }], xp: 60 } },
-      { id: 'peaceful_rest', name: 'Nghỉ Ngơi Bình Yên', description: 'Bạn nghỉ ngơi trong đồng cỏ và cảm thấy thư thái.', probability: 0.4, type: 'find', reward: { xp: 20, coins: 30 } },
+      { id: 'peaceful_rest', name: 'Nghỉ Ngơi Bình Yên', description: 'Bạn nghỉ ngơi trong đồng cỏ và cảm thấy thư thái.', probability: 0.4, type: 'find', reward: { xp: 20, coins: 10 } },
     ],
     monsters: [], items: ['seed_starbloom', 'seed_sunpetal'],
   },
@@ -91,7 +91,7 @@ export const AREAS: Record<AreaType, Area> = {
     events: [
       { id: 'swamp_herb', name: 'Thảo Dược Đầm Lầy', description: 'Những loại thảo dược hiếm mọc ven bờ nước.', probability: 0.25, type: 'find', reward: { items: [{ itemId: 'healing_herb', quantity: 5 }], xp: 50 } },
       { id: 'will_o_wisp', name: 'Đom Đóm Ma', description: 'Bạn theo đom đóm — nó dẫn đến một viên đá mặt trăng.', probability: 0.12, type: 'mystery', reward: { items: [{ itemId: 'moonstone', quantity: 2 }], xp: 80 } },
-      { id: 'swamp_ambush', name: 'Phục Kích Đầm Lầy', description: 'Có gì đó ẩn nấp trong bùn. Bạn đánh đuổi nó đi.', probability: 0.2, type: 'combat', reward: { coins: 160, xp: 45 } },
+      { id: 'swamp_ambush', name: 'Phục Kích Đầm Lầy', description: 'Có gì đó ẩn nấp trong bùn. Bạn đánh đuổi nó đi.', probability: 0.2, type: 'combat', reward: { coins: 60, xp: 45 } },
     ],
     monsters: ['quái vật đầm', 'cá sấu'], items: ['healing_herb', 'moonstone'],
   },

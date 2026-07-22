@@ -17,13 +17,13 @@ export const ITEMS: Record<string, ItemDefinition> = {
   seed_shadowbloom: { id: 'seed_shadowbloom', name: 'Hạt Hoa Bóng Tối', emoji: '🌑', category: 'seed', rarity: 'legendary', description: 'Cực kỳ hiếm. Chỉ nở trong đêm tối.', sellPrice: 250, buyPrice: 1600, usable: true, stackable: true, maxStack: 10 },
 
   // Nông sản
-  crop_moonflower: { id: 'crop_moonflower', name: 'Hoa Trăng', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'Hoa Trăng vừa thu hoạch.', sellPrice: 100, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_starbloom: { id: 'crop_starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'Tinh Hoa Sao vừa thu hoạch.', sellPrice: 170, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 45, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 420, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 75, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 30, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 1100, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
+  crop_moonflower: { id: 'crop_moonflower', name: 'Hoa Trăng', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'Hoa Trăng vừa thu hoạch.', sellPrice: 55, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_starbloom: { id: 'crop_starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'Tinh Hoa Sao vừa thu hoạch.', sellPrice: 95, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 25, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 230, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 50, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 18, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 600, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
 
   // Công cụ & thuốc
   watering_can: { id: 'watering_can', name: 'Bình Tưới Nước', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Dùng để tưới cây trong vườn.', sellPrice: 25, buyPrice: 150, usable: true, stackable: false, maxStack: 1 },
@@ -90,7 +90,7 @@ export class EconomyService {
     if (!hasItem) throw new Error('Không đủ số lượng vật phẩm trong túi đồ.');
 
     await InventoryService.removeItem(playerId, itemId, quantity);
-    const earned = item.sellPrice * quantity;
+    const earned = Math.floor(item.sellPrice * quantity * 0.92); // 8% thuế giao dịch
     await PlayerService.updateCoins(playerId, earned);
 
     await EconomyService.logTransaction(playerId, null, 'earn', earned, itemId, quantity, `Bán ${quantity}x ${item.name}`);
