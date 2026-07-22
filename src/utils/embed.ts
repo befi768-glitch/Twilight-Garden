@@ -53,12 +53,12 @@ export function questEmbed(title: string, description: string): EmbedBuilder {
 
 /** Error embed (red) */
 export function errorEmbed(message: string): EmbedBuilder {
-  return createEmbed({ title: '❌ Error', description: message, color: 0xe74c3c });
+  return createEmbed({ title: '❌ Lỗi', description: message, color: 0xe74c3c });
 }
 
 /** Success embed (green) */
 export function successEmbed(message: string): EmbedBuilder {
-  return createEmbed({ title: '✅ Success', description: message, color: 0x2ecc71 });
+  return createEmbed({ title: '✅ Thành công', description: message, color: 0x2ecc71 });
 }
 
 /** Rarity embed */

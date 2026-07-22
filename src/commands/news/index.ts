@@ -12,36 +12,36 @@ export const command: Command = {
   name: 'news',
 
   async execute(message: Message, args: string[]) {
-    const sub = args[0]?.toLowerCase() ?? 'latest';
+    const sub = args[0]?.toLowerCase() ?? 'moinhat';
     await message.channel.sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
-    if (sub === 'latest') {
+    if (sub === 'moinhat') {
       const newsItems = await NewsService.getLatestNews(message.guildId!);
       if (!newsItems.length) {
-        return void message.reply({ embeds: [createEmbed({ title: '📰 World News', description: '*No news yet. The world is quiet... for now.*', color: 0x2980b9 })] });
+        return void message.reply({ embeds: [createEmbed({ title: '📰 Tin Tức Thế Giới', description: '*Chưa có tin tức gì. Thế giới đang yên tĩnh... tạm thời thôi.*', color: 0x2980b9 })] });
       }
       const lines = newsItems.map((n) =>
         `${NEWS_TYPE_EMOJIS[n.type] ?? '📰'} **${n.title}**\n> ${n.content}\n> *<t:${Math.floor(new Date(n.createdAt).getTime() / 1000)}:R>*`
       );
-      return void message.reply({ embeds: [createEmbed({ title: '📰 Latest World News', description: lines.join('\n\n'), color: 0x2980b9 })] });
+      return void message.reply({ embeds: [createEmbed({ title: '📰 Tin Tức Mới Nhất', description: lines.join('\n\n'), color: 0x2980b9 })] });
     }
 
-    if (sub === 'offline') {
+    if (sub === 'vangmat') {
       const lastSeen = new Date(player.lastSeen);
       const summary = await NewsService.getOfflineSummary(message.guildId!, lastSeen);
       if (!summary.length) {
-        return void message.reply({ embeds: [createEmbed({ title: '📰 Offline Summary', description: '*Nothing major happened while you were away!*', color: 0x2980b9 })] });
+        return void message.reply({ embeds: [createEmbed({ title: '📰 Tóm Tắt Khi Offline', description: '*Không có gì quan trọng xảy ra khi bạn vắng mặt!*', color: 0x2980b9 })] });
       }
       const lines = summary.map((n) => `${NEWS_TYPE_EMOJIS[n.type] ?? '📰'} **${n.title}**\n> ${n.content}`);
       return void message.reply({ embeds: [createEmbed({
-        title: '📰 While You Were Away...',
+        title: '📰 Trong Lúc Bạn Vắng Mặt...',
         description: lines.join('\n\n'),
         color: 0x2980b9,
-        footer: `You were away since ${new Date(lastSeen).toLocaleString()}`,
+        footer: `Bạn offline từ ${new Date(lastSeen).toLocaleString()}`,
       })] });
     }
 
-    return void message.reply('Usage: `.news latest` or `.news offline`');
+    return void message.reply('Cách dùng: `.news moinhat` hoặc `.news vangmat`');
   },
 };

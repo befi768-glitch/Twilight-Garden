@@ -20,14 +20,14 @@ export const command: Command = {
     const weatherDesc = WEATHER_DESCRIPTIONS[world.currentWeather as keyof typeof WEATHER_DESCRIPTIONS];
     const timeEmoji = TIME_EMOJIS[world.timeOfDay] ?? '⏰';
 
-    const embed = worldEmbed('Twilight Garden — World State', seasonInfo.description)
+    const embed = worldEmbed('Thế Giới Hoàng Hôn', seasonInfo.description)
       .addFields(
-        { name: `${seasonInfo.emoji} Season`, value: `**${world.currentSeason.charAt(0).toUpperCase() + world.currentSeason.slice(1)}**`, inline: true },
-        { name: `${WEATHER_EMOJIS[world.currentWeather as keyof typeof WEATHER_EMOJIS] ?? '🌤️'} Weather`, value: `**${world.currentWeather}**`, inline: true },
-        { name: `${timeEmoji} Time of Day`, value: `**${world.timeOfDay}**`, inline: true },
-        { name: '📅 Day', value: `Day **${world.dayNumber}**`, inline: true },
-        { name: '⚙️ World Tick', value: String(world.worldTick), inline: true },
-        { name: '📝 Weather', value: weatherDesc, inline: false },
+        { name: `${seasonInfo.emoji} Mùa`, value: `**${world.currentSeason}**`, inline: true },
+        { name: `${WEATHER_EMOJIS[world.currentWeather as keyof typeof WEATHER_EMOJIS] ?? '🌤️'} Thời tiết`, value: `**${world.currentWeather}**`, inline: true },
+        { name: `${timeEmoji} Thời điểm`, value: `**${world.timeOfDay}**`, inline: true },
+        { name: '📅 Ngày', value: `Ngày thứ **${world.dayNumber}**`, inline: true },
+        { name: '⚙️ Vòng thế giới', value: String(world.worldTick), inline: true },
+        { name: '📝 Thời tiết chi tiết', value: weatherDesc, inline: false },
       );
 
     return void message.reply({ embeds: [embed] });

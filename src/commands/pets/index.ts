@@ -7,15 +7,15 @@ import { petEmbed, errorEmbed, successEmbed } from '../../utils/embed';
 import { progressBar, rarityEmoji, formatCoins } from '../../utils/helpers';
 
 const HELP = [
-  '**Pet Commands:**',
-  '`.pet list` — View your pets',
-  '`.pet catalogue` — Browse adoptable pets',
-  '`.pet adopt <type> <name>` — Adopt a pet',
-  '`.pet feed <petId>` — Feed a pet',
-  '`.pet play <petId>` — Play with a pet',
-  '`.pet heal <petId>` — Heal a pet',
-  '`.pet rename <petId> <newName>` — Rename a pet',
-  '`.pet release <petId>` — Release a pet',
+  '**Lệnh Thú Cưng:**',
+  '`.pet danhsach` — Xem thú cưng của bạn',
+  '`.pet catalog` — Xem thú có thể nhận nuôi',
+  '`.pet nuoi <loai> <tên>` — Nhận nuôi thú cưng',
+  '`.pet cho_an <mãThú>` — Cho thú ăn',
+  '`.pet choi <mãThú>` — Chơi với thú',
+  '`.pet chua <mãThú>` — Chữa bệnh cho thú',
+  '`.pet doi_ten <mãThú> <tên>` — Đổi tên thú',
+  '`.pet thả <mãThú>` — Thả thú về tự nhiên',
 ].join('\n');
 
 export const command: Command = {
@@ -28,84 +28,83 @@ export const command: Command = {
     await message.channel.sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
-    if (sub === 'catalogue') {
+    if (sub === 'catalog') {
       const lines = Object.values(PETS).map((p) =>
         `${rarityEmoji[p.rarity]} **${p.emoji} ${p.name}** [\`${p.id}\`] — 🌙${formatCoins(p.adoptCost)}\n> ${p.description}\n> Bonus: *${p.passiveBonus}*`
       );
-      return void message.reply({ embeds: [petEmbed('Adoptable Pets', lines.join('\n\n'))] });
+      return void message.reply({ embeds: [petEmbed('Thú Có Thể Nhận Nuôi', lines.join('\n\n'))] });
     }
 
-    if (sub === 'list') {
+    if (sub === 'danhsach') {
       const pets = await PetService.getPets(player.id);
-      if (!pets.length) return void message.reply({ embeds: [petEmbed('Your Pets', '*No pets yet! Use `.pet adopt` to get your first companion.*')] });
+      if (!pets.length) return void message.reply({ embeds: [petEmbed('Thú Cưng Của Bạn', '*Chưa có thú cưng! Dùng `.pet nuoi` để nhận nuôi thú đầu tiên.*')] });
       const lines = pets.map((pet) => {
         const def = PetService.getPetDef(pet.petType);
-        return `**${def?.emoji ?? '🐾'} ${pet.name}** (${def?.name ?? pet.petType}) — Lvl ${pet.level}\n🍖 Hunger: ${progressBar(pet.hunger, 100, 8)} | 😊 Happiness: ${progressBar(pet.happiness, 100, 8)}\nStatus: **${pet.status}** | ID: \`${pet.id.slice(0, 8)}\``;
+        return `**${def?.emoji ?? '🐾'} ${pet.name}** (${def?.name ?? pet.petType}) — Cấp ${pet.level}\n🍖 Đói: ${progressBar(pet.hunger, 100, 8)} | 😊 Vui: ${progressBar(pet.happiness, 100, 8)}\nTrạng thái: **${pet.status}** | Mã: \`${pet.id.slice(0, 8)}\``;
       });
-      return void message.reply({ embeds: [petEmbed('Your Pets', lines.join('\n\n'))] });
+      return void message.reply({ embeds: [petEmbed('Thú Cưng Của Bạn', lines.join('\n\n'))] });
     }
 
-    if (sub === 'adopt') {
+    if (sub === 'nuoi') {
       const petType = args[1];
       const name = args.slice(2).join(' ');
-      if (!petType || !name) return void message.reply({ embeds: [errorEmbed('Usage: `.pet adopt <type> <name>` — Use `.pet catalogue` to see types.')] });
+      if (!petType || !name) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.pet nuoi <loai> <tên>` — Dùng `.pet catalog` để xem các loại.')] });
       try {
         const pet = await PetService.adopt(player.id, petType, name);
         await afterAdopt(player.id);
         const def = PetService.getPetDef(petType)!;
-        return void message.reply({ embeds: [successEmbed(`You adopted **${def.emoji} ${pet.name}** the ${def.name}!\n*ID: \`${pet.id.slice(0, 8)}\`*\nBonus: *${def.passiveBonus}*`)] });
+        return void message.reply({ embeds: [successEmbed(`Bạn đã nhận nuôi **${def.emoji} ${pet.name}** loài ${def.name}!\n*Mã: \`${pet.id.slice(0, 8)}\`*\nBonus: *${def.passiveBonus}*`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    // All remaining subcommands need a petId
     const petIdInput = args[1] ?? '';
-    if (!petIdInput) return void message.reply({ embeds: [errorEmbed(`Usage: \`.pet ${sub} <petId>\` — Use \`.pet list\` to see your pet IDs.`)] });
+    if (!petIdInput) return void message.reply({ embeds: [errorEmbed(`Cách dùng: \`.pet ${sub} <mãThú>\` — Dùng \`.pet danhsach\` để xem mã thú.`)] });
 
     const allPets = await PetService.getPets(player.id);
     const pet = allPets.find((p) => p.id.startsWith(petIdInput));
-    if (!pet) return void message.reply({ embeds: [errorEmbed('Pet not found. Use `.pet list` to see your pet IDs.')] });
+    if (!pet) return void message.reply({ embeds: [errorEmbed('Không tìm thấy thú cưng. Dùng `.pet danhsach` để xem mã thú.')] });
 
-    if (sub === 'feed') {
+    if (sub === 'cho_an') {
       try {
         const updated = await PetService.feed(player.id, pet.id);
-        return void message.reply({ embeds: [successEmbed(`Fed **${pet.name}**! 🍖 Hunger: ${progressBar(updated.hunger, 100)} | Status: ${updated.status}`)] });
+        return void message.reply({ embeds: [successEmbed(`Đã cho **${pet.name}** ăn! 🍖 Độ đói: ${progressBar(updated.hunger, 100)} | Trạng thái: ${updated.status}`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'play') {
+    if (sub === 'choi') {
       try {
         const result = await PetService.play(player.id, pet.id);
-        let msg = `Played with **${pet.name}**! +${result.xpGained} XP`;
-        if (result.levelUp) msg += ` 🎉 **Level up!**`;
+        let msg = `Đã chơi với **${pet.name}**! +${result.xpGained} XP`;
+        if (result.levelUp) msg += ` 🎉 **Lên cấp!**`;
         return void message.reply({ embeds: [successEmbed(msg)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'heal') {
+    if (sub === 'chua') {
       try {
         const updated = await PetService.heal(player.id, pet.id);
-        return void message.reply({ embeds: [successEmbed(`Healed **${pet.name}**! Health: 100% | Status: ${updated.status}`)] });
+        return void message.reply({ embeds: [successEmbed(`Đã chữa bệnh cho **${pet.name}**! Sức khỏe: 100% | Trạng thái: ${updated.status}`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'rename') {
+    if (sub === 'doi_ten') {
       const newName = args.slice(2).join(' ');
-      if (!newName) return void message.reply({ embeds: [errorEmbed('Usage: `.pet rename <petId> <newName>`')] });
+      if (!newName) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.pet doi_ten <mãThú> <tên mới>`')] });
       await PetService.rename(player.id, pet.id, newName);
-      return void message.reply({ embeds: [successEmbed(`Renamed pet to **${newName}**!`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã đổi tên thú thành **${newName}**!`)] });
     }
 
-    if (sub === 'release') {
+    if (sub === 'thả') {
       await PetService.release(player.id, pet.id);
-      return void message.reply({ embeds: [successEmbed(`Released **${pet.name}** back into the wild. Farewell! 🌿`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã thả **${pet.name}** về tự nhiên. Tạm biệt! 🌿`)] });
     }
 
     return void message.reply(HELP);

@@ -14,18 +14,18 @@ export const command: Command = {
   name: 'journal',
 
   async execute(message: Message, args: string[]) {
-    const sub = args[0]?.toLowerCase() ?? 'all';
+    const sub = args[0]?.toLowerCase() ?? 'tatca';
     await message.channel.sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
-    const type = sub === 'category' ? args[1]?.toLowerCase() : undefined;
-    if (sub === 'category' && (!type || !VALID_TYPES.includes(type))) {
-      return void message.reply(`Usage: \`.journal category <type>\`\nTypes: ${VALID_TYPES.join(', ')}`);
+    const type = sub === 'loai' ? args[1]?.toLowerCase() : undefined;
+    if (sub === 'loai' && (!type || !VALID_TYPES.includes(type))) {
+      return void message.reply(`Cách dùng: \`.journal loai <loại>\`\nCác loại: ${VALID_TYPES.join(', ')}`);
     }
 
     const entries = await JournalService.getEntries(player.id, type);
     if (!entries.length) {
-      return void message.reply({ embeds: [createEmbed({ title: '📓 Journal', description: '*No entries yet. Explore, harvest, and meet NPCs to fill your journal!*', color: 0x8e44ad })] });
+      return void message.reply({ embeds: [createEmbed({ title: '📓 Nhật Ký', description: '*Chưa có ghi chép nào. Hãy khám phá, thu hoạch và gặp gỡ NPC để điền vào nhật ký!*', color: 0x8e44ad })] });
     }
 
     const lines = entries.slice(0, 20).map((e) =>
@@ -33,10 +33,10 @@ export const command: Command = {
     );
 
     return void message.reply({ embeds: [createEmbed({
-      title: `📓 Journal — ${entries.length} Entries`,
+      title: `📓 Nhật Ký — ${entries.length} Ghi Chép`,
       description: lines.join('\n\n'),
       color: 0x8e44ad,
-      footer: entries.length > 20 ? `Showing 20 of ${entries.length} entries` : undefined,
+      footer: entries.length > 20 ? `Hiển thị 20/${entries.length} ghi chép` : undefined,
     })] });
   },
 };

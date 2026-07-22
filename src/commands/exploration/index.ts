@@ -8,10 +8,10 @@ import { explorationEmbed, errorEmbed } from '../../utils/embed';
 import { AreaType } from '../../models/types';
 
 const HELP = [
-  '**Explore Commands:**',
-  '`.explore areas` — List all explorable areas',
-  '`.explore go <areaId>` — Explore an area',
-  '`.explore history` — View your recent explorations',
+  '**Lệnh Khám Phá:**',
+  '`.explore khuvuc` — Xem danh sách khu vực',
+  '`.explore di <mãKV>` — Khám phá khu vực',
+  '`.explore lichsu` — Xem lịch sử khám phá',
 ].join('\n');
 
 export const command: Command = {
@@ -25,17 +25,17 @@ export const command: Command = {
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
     const world = await GuildService.getOrCreateWorldState(message.guildId!);
 
-    if (sub === 'areas') {
+    if (sub === 'khuvuc') {
       const lines = Object.values(AREAS).map((a) =>
-        `${a.emoji} **${a.name}** [\`${a.id}\`] — Min Level: ${a.minLevel} · Energy: ⚡${a.energyCost}\n> ${a.description}`
+        `${a.emoji} **${a.name}** [\`${a.id}\`] — Cấp tối thiểu: ${a.minLevel} · Năng lượng: ⚡${a.energyCost}\n> ${a.description}`
       );
-      return void message.reply({ embeds: [explorationEmbed('Explorable Areas', lines.join('\n\n'))] });
+      return void message.reply({ embeds: [explorationEmbed('Các Khu Vực Có Thể Khám Phá', lines.join('\n\n'))] });
     }
 
-    if (sub === 'go') {
+    if (sub === 'di') {
       const areaId = args[1]?.toLowerCase() as AreaType;
-      if (!areaId) return void message.reply({ embeds: [errorEmbed('Usage: `.explore go <areaId>` — Use `.explore areas` to see area IDs.')] });
-      if (!AREAS[areaId]) return void message.reply({ embeds: [errorEmbed(`Unknown area \`${areaId}\`. Use \`.explore areas\` to see options.`)] });
+      if (!areaId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.explore di <mãKV>` — Dùng `.explore khuvuc` để xem danh sách.')] });
+      if (!AREAS[areaId]) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy khu vực \`${areaId}\`. Dùng \`.explore khuvuc\` để xem.`)] });
       try {
         const result = await ExplorationService.explore(player.id, areaId, world);
 
@@ -43,15 +43,15 @@ export const command: Command = {
         if (Math.random() < 0.4) {
           const enc = await encounterWildlife(player.id, areaId, world.currentSeason as any, world.currentWeather as any, world.timeOfDay as any, message.guildId!);
           if (enc) {
-            wildlifeMsg = `\n\n🐾 **Wildlife Encounter!** You spotted a **${enc.wildlife.emoji} ${enc.wildlife.name}**${enc.isNew ? ' — *New discovery!* 🆕' : ''}`;
+            wildlifeMsg = `\n\n🐾 **Gặp Sinh Vật!** Bạn phát hiện **${enc.wildlife.emoji} ${enc.wildlife.name}**${enc.isNew ? ' — *Khám phá mới!* 🆕' : ''}`;
           }
         }
 
         const area = AREAS[areaId];
-        const embed = explorationEmbed(`Explored: ${area.emoji} ${area.name}`, result.message + wildlifeMsg)
+        const embed = explorationEmbed(`Đã khám phá: ${area.emoji} ${area.name}`, result.message + wildlifeMsg)
           .addFields(
-            { name: '⚡ Energy Remaining', value: String(player.energyCurrent - area.energyCost), inline: true },
-            { name: '🌤️ Weather', value: world.currentWeather, inline: true },
+            { name: '⚡ Năng lượng còn lại', value: String(player.energyCurrent - area.energyCost), inline: true },
+            { name: '🌤️ Thời tiết', value: world.currentWeather, inline: true },
           );
         return void message.reply({ embeds: [embed] });
       } catch (err) {
@@ -59,11 +59,11 @@ export const command: Command = {
       }
     }
 
-    if (sub === 'history') {
+    if (sub === 'lichsu') {
       const logs = await ExplorationService.getExplorationHistory(player.id, 8);
-      if (!logs.length) return void message.reply({ embeds: [explorationEmbed('Exploration History', '*No explorations yet. Use `.explore go` to start your adventure!*')] });
+      if (!logs.length) return void message.reply({ embeds: [explorationEmbed('Lịch Sử Khám Phá', '*Chưa khám phá lần nào. Dùng `.explore di` để bắt đầu phiêu lưu!*')] });
       const lines = logs.map((l) => `**${l.area}** — ${l.event}\n> *<t:${Math.floor(new Date(l.exploredAt).getTime() / 1000)}:R>*`);
-      return void message.reply({ embeds: [explorationEmbed('Exploration History', lines.join('\n\n'))] });
+      return void message.reply({ embeds: [explorationEmbed('Lịch Sử Khám Phá', lines.join('\n\n'))] });
     }
 
     return void message.reply(HELP);

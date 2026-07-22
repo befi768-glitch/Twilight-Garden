@@ -11,11 +11,11 @@ const NPC_RELATION_COLORS: Record<string, number> = {
 };
 
 const HELP = [
-  '**NPC Commands:**',
-  '`.npc list` — View all NPCs',
-  '`.npc talk <npcId>` — Talk to an NPC',
-  '`.npc gift <npcId> <itemId>` — Give a gift',
-  '`.npc relations` — View your relationships',
+  '**Lệnh NPC:**',
+  '`.npc danhsach` — Xem tất cả NPC',
+  '`.npc noi <mãNPC>` — Nói chuyện với NPC',
+  '`.npc tang <mãNPC> <mãVật>` — Tặng quà cho NPC',
+  '`.npc quanhe` — Xem quan hệ với NPC',
 ].join('\n');
 
 export const command: Command = {
@@ -28,28 +28,28 @@ export const command: Command = {
     await message.channel.sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
-    if (sub === 'list') {
+    if (sub === 'danhsach') {
       const lines = Object.values(NPCS).map((n) =>
         `${n.emoji} **${n.name}** [\`${n.id}\`] — *${n.title}*\n📍 ${n.location} · ${n.description}`
       );
-      return void message.reply({ embeds: [createEmbed({ title: '👥 Twilight NPCs', description: lines.join('\n\n'), color: 0x16a085 })] });
+      return void message.reply({ embeds: [createEmbed({ title: '👥 Nhân Vật NPC', description: lines.join('\n\n'), color: 0x16a085 })] });
     }
 
-    if (sub === 'talk') {
+    if (sub === 'noi') {
       const npcId = args[1];
-      if (!npcId) return void message.reply({ embeds: [errorEmbed('Usage: `.npc talk <npcId>` — Use `.npc list` to see NPC IDs.')] });
+      if (!npcId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.npc noi <mãNPC>` — Dùng `.npc danhsach` để xem mã NPC.')] });
       const npc = NPCS[npcId];
-      if (!npc) return void message.reply({ embeds: [errorEmbed(`Unknown NPC \`${npcId}\`. Use \`.npc list\` to see options.`)] });
+      if (!npc) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy NPC \`${npcId}\`. Dùng \`.npc danhsach\` để xem.`)] });
       try {
         const result = await NpcService.talk(player.id, npcId);
         const relation = await NpcService.getOrCreateRelation(player.id, npcId);
         const embed = createEmbed({
-          title: `${npc.emoji} ${npc.name} says:`,
+          title: `${npc.emoji} ${npc.name} nói:`,
           description: `*"${result.dialogue}"*`,
           color: NPC_RELATION_COLORS[relation.relation] ?? 0x888888,
         }).addFields(
-          { name: '💬 Relation', value: `${relation.relation} (${formatNumber(relation.relationScore)} pts)`, inline: true },
-          { name: '✨ Gained', value: result.relationGain > 0 ? `+${result.relationGain} relation` : 'No change', inline: true },
+          { name: '💬 Quan hệ', value: `${relation.relation} (${formatNumber(relation.relationScore)} điểm)`, inline: true },
+          { name: '✨ Tăng thêm', value: result.relationGain > 0 ? `+${result.relationGain} quan hệ` : 'Không thay đổi', inline: true },
         );
         return void message.reply({ embeds: [embed] });
       } catch (err) {
@@ -57,28 +57,28 @@ export const command: Command = {
       }
     }
 
-    if (sub === 'gift') {
+    if (sub === 'tang') {
       const npcId = args[1];
       const itemId = args[2];
-      if (!npcId || !itemId) return void message.reply({ embeds: [errorEmbed('Usage: `.npc gift <npcId> <itemId>`')] });
+      if (!npcId || !itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.npc tang <mãNPC> <mãVật>`')] });
       const npc = NPCS[npcId];
-      if (!npc) return void message.reply({ embeds: [errorEmbed(`Unknown NPC \`${npcId}\`. Use \`.npc list\` to see options.`)] });
+      if (!npc) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy NPC \`${npcId}\`. Dùng \`.npc danhsach\` để xem.`)] });
       try {
         const result = await NpcService.giftItem(player.id, npcId, itemId);
-        return void message.reply({ embeds: [successEmbed(`${result.response}\n+${result.relationGain} relation with **${npc.name}**!`)] });
+        return void message.reply({ embeds: [successEmbed(`${result.response}\n+${result.relationGain} quan hệ với **${npc.name}**!`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'relations') {
+    if (sub === 'quanhe') {
       const relations = await NpcService.getAllRelations(player.id);
-      if (!relations.length) return void message.reply({ embeds: [createEmbed({ title: '👥 NPC Relations', description: "*You haven't met any NPCs yet. Explore areas to find them!*", color: 0x16a085 })] });
+      if (!relations.length) return void message.reply({ embeds: [createEmbed({ title: '👥 Quan Hệ NPC', description: '*Bạn chưa gặp NPC nào. Hãy khám phá các khu vực!*', color: 0x16a085 })] });
       const lines = relations.map((r) => {
         const npc = NPCS[r.npcId];
-        return `${npc?.emoji ?? '👤'} **${npc?.name ?? r.npcId}** — ${r.relation} (${formatNumber(r.relationScore)} pts)`;
+        return `${npc?.emoji ?? '👤'} **${npc?.name ?? r.npcId}** — ${r.relation} (${formatNumber(r.relationScore)} điểm)`;
       });
-      return void message.reply({ embeds: [createEmbed({ title: '👥 NPC Relations', description: lines.join('\n'), color: 0x16a085 })] });
+      return void message.reply({ embeds: [createEmbed({ title: '👥 Quan Hệ NPC', description: lines.join('\n'), color: 0x16a085 })] });
     }
 
     return void message.reply(HELP);

@@ -6,7 +6,7 @@ import { InventoryService } from '../../services/InventoryService';
 import { HomeService } from '../../services/HomeService';
 import { GardenService } from '../../services/GardenService';
 import { createEmbed, errorEmbed, successEmbed } from '../../utils/embed';
-import { formatCoins, progressBar } from '../../utils/helpers';
+import { formatCoins } from '../../utils/helpers';
 
 function parseMention(str: string): string | null {
   const m = str?.match(/^<@!?(\d+)>$/);
@@ -14,10 +14,10 @@ function parseMention(str: string): string | null {
 }
 
 const HELP = [
-  '**Social Commands:**',
-  '`.social give_coins @user <amount>` — Give coins',
-  '`.social give_item @user <itemId> [qty]` — Give an item',
-  '`.social visit @user` — Visit a player\'s home',
+  '**Lệnh Xã Hội:**',
+  '`.social cho_xu @người <số>` — Cho xu',
+  '`.social cho_do @người <mãVật> [slg]` — Cho vật phẩm',
+  '`.social thamquan @người` — Thăm nhà người chơi',
 ].join('\n');
 
 export const command: Command = {
@@ -31,49 +31,49 @@ export const command: Command = {
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
     const targetId = parseMention(args[1]);
-    if (!targetId) return void message.reply({ embeds: [errorEmbed('Please mention a player. Example: `.social give_coins @user 100`')] });
-    if (targetId === message.author.id) return void message.reply({ embeds: [errorEmbed('You cannot interact with yourself!')] });
+    if (!targetId) return void message.reply({ embeds: [errorEmbed('Vui lòng tag người chơi. Ví dụ: `.social cho_xu @người 100`')] });
+    if (targetId === message.author.id) return void message.reply({ embeds: [errorEmbed('Bạn không thể tương tác với chính mình!')] });
 
     const targetPlayer = await PlayerService.getByDiscord(targetId, message.guildId!);
-    if (!targetPlayer) return void message.reply({ embeds: [errorEmbed('That player has not started playing yet.')] });
+    if (!targetPlayer) return void message.reply({ embeds: [errorEmbed('Người chơi đó chưa bắt đầu chơi.')] });
 
-    if (sub === 'give_coins') {
+    if (sub === 'cho_xu') {
       const amount = parseInt(args[2] ?? '');
-      if (!amount) return void message.reply({ embeds: [errorEmbed('Usage: `.social give_coins @user <amount>`')] });
+      if (!amount) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.social cho_xu @người <số>`')] });
       try {
         await EconomyService.transfer(player.id, targetPlayer.id, amount);
-        return void message.reply({ embeds: [successEmbed(`Gave **${formatCoins(amount)}** to **${targetPlayer.username}**! 🎁`)] });
+        return void message.reply({ embeds: [successEmbed(`Đã cho **${formatCoins(amount)}** cho **${targetPlayer.username}**! 🎁`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'give_item') {
+    if (sub === 'cho_do') {
       const itemId = args[2];
       const qty = parseInt(args[3] ?? '1') || 1;
-      if (!itemId) return void message.reply({ embeds: [errorEmbed('Usage: `.social give_item @user <itemId> [qty]`')] });
+      if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.social cho_do @người <mãVật> [slg]`')] });
       const has = await InventoryService.hasItem(player.id, itemId, qty);
-      if (!has) return void message.reply({ embeds: [errorEmbed(`You don't have ${qty}x ${itemId} in your inventory.`)] });
+      if (!has) return void message.reply({ embeds: [errorEmbed(`Bạn không có ${qty}x ${itemId} trong túi đồ.`)] });
       await InventoryService.removeItem(player.id, itemId, qty);
       await InventoryService.addItem(targetPlayer.id, itemId, qty);
       const { ITEMS } = await import('../../services/EconomyService');
       const def = ITEMS[itemId];
-      return void message.reply({ embeds: [successEmbed(`Gave **${qty}x ${def?.emoji ?? ''} ${def?.name ?? itemId}** to **${targetPlayer.username}**! 🎁`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã cho **${qty}x ${def?.emoji ?? ''} ${def?.name ?? itemId}** cho **${targetPlayer.username}**! 🎁`)] });
     }
 
-    if (sub === 'visit') {
+    if (sub === 'thamquan') {
       const home = await HomeService.getHome(targetPlayer.id);
-      if (!home) return void message.reply({ embeds: [errorEmbed(`${targetPlayer.username} doesn't have a home yet.`)] });
+      if (!home) return void message.reply({ embeds: [errorEmbed(`${targetPlayer.username} chưa có nhà.`)] });
       const plants = await GardenService.getPlants(targetPlayer.id);
       const activePlants = plants.filter((p) => p.stage !== 'withered');
       const embed = createEmbed({
-        title: `🏡 Visiting ${targetPlayer.username}'s Home`,
+        title: `🏡 Thăm nhà của ${targetPlayer.username}`,
         description: `**${home.name}**\n${home.description}`,
         color: 0xe67e22,
         fields: [
-          { name: '⭐ Level', value: String(home.level), inline: true },
-          { name: '🌱 Garden', value: `${activePlants.length} active plants`, inline: true },
-          { name: '📊 Owner Level', value: String(targetPlayer.level), inline: true },
+          { name: '⭐ Cấp độ nhà', value: String(home.level), inline: true },
+          { name: '🌱 Vườn', value: `${activePlants.length} cây đang trồng`, inline: true },
+          { name: '📊 Cấp chủ nhà', value: String(targetPlayer.level), inline: true },
         ],
       });
       return void message.reply({ embeds: [embed] });

@@ -11,22 +11,21 @@ function parseChannelMention(str: string): string | null {
 }
 
 const HELP = [
-  '**Admin Commands (Manage Guild required):**',
-  '`.admin set_news_channel #channel` — Set news channel',
-  '`.admin set_notify_channel #channel` — Set notification channel',
-  '`.admin force_event <eventId>` — Force start a world event',
-  '`.admin post_news <title> | <content>` — Post custom news',
-  '`.admin status` — View bot/server status',
+  '**Lệnh Admin (cần quyền Quản Lý Server):**',
+  '`.admin kenh_tin_tuc #kenh` — Đặt kênh tin tức',
+  '`.admin kenh_thongbao #kenh` — Đặt kênh thông báo',
+  '`.admin bat_sukien <mãSK>` — Bắt buộc bắt đầu sự kiện',
+  '`.admin dang_tin <tiêu đề> | <nội dung>` — Đăng tin tức',
+  '`.admin trangthai` — Xem trạng thái bot/server',
 ].join('\n');
 
 export const command: Command = {
   name: 'admin',
 
   async execute(message: Message, args: string[]) {
-    // Check permissions
     const member = message.member;
     if (!member?.permissions.has(PermissionFlagsBits.ManageGuild)) {
-      return void message.reply({ embeds: [errorEmbed('You need **Manage Guild** permission to use admin commands.')] });
+      return void message.reply({ embeds: [errorEmbed('Bạn cần quyền **Quản Lý Server** để dùng lệnh admin.')] });
     }
 
     const sub = args[0]?.toLowerCase();
@@ -34,56 +33,55 @@ export const command: Command = {
 
     await message.channel.sendTyping();
 
-    if (sub === 'set_news_channel') {
+    if (sub === 'kenh_tin_tuc') {
       const channelId = parseChannelMention(args[1]);
-      if (!channelId) return void message.reply({ embeds: [errorEmbed('Usage: `.admin set_news_channel #channel`')] });
+      if (!channelId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.admin kenh_tin_tuc #kênh`')] });
       await GuildService.setNewsChannel(message.guildId!, channelId);
-      return void message.reply({ embeds: [successEmbed(`News channel set to <#${channelId}>`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã đặt kênh tin tức thành <#${channelId}>`)] });
     }
 
-    if (sub === 'set_notify_channel') {
+    if (sub === 'kenh_thongbao') {
       const channelId = parseChannelMention(args[1]);
-      if (!channelId) return void message.reply({ embeds: [errorEmbed('Usage: `.admin set_notify_channel #channel`')] });
+      if (!channelId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.admin kenh_thongbao #kênh`')] });
       await GuildService.setNotificationChannel(message.guildId!, channelId);
-      return void message.reply({ embeds: [successEmbed(`Notification channel set to <#${channelId}>`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã đặt kênh thông báo thành <#${channelId}>`)] });
     }
 
-    if (sub === 'force_event') {
+    if (sub === 'bat_sukien') {
       const eventId = args[1];
-      if (!eventId) return void message.reply({ embeds: [errorEmbed(`Usage: \`.admin force_event <eventId>\`\nAvailable: ${Object.keys(WORLD_EVENTS).join(', ')}`)] });
+      if (!eventId) return void message.reply({ embeds: [errorEmbed(`Cách dùng: \`.admin bat_sukien <mãSK>\`\nCác sự kiện: ${Object.keys(WORLD_EVENTS).join(', ')}`)] });
       try {
         const active = await WorldEventService.startEvent(message.guildId!, eventId);
         const event = WORLD_EVENTS[eventId];
-        return void message.reply({ embeds: [successEmbed(`Started world event: **${event.emoji} ${event.name}**!\nEnds <t:${Math.floor(new Date(active.endsAt).getTime() / 1000)}:R>`)] });
+        return void message.reply({ embeds: [successEmbed(`Đã bắt đầu sự kiện: **${event.emoji} ${event.name}**!\nKết thúc <t:${Math.floor(new Date(active.endsAt).getTime() / 1000)}:R>`)] });
       } catch (err) {
         return void message.reply({ embeds: [errorEmbed(String(err instanceof Error ? err.message : err))] });
       }
     }
 
-    if (sub === 'post_news') {
-      // Format: .admin post_news Title here | Content here
+    if (sub === 'dang_tin') {
       const rest = args.slice(1).join(' ');
       const pipeIdx = rest.indexOf(' | ');
-      if (pipeIdx === -1) return void message.reply({ embeds: [errorEmbed('Usage: `.admin post_news <title> | <content>`')] });
+      if (pipeIdx === -1) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.admin dang_tin <tiêu đề> | <nội dung>`')] });
       const title = rest.slice(0, pipeIdx).trim();
       const content = rest.slice(pipeIdx + 3).trim();
-      if (!title || !content) return void message.reply({ embeds: [errorEmbed('Usage: `.admin post_news <title> | <content>`')] });
+      if (!title || !content) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.admin dang_tin <tiêu đề> | <nội dung>`')] });
       await NewsService.postNews(message.guildId!, title, content, 'world_event', 2);
-      return void message.reply({ embeds: [successEmbed(`Posted news: **${title}**`)] });
+      return void message.reply({ embeds: [successEmbed(`Đã đăng tin: **${title}**`)] });
     }
 
-    if (sub === 'status') {
+    if (sub === 'trangthai') {
       const world = await GuildService.getOrCreateWorldState(message.guildId!);
       const config = await GuildService.getOrCreateConfig(message.guildId!);
       return void message.reply({ embeds: [createEmbed({
-        title: '⚙️ Server Status',
+        title: '⚙️ Trạng Thái Server',
         color: 0x3498db,
         fields: [
-          { name: '🌍 World Tick', value: String(world.worldTick), inline: true },
-          { name: '📅 Day', value: String(world.dayNumber), inline: true },
-          { name: '🍂 Season', value: world.currentSeason, inline: true },
-          { name: '📰 News Channel', value: config.newsChannelId ? `<#${config.newsChannelId}>` : '*Not set*', inline: true },
-          { name: '🔔 Notify Channel', value: config.notificationChannelId ? `<#${config.notificationChannelId}>` : '*Not set*', inline: true },
+          { name: '🌍 Vòng thế giới', value: String(world.worldTick), inline: true },
+          { name: '📅 Ngày', value: String(world.dayNumber), inline: true },
+          { name: '🍂 Mùa', value: world.currentSeason, inline: true },
+          { name: '📰 Kênh tin tức', value: config.newsChannelId ? `<#${config.newsChannelId}>` : '*Chưa đặt*', inline: true },
+          { name: '🔔 Kênh thông báo', value: config.notificationChannelId ? `<#${config.notificationChannelId}>` : '*Chưa đặt*', inline: true },
         ],
       })] });
     }

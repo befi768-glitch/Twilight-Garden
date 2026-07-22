@@ -9,31 +9,31 @@ export const command: Command = {
   name: 'achievements',
 
   async execute(message: Message, args: string[]) {
-    const sub = args[0]?.toLowerCase() ?? 'mine';
+    const sub = args[0]?.toLowerCase() ?? 'cuatoi';
     await message.channel.sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
     const playerAchs = await AchievementService.getPlayerAchievements(player.id);
     const unlockedIds = new Set(playerAchs.map((a) => a.achievementId));
 
-    if (sub === 'mine') {
-      if (!playerAchs.length) return void message.reply({ embeds: [achievementEmbed('Your Achievements', '*No achievements unlocked yet. Keep playing!*')] });
+    if (sub === 'cuatoi') {
+      if (!playerAchs.length) return void message.reply({ embeds: [achievementEmbed('Thành Tích Của Bạn', '*Chưa có thành tích nào. Tiếp tục chơi nhé!*')] });
       const lines = playerAchs.map((pa) => {
         const a = ACHIEVEMENTS[pa.achievementId];
         return `${a?.emoji ?? '🏆'} **${a?.name ?? pa.achievementId}** ${rarityEmoji[a?.rarity ?? 'common']}\n> ${a?.description ?? ''} — *<t:${Math.floor(new Date(pa.unlockedAt).getTime() / 1000)}:R>*`;
       });
-      return void message.reply({ embeds: [achievementEmbed(`Achievements (${playerAchs.length}/${Object.keys(ACHIEVEMENTS).length})`, lines.join('\n\n'))] });
+      return void message.reply({ embeds: [achievementEmbed(`Thành Tích Của Bạn (${playerAchs.length}/${Object.keys(ACHIEVEMENTS).length})`, lines.join('\n\n'))] });
     }
 
-    if (sub === 'all') {
+    if (sub === 'tatca') {
       const lines = Object.values(ACHIEVEMENTS).map((a) => {
         const unlocked = unlockedIds.has(a.id);
-        if (a.secret && !unlocked) return `🔒 **???** ${rarityEmoji[a.rarity]}\n> *Secret achievement — keep exploring to discover it.*`;
+        if (a.secret && !unlocked) return `🔒 **???** ${rarityEmoji[a.rarity]}\n> *Thành tích bí ẩn — tiếp tục khám phá để mở.*`;
         return `${unlocked ? '✅' : '⬜'} ${a.emoji} **${a.name}** ${rarityEmoji[a.rarity]}\n> ${a.description} — 🌙${a.reward.coins} · ✨${a.reward.xp} XP`;
       });
-      return void message.reply({ embeds: [achievementEmbed(`All Achievements (${unlockedIds.size}/${Object.keys(ACHIEVEMENTS).length})`, lines.join('\n\n'))] });
+      return void message.reply({ embeds: [achievementEmbed(`Tất Cả Thành Tích (${unlockedIds.size}/${Object.keys(ACHIEVEMENTS).length})`, lines.join('\n\n'))] });
     }
 
-    return void message.reply('Usage: `.achievements mine` or `.achievements all`');
+    return void message.reply('Cách dùng: `.achievements cuatoi` hoặc `.achievements tatca`');
   },
 };
