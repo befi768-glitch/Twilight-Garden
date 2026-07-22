@@ -57,7 +57,7 @@ export const command: Command = {
 
     if (sub === 'danh_sach') {
       const lines = Object.values(PLANTS).map((p) =>
-        `${rarityEmoji[p.rarity]} **${p.emoji} ${p.name}** [\`${p.id}\`]\n> ⏱️ ${p.growthTime} phút · 💰${p.baseValue} · ${p.description}`
+        `${rarityEmoji[p.rarity]} **${p.emoji} ${p.name}** [\`${p.id}\`]\n> ⏱️ ${p.growTimeMinutes} phút · 💰${p.sellPrice} · ${p.description}`
       );
       return void message.reply({ embeds: [gardenEmbed('Danh Sách Cây Trồng', lines.join('\n\n'))] });
     }
@@ -71,9 +71,9 @@ export const command: Command = {
       const def = GardenService.getPlantDef(plantId);
       if (!def) return void message.reply({ embeds: [errorEmbed(`Không tìm thấy cây \`${plantId}\`. Dùng \`.vuon danh_sach\` để xem.`)] });
       const hasSeed = await InventoryService.hasItem(player.id, plantId + '_seed', 1);
-      if (!hasSeed) return void message.reply({ embeds: [errorEmbed(`Bạn cần **Hạt giống ${def.name}** trong túi đồ. Mua tại \`.economy shop\`!`)] });
+      if (!hasSeed) return void message.reply({ embeds: [errorEmbed(`Bạn cần **Hạt giống ${def.name}** trong túi đồ. Mua tại \`.kinhte shop\`!`)] });
       try {
-        await GardenService.plant(player.id, slot, plantId);
+        await GardenService.plant(player.id, plantId, slot, world);
         await InventoryService.removeItem(player.id, plantId + '_seed', 1);
         return void message.reply({ embeds: [successEmbed(`Đã trồng **${def.emoji} ${def.name}** vào ô ${slot}!`)] });
       } catch (err) {

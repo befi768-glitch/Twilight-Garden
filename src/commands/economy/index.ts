@@ -53,8 +53,8 @@ export const command: Command = {
       const qty = parseInt(args[2] ?? '1') || 1;
       if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte mua <mãVật> [sốLượng]`')] });
       try {
-        await EconomyService.buyItem(player.id, itemId, qty);
-        await afterBuy(player.id, itemId, qty);
+        const { spent } = await EconomyService.buyFromShop(player.id, itemId, qty);
+        await afterBuy(player.id, spent);
         const item = ITEMS[itemId];
         return void message.reply({ embeds: [successEmbed(`Đã mua **${qty}x ${item?.emoji ?? ''} ${item?.name ?? itemId}**!`)] });
       } catch (err) {
@@ -67,8 +67,8 @@ export const command: Command = {
       const qty = parseInt(args[2] ?? '1') || 1;
       if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte ban <mãVật> [sốLượng]`')] });
       try {
-        const total = await EconomyService.sellItem(player.id, itemId, qty);
-        await afterSell(player.id, itemId, qty, total);
+        const { earned: total } = await EconomyService.sellItem(player.id, itemId, qty);
+        await afterSell(player.id, total);
         const item = ITEMS[itemId];
         return void message.reply({ embeds: [successEmbed(`Đã bán **${qty}x ${item?.emoji ?? ''} ${item?.name ?? itemId}** được ${formatCoins(total)}!`)] });
       } catch (err) {
