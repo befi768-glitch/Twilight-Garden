@@ -213,6 +213,63 @@ const CREATE_TABLES: string[] = [
 // ADD COLUMN IF NOT EXISTS is safe to run repeatedly — each step is idempotent.
 // These handle databases that existed before a column was added to the schema.
 const MIGRATION_STEPS: string[] = [
+  // FIX: drop NOT NULL on legacy user_id columns and backfill player_id — runs safely on any DB
+  // (old schema used user_id; new schema uses player_id; both may coexist during migration)
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='plants' AND column_name='user_id') THEN
+      ALTER TABLE plants ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE plants SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='pets' AND column_name='user_id') THEN
+      ALTER TABLE pets ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE pets SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_quests' AND column_name='user_id') THEN
+      ALTER TABLE player_quests ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE player_quests SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='npc_relations' AND column_name='user_id') THEN
+      ALTER TABLE npc_relations ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE npc_relations SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='wildlife_discoveries' AND column_name='user_id') THEN
+      ALTER TABLE wildlife_discoveries ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE wildlife_discoveries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='player_achievements' AND column_name='user_id') THEN
+      ALTER TABLE player_achievements ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE player_achievements SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='homes' AND column_name='user_id') THEN
+      ALTER TABLE homes ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE homes SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='journal_entries' AND column_name='user_id') THEN
+      ALTER TABLE journal_entries ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE journal_entries SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='exploration_logs' AND column_name='user_id') THEN
+      ALTER TABLE exploration_logs ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE exploration_logs SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
+
   // plants
   `ALTER TABLE plants ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
   `ALTER TABLE plants ADD COLUMN IF NOT EXISTS slot_index INTEGER`,
@@ -232,6 +289,14 @@ const MIGRATION_STEPS: string[] = [
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS acquired_at TIMESTAMP NOT NULL DEFAULT NOW()`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS metadata JSONB`,
+  // FIX: old schema used user_id instead of player_id — drop NOT NULL so new inserts don't fail,
+  // then backfill player_id from user_id for any existing rows.
+  `DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='inventory' AND column_name='user_id') THEN
+      ALTER TABLE inventory ALTER COLUMN user_id DROP NOT NULL;
+      UPDATE inventory SET player_id = user_id WHERE player_id IS NULL AND user_id IS NOT NULL;
+    END IF;
+  END $$`,
 
   // pets
   `ALTER TABLE pets ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
