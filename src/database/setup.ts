@@ -154,11 +154,12 @@ const CREATE_TABLES: string[] = [
   `CREATE TABLE IF NOT EXISTS news (
     id TEXT PRIMARY KEY,
     guild_id TEXT NOT NULL,
-    type TEXT NOT NULL,
-    headline TEXT NOT NULL,
+    title TEXT NOT NULL,
     content TEXT NOT NULL,
-    author_id TEXT,
-    published_at TIMESTAMP NOT NULL DEFAULT NOW()
+    type TEXT NOT NULL,
+    importance INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMP NOT NULL DEFAULT NOW() + INTERVAL '7 days'
   )`,
 
   `CREATE TABLE IF NOT EXISTS exploration_logs (
@@ -229,6 +230,8 @@ const MIGRATION_STEPS: string[] = [
 
   // inventory
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
+  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS acquired_at TIMESTAMP NOT NULL DEFAULT NOW()`,
+  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS metadata JSONB`,
 
   // pets
   `ALTER TABLE pets ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
@@ -258,6 +261,12 @@ const MIGRATION_STEPS: string[] = [
 
   // exploration_logs
   `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
+
+  // news — columns added/renamed in later schema versions
+  `ALTER TABLE news ADD COLUMN IF NOT EXISTS title TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE news ADD COLUMN IF NOT EXISTS importance INTEGER NOT NULL DEFAULT 1`,
+  `ALTER TABLE news ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW()`,
+  `ALTER TABLE news ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP NOT NULL DEFAULT NOW() + INTERVAL '7 days'`,
 
   // players — columns added in later schema versions
   `ALTER TABLE players ADD COLUMN IF NOT EXISTS discord_id TEXT`,
