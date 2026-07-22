@@ -152,12 +152,11 @@ CREATE TABLE IF NOT EXISTS journal_entries (
 CREATE TABLE IF NOT EXISTS news (
   id TEXT PRIMARY KEY,
   guild_id TEXT NOT NULL,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
   type TEXT NOT NULL,
-  importance INTEGER NOT NULL DEFAULT 1,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  expires_at TIMESTAMP NOT NULL
+  headline TEXT NOT NULL,
+  content TEXT NOT NULL,
+  author_id TEXT,
+  published_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS exploration_logs (
@@ -208,6 +207,46 @@ CREATE TABLE IF NOT EXISTS guild_config (
 );
 `;
 
+// Migration SQL: add missing columns to tables that may have been created with old schema.
+// ADD COLUMN IF NOT EXISTS is safe to run repeatedly.
+const MIGRATION_SQL = `
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS slot_index INTEGER;
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS growth_percent REAL NOT NULL DEFAULT 0;
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS water_level REAL NOT NULL DEFAULT 50;
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS fertilizer_level REAL NOT NULL DEFAULT 0;
+ALTER TABLE plants ADD COLUMN IF NOT EXISTS is_mutant BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE inventory ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE pets ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE player_quests ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE npc_relations ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE wildlife_discoveries ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS notified BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE homes ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+ALTER TABLE homes ADD COLUMN IF NOT EXISTS storage_slots INTEGER NOT NULL DEFAULT 30;
+ALTER TABLE homes ADD COLUMN IF NOT EXISTS garden_slots INTEGER NOT NULL DEFAULT 6;
+ALTER TABLE homes ADD COLUMN IF NOT EXISTS defense_rating INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE homes ADD COLUMN IF NOT EXISTS decorations JSONB NOT NULL DEFAULT '[]';
+
+ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE;
+
+ALTER TABLE players ADD COLUMN IF NOT EXISTS discord_id TEXT;
+ALTER TABLE players ADD COLUMN IF NOT EXISTS guild_id TEXT;
+ALTER TABLE players ADD COLUMN IF NOT EXISTS stats JSONB DEFAULT '{}';
+ALTER TABLE players ADD COLUMN IF NOT EXISTS energy_max INTEGER NOT NULL DEFAULT 100;
+ALTER TABLE players ADD COLUMN IF NOT EXISTS energy_current INTEGER NOT NULL DEFAULT 100;
+`;
+
 export async function setupDatabase(): Promise<void> {
   const rawUrl2 = process.env.DATABASE_URL ?? '';
   const isInternal2 = rawUrl2.includes('localhost') || rawUrl2.includes('127.0.0.1') || rawUrl2.includes('.railway.internal');
@@ -217,6 +256,8 @@ export async function setupDatabase(): Promise<void> {
   try {
     await pool.query(SQL);
     logger.info('Database tables created/verified');
+    await pool.query(MIGRATION_SQL);
+    logger.info('Database migrations applied');
   } finally {
     await pool.end();
   }
