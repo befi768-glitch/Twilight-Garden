@@ -101,14 +101,22 @@ export class WorldEventService {
       if (event && participants.length > 0) {
         const { PlayerService } = await import('./PlayerService');
         const { InventoryService } = await import('./InventoryService');
+        const { logger } = await import('../utils/logger');
         for (const pid of participants) {
-          await PlayerService.updateCoins(pid, event.participantRewards.coins);
-          await PlayerService.addXp(pid, event.participantRewards.xp);
-          if (event.participantRewards.items) {
-            for (const item of event.participantRewards.items) await InventoryService.addItem(pid, item.itemId, item.quantity);
+          // FIX: wrap each participant in try/catch — one deleted/broken player record
+          // must not prevent the rest from receiving their rewards or the event from completing
+          try {
+            await PlayerService.updateCoins(pid, event.participantRewards.coins);
+            await PlayerService.addXp(pid, event.participantRewards.xp);
+            if (event.participantRewards.items) {
+              for (const item of event.participantRewards.items) await InventoryService.addItem(pid, item.itemId, item.quantity);
+            }
+          } catch (err: any) {
+            logger.warn(`Failed to reward participant ${pid} for event ${evt.eventId}: ${err?.message}`);
           }
         }
       }
+      // FIX: always mark the event completed even if some participant rewards failed
       await db.update(schema.activeWorldEvents).set({ completed: true }).where(eq(schema.activeWorldEvents.id, evt.id));
     }
   }

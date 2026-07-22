@@ -154,6 +154,13 @@ export class ExplorationService {
 
     await PlayerService.incrementStat(playerId, 'explorationCount');
 
+    // FIX: track explore-type quest objectives — daily_explore and explorer_badge were
+    // never progressing because no updateObjective call existed for type='explore'
+    const { QuestService: QS } = await import('./QuestService');
+    await QS.updateObjective(playerId, 'explore', areaId, 1);
+    await QS.updateObjective(playerId, 'explore', 'any', 1);
+    await QS.updateObjective(playerId, 'explore', 'unique_areas', 1);
+
     let message = `**${event.name}**\n${event.description}`;
     const parts: string[] = [];
     if (reward.coins) parts.push(`🌙 **${reward.coins}** xu`);

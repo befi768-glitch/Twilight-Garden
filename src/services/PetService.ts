@@ -146,7 +146,10 @@ export class PetService {
   static async rename(playerId: string, petId: string, newName: string): Promise<void> {
     const pet = await PetService.getPet(petId);
     if (!pet || pet.playerId !== playerId) throw new Error('Không tìm thấy thú cưng.');
-    await db.update(schema.pets).set({ name: newName.slice(0, 30) }).where(eq(schema.pets.id, petId));
+    // FIX: validate name is non-empty after trimming whitespace
+    const trimmed = newName.trim().slice(0, 30);
+    if (!trimmed) throw new Error('Tên thú cưng không được để trống.');
+    await db.update(schema.pets).set({ name: trimmed }).where(eq(schema.pets.id, petId));
   }
 
   static async release(playerId: string, petId: string): Promise<void> {

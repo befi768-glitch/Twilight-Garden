@@ -53,20 +53,29 @@ export class InventoryService {
   }
 
   static async removeItem(playerId: string, itemId: string, quantity: number): Promise<void> {
-    const existing = await InventoryService.getItem(playerId, itemId);
-    if (!existing || existing.quantity < quantity) throw new Error('Not enough items');
+    // FIX: wrap entire check+delete/update in a transaction so two concurrent removals
+    // can't both pass the quantity check and then double-remove (race condition)
+    await db.transaction(async (tx) => {
+      const result = await tx
+        .select()
+        .from(schema.inventory)
+        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)))
+        .limit(1);
+      const existing = result.length > 0 ? (result[0] as unknown as InventoryItem) : null;
+      if (!existing || existing.quantity < quantity) throw new Error('Not enough items');
 
-    if (existing.quantity === quantity) {
-      await db
-        .delete(schema.inventory)
-        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
-    } else {
-      // FIX: atomic SQL decrement — avoids race condition on concurrent removes
-      await db
-        .update(schema.inventory)
-        .set({ quantity: sql`${schema.inventory.quantity} - ${quantity}` })
-        .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
-    }
+      if (existing.quantity === quantity) {
+        await tx
+          .delete(schema.inventory)
+          .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+      } else {
+        // Atomic SQL decrement — avoids read-modify-write race condition
+        await tx
+          .update(schema.inventory)
+          .set({ quantity: sql`${schema.inventory.quantity} - ${quantity}` })
+          .where(and(eq(schema.inventory.playerId, playerId), eq(schema.inventory.itemId, itemId)));
+      }
+    });
   }
 
   static async clearInventory(playerId: string): Promise<void> {

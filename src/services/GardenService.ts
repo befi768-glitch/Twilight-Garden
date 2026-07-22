@@ -142,7 +142,8 @@ export class GardenService {
       const readyAt = plant.readyAt ? new Date(plant.readyAt).getTime() : now;
       const totalTime = readyAt - new Date(plant.plantedAt).getTime();
       const elapsed = now - new Date(plant.plantedAt).getTime();
-      const growthPercent = Math.min(100, (elapsed / totalTime) * 100);
+      // FIX: guard against totalTime === 0 (readyAt === plantedAt) to avoid Infinity/NaN
+      const growthPercent = totalTime <= 0 ? 100 : Math.min(100, (elapsed / totalTime) * 100);
 
       let stage: PlantStage = 'seed';
       if (growthPercent >= 100) stage = 'flowering';
@@ -166,6 +167,8 @@ export class GardenService {
     if (plant.stage !== 'flowering' && plant.stage !== 'mature') throw new Error('Cây chưa chín để thu hoạch.');
 
     const def = PLANTS[plant.plantType];
+    // FIX: guard against unknown plantType — should never happen in practice but prevents a crash
+    if (!def) throw new Error(`Không tìm thấy định nghĩa cây: ${plant.plantType}. Hãy dùng \`.vuon nhổ\` để xóa cây này.`);
     let yieldAmount = def.baseYield;
     let priceMultiplier = 1;
     let mutant = false;
