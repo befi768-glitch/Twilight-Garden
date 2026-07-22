@@ -113,7 +113,7 @@ export class NpcService {
     if (existing) return existing;
 
     const id = randomUUID();
-    await db.insert(schema.npcRelations).values({ id, playerId, npcId, relationScore: 0, relation: 'stranger', giftsGiven: 0 });
+    await db.insert(schema.npcRelations).values({ id, userId: playerId, playerId, npcId, relationScore: 0, relation: 'stranger', giftsGiven: 0 }); // userId mirrors playerId (legacy NOT NULL col)
     return (await NpcService.getRelation(playerId, npcId))!;
   }
 

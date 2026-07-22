@@ -42,6 +42,7 @@ export class InventoryService {
       } else {
         await tx.insert(schema.inventory).values({
           id: randomUUID(),
+          userId: playerId,   // legacy NOT NULL column — mirror playerId
           playerId,
           itemId,
           quantity,

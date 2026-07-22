@@ -25,6 +25,7 @@ export const players = pgTable('players', {
 
 export const plants = pgTable('plants', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   slotIndex: integer('slot_index').notNull(),
   plantType: text('plant_type').notNull(),
@@ -44,6 +45,7 @@ export const plants = pgTable('plants', {
 
 export const inventory = pgTable('inventory', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column (NOT NULL in old DB) — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   itemId: text('item_id').notNull(),
   quantity: integer('quantity').notNull().default(1),
@@ -55,6 +57,7 @@ export const inventory = pgTable('inventory', {
 
 export const pets = pgTable('pets', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   petType: text('pet_type').notNull(),
   name: text('name').notNull(),
@@ -75,6 +78,7 @@ export const pets = pgTable('pets', {
 
 export const playerQuests = pgTable('player_quests', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   questId: text('quest_id').notNull(),
   status: text('status').notNull().default('active'),
@@ -88,6 +92,7 @@ export const playerQuests = pgTable('player_quests', {
 
 export const npcRelations = pgTable('npc_relations', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   npcId: text('npc_id').notNull(),
   relationScore: integer('relation_score').notNull().default(0),
@@ -100,6 +105,7 @@ export const npcRelations = pgTable('npc_relations', {
 
 export const wildlifeDiscoveries = pgTable('wildlife_discoveries', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   wildlifeId: text('wildlife_id').notNull(),
   firstSeenAt: timestamp('first_seen_at').notNull().defaultNow(),
@@ -137,6 +143,7 @@ export const activeWorldEvents = pgTable('active_world_events', {
 
 export const playerAchievements = pgTable('player_achievements', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   achievementId: text('achievement_id').notNull(),
   unlockedAt: timestamp('unlocked_at').notNull().defaultNow(),
@@ -147,6 +154,7 @@ export const playerAchievements = pgTable('player_achievements', {
 
 export const homes = pgTable('homes', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }).unique(),
   level: integer('level').notNull().default(1),
   name: text('name').notNull().default('My Home'),
@@ -162,6 +170,7 @@ export const homes = pgTable('homes', {
 
 export const journalEntries = pgTable('journal_entries', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   type: text('type').notNull(),
   targetId: text('target_id').notNull(),
@@ -187,6 +196,7 @@ export const news = pgTable('news', {
 
 export const explorationLogs = pgTable('exploration_logs', {
   id: text('id').primaryKey(),
+  userId: text('user_id'),              // legacy column — always mirror playerId
   playerId: text('player_id').notNull().references(() => players.id, { onDelete: 'cascade' }),
   area: text('area').notNull(),
   event: text('event').notNull(),

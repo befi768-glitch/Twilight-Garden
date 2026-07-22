@@ -48,7 +48,7 @@ export class PetService {
 
     const id = randomUUID();
     await db.insert(schema.pets).values({
-      id, playerId, petType,
+      id, userId: playerId, playerId, petType,  // userId mirrors playerId (legacy NOT NULL col)
       name: name.slice(0, 30),
       level: 1, xp: 0,
       hunger: 100, happiness: 100, bond: 0, health: 100,

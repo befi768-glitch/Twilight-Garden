@@ -102,7 +102,7 @@ export class QuestService {
     const id = randomUUID();
     const expiresAt = quest.timeLimit ? new Date(Date.now() + quest.timeLimit * 60 * 1000) : null;
     await db.insert(schema.playerQuests).values({
-      id, playerId, questId, status: 'active',
+      id, userId: playerId, playerId, questId, status: 'active',  // userId mirrors playerId (legacy NOT NULL col)
       objectives: quest.objectives as any,
       startedAt: new Date(), expiresAt,
     });

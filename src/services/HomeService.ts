@@ -27,7 +27,7 @@ export class HomeService {
     const id = randomUUID();
     const tier = HOME_UPGRADES[0];
     await db.insert(schema.homes).values({
-      id, playerId, level: 1,
+      id, userId: playerId, playerId, level: 1,  // userId mirrors playerId (legacy NOT NULL col)
       name: tier.name, description: tier.description,
       decorations: [], storageSlots: tier.storageSlots,
       gardenSlots: tier.gardenSlots, defenseRating: tier.defenseRating,

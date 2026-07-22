@@ -146,7 +146,7 @@ export class ExplorationService {
     }
 
     await db.insert(schema.explorationLogs).values({
-      id: randomUUID(), playerId, area: areaId,
+      id: randomUUID(), userId: playerId, playerId, area: areaId,  // userId mirrors playerId (legacy NOT NULL col)
       event: event.name, result: event.description,
       reward: reward as any,
       exploredAt: new Date(),

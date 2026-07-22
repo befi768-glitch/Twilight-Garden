@@ -108,7 +108,7 @@ export class WildlifeService {
       return false;
     }
 
-    await db.insert(schema.wildlifeDiscoveries).values({ id: randomUUID(), playerId, wildlifeId, firstSeenAt: new Date(), timesSeen: 1, tamed: false });
+    await db.insert(schema.wildlifeDiscoveries).values({ id: randomUUID(), userId: playerId, playerId, wildlifeId, firstSeenAt: new Date(), timesSeen: 1, tamed: false }); // userId mirrors playerId (legacy NOT NULL col)
     await PlayerService.incrementStat(playerId, 'wildlifeFound');
     return true;
   }

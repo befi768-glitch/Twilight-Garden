@@ -44,7 +44,7 @@ export class AchievementService {
     if (!achievement) return null;
     if (await AchievementService.hasAchievement(playerId, achievementId)) return null;
 
-    await db.insert(schema.playerAchievements).values({ id: randomUUID(), playerId, achievementId, unlockedAt: new Date(), notified: false });
+    await db.insert(schema.playerAchievements).values({ id: randomUUID(), userId: playerId, playerId, achievementId, unlockedAt: new Date(), notified: false }); // userId mirrors playerId (legacy NOT NULL col)
 
     await PlayerService.updateCoins(playerId, achievement.reward.coins);
     await PlayerService.addXp(playerId, achievement.reward.xp);

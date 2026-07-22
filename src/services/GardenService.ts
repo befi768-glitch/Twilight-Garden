@@ -90,6 +90,7 @@ export class GardenService {
     const id = randomUUID();
     await db.insert(schema.plants).values({
       id,
+      userId: playerId,   // legacy NOT NULL column — mirror playerId
       playerId,
       slotIndex: slot,
       plantType,

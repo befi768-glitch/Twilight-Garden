@@ -19,7 +19,7 @@ export class JournalService {
 
   static async addEntry(playerId: string, type: string, targetId: string, title: string, content: string): Promise<boolean> {
     if (await JournalService.hasEntry(playerId, type, targetId)) return false;
-    await db.insert(schema.journalEntries).values({ id: randomUUID(), playerId, type, targetId, title, content, discoveredAt: new Date() });
+    await db.insert(schema.journalEntries).values({ id: randomUUID(), userId: playerId, playerId, type, targetId, title, content, discoveredAt: new Date() }); // userId mirrors playerId (legacy NOT NULL col)
     return true;
   }
 
