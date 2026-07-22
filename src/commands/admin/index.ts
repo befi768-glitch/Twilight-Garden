@@ -31,7 +31,7 @@ export const command: Command = {
     const sub = args[0]?.toLowerCase();
     if (!sub) return void message.reply(HELP);
 
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
 
     if (sub === 'kenh_tin_tuc') {
       const channelId = parseChannelMention(args[1]);

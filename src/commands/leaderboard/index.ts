@@ -9,7 +9,7 @@ export const command: Command = {
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'giau';
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
 
     const field = sub === 'giau' ? 'coins' : sub === 'capdo' ? 'xp' : 'reputation';
     const players = await PlayerService.getLeaderboard(message.guildId!, field);

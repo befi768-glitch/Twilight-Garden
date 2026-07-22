@@ -15,7 +15,7 @@ export const command: Command = {
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'tatca';
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
     const type = sub === 'loai' ? args[1]?.toLowerCase() : undefined;

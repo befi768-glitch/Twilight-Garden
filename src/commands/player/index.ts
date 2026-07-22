@@ -14,7 +14,7 @@ export const command: Command = {
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'thongtin';
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
 
     const targetId = (sub === 'xem') ? parseMention(args[1]) : null;
     if (sub === 'xem' && !targetId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.nguoichoi xem @người`')] });

@@ -10,7 +10,7 @@ export const command: Command = {
 
   async execute(message: Message, args: string[]) {
     const sub = args[0]?.toLowerCase() ?? 'cuatoi';
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
 
     const playerAchs = await AchievementService.getPlayerAchievements(player.id);

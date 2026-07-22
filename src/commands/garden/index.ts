@@ -26,7 +26,7 @@ export const command: Command = {
     const sub = args[0]?.toLowerCase();
     if (!sub) return void message.reply(HELP);
 
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
     const player = await PlayerService.getOrCreate(message.author.id, message.guildId!, message.author.username);
     const world = await GuildService.getOrCreateWorldState(message.guildId!);
 

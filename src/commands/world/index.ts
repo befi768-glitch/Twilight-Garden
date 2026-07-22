@@ -13,7 +13,7 @@ export const command: Command = {
   name: 'the_gioi',
 
   async execute(message: Message, _args: string[]) {
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) await (message.channel as any).sendTyping();
     const world = await GuildService.getOrCreateWorldState(message.guildId!);
 
     const seasonInfo = SEASON_INFO[world.currentSeason as keyof typeof SEASON_INFO];
