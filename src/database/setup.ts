@@ -213,11 +213,25 @@ const CREATE_TABLES: string[] = [
 // ADD COLUMN IF NOT EXISTS is safe to run repeatedly — each step is idempotent.
 // These handle databases that existed before a column was added to the schema.
 const MIGRATION_STEPS: string[] = [
-  // ── CRITICAL FIX: drop NOT NULL on legacy user_id columns ──────────────────
+  // ── STEP 0: Ensure user_id column exists on all tables that need it ──────────
+  // On a fresh DB created by CREATE_TABLES above, user_id columns don't exist.
+  // ADD COLUMN IF NOT EXISTS is a no-op on old DBs that already have the column.
+  // This must run BEFORE the ALTER COLUMN steps below, otherwise those steps
+  // fail with "column does not exist" on fresh databases.
+  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE plants ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE pets ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE player_quests ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE npc_relations ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE wildlife_discoveries ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE player_achievements ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE homes ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE journal_entries ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE exploration_logs ADD COLUMN IF NOT EXISTS user_id TEXT NOT NULL DEFAULT ''`,
+
+  // ── STEP 1: drop NOT NULL on legacy user_id columns ────────────────────────
   // Old schema used user_id (NOT NULL); new schema uses player_id only.
   // Each fix is a BARE ALTER TABLE — no DO blocks, no PL/pgSQL transactions.
-  // If the column doesn't exist the statement errors → caught individually by
-  // the try/catch loop → logged as warning → execution continues.
   // This guarantees DROP NOT NULL is never rolled back by a later UPDATE failure.
 
   `ALTER TABLE inventory ALTER COLUMN user_id SET DEFAULT ''`,
