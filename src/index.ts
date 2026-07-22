@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Events, REST, Routes, ActivityType } from 'discord.js';
 import { TwilightClient } from './client';
 import { connectDatabase } from './database';
+import { setupDatabase } from './database/setup';
 import { loadCommands, ALL_COMMANDS } from './commands';
 import { startTickEngine } from './systems/time';
 import { startWeatherSystem } from './systems/weather';
@@ -35,7 +36,8 @@ async function registerSlashCommands(guildIds: string[]): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  // Connect to database
+  // Setup and connect to database
+  await setupDatabase();
   await connectDatabase();
 
   const client = new TwilightClient();

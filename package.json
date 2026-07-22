@@ -5,12 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "npm run push && node dist/index.js",
+    "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "migrate": "ts-node src/database/migrate.ts",
     "lint": "eslint src --ext .ts",
     "register": "ts-node --transpile-only src/deploy-commands.ts",
-    "push": "yes | drizzle-kit push:pg"
+    "push": "drizzle-kit push:pg"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
