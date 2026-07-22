@@ -10,7 +10,7 @@
     "migrate": "ts-node src/database/migrate.ts",
     "lint": "eslint src --ext .ts",
     "register": "ts-node --transpile-only src/deploy-commands.ts",
-    "push": "drizzle-kit push --force"
+    "push": "yes | drizzle-kit push:pg"
   },
   "dependencies": {
     "discord.js": "^14.14.1",
