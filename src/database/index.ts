@@ -3,12 +3,20 @@ import { Pool } from 'pg';
 import * as schema from './schema';
 import { logger } from '../utils/logger';
 
+const rawUrl = process.env.DATABASE_URL ?? '';
+const isLocal = rawUrl.includes('localhost') || rawUrl.includes('127.0.0.1');
+const connectionString = isLocal
+  ? (process.env.DATABASE_PUBLIC_URL ?? rawUrl)
+  : rawUrl;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString,
   max: 10,
   idleTimeoutMillis: 30_000,
-  connectionTimeoutMillis: 5_000,
-  ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false },
+  connectionTimeoutMillis: 10_000,
+  ssl: connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+    ? false
+    : { rejectUnauthorized: false },
 });
 
 pool.on('error', (err) => {
