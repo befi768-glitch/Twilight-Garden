@@ -20,29 +20,18 @@ if (!process.env.DISCORD_TOKEN || !process.env.DISCORD_CLIENT_ID) {
 const TOKEN = process.env.DISCORD_TOKEN as string;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID as string;
 
-async function registerSlashCommands(guildIds: string[]): Promise<void> {
-  const rest = new REST({ version: '10' }).setToken(TOKEN);
-  const commandData = ALL_COMMANDS.map((c) => c.data.toJSON());
+const rest = new REST({ version: '10' }).setToken(TOKEN);
 
-  // Register globally (takes up to 1 hour to propagate) OR per-guild (instant)
-  if (process.env.GUILD_ID) {
-    // Dev mode: register to specific guild for instant updates
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, process.env.GUILD_ID), { body: commandData });
-    logger.info(`Registered ${commandData.length} commands to guild ${process.env.GUILD_ID}`);
-  } else {
-    await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandData });
-    logger.info(`Registered ${commandData.length} global commands`);
-  }
+async function registerCommandsToGuild(guildId: string): Promise<void> {
+  const commandData = ALL_COMMANDS.map((c) => c.data.toJSON());
+  await rest.put(Routes.applicationGuildCommands(CLIENT_ID, guildId), { body: commandData });
+  logger.info(`Registered ${commandData.length} commands to guild ${guildId}`);
 }
 
 async function main(): Promise<void> {
   // Setup and connect to database
   await setupDatabase();
   await connectDatabase();
-
-  // Register slash commands BEFORE login so errors are visible
-  logger.info(`Registering commands with CLIENT_ID=${CLIENT_ID}, GUILD_ID=${process.env.GUILD_ID ?? '(global)'}`);
-  await registerSlashCommands([]);
 
   const client = new TwilightClient();
   loadCommands(client);
@@ -54,9 +43,12 @@ async function main(): Promise<void> {
     // Set bot presence
     c.user.setActivity('🌙 Twilight Garden', { type: ActivityType.Playing });
 
-    // Initialize world state for all guilds
+    // Register commands to every guild the bot is in (instant, no 1-hour wait)
     const guildIds = [...c.guilds.cache.keys()];
     for (const guildId of guildIds) {
+      await registerCommandsToGuild(guildId).catch((err) =>
+        logger.error(`Failed to register commands in guild ${guildId}`, { error: String(err) })
+      );
       await GuildService.getOrCreateWorldState(guildId);
     }
 
@@ -71,6 +63,9 @@ async function main(): Promise<void> {
   // ─── Guild join ────────────────────────────────────────────────────────────
   client.on(Events.GuildCreate, async (guild) => {
     logger.info(`Joined guild: ${guild.name} (${guild.id})`);
+    await registerCommandsToGuild(guild.id).catch((err) =>
+      logger.error(`Failed to register commands in new guild ${guild.id}`, { error: String(err) })
+    );
     await GuildService.getOrCreateWorldState(guild.id);
     await GuildService.getOrCreateConfig(guild.id);
 
