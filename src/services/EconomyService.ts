@@ -18,12 +18,12 @@ export const ITEMS: Record<string, ItemDefinition> = {
 
   // Nông sản
   crop_moonflower: { id: 'crop_moonflower', name: 'Hoa Trăng', emoji: '🌙', category: 'crop', rarity: 'uncommon', description: 'Hoa Trăng vừa thu hoạch.', sellPrice: 55, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_starbloom: { id: 'crop_starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'Tinh Hoa Sao vừa thu hoạch.', sellPrice: 95, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 25, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 230, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 50, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_starbloom: { id: 'crop_starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', category: 'crop', rarity: 'rare', description: 'Tinh Hoa Sao vừa thu hoạch.', sellPrice: 210, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_twilight_rose: { id: 'crop_twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', category: 'crop', rarity: 'common', description: 'Hoa hồng hoàng hôn tươi.', sellPrice: 30, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_crystalvine: { id: 'crop_crystalvine', name: 'Mảnh Dây Pha Lê', emoji: '💎', category: 'crop', rarity: 'epic', description: 'Dây leo kết tinh thành pha lê.', sellPrice: 975, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
+  crop_dreamcap: { id: 'crop_dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', category: 'crop', rarity: 'uncommon', description: 'Nấm mộng mơ vừa thu hoạch.', sellPrice: 60, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
   crop_sunpetal: { id: 'crop_sunpetal', name: 'Cánh Hoa Nắng', emoji: '🌻', category: 'crop', rarity: 'common', description: 'Cánh hoa nắng tươi sáng.', sellPrice: 18, buyPrice: null, usable: false, stackable: true, maxStack: 999 },
-  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 600, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
+  crop_shadowbloom: { id: 'crop_shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', category: 'crop', rarity: 'legendary', description: 'Tinh chất bóng tối huyền bí.', sellPrice: 2400, buyPrice: null, usable: false, stackable: true, maxStack: 99 },
 
   // Công cụ & thuốc
   watering_can: { id: 'watering_can', name: 'Bình Tưới Nước', emoji: '🪣', category: 'tool', rarity: 'common', description: 'Dùng để tưới cây trong vườn.', sellPrice: 100, buyPrice: 150, usable: true, stackable: false, maxStack: 1 },

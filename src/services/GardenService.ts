@@ -8,31 +8,31 @@ import { randomUUID } from 'crypto';
 export const PLANTS: Record<string, PlantDefinition> = {
   moonflower: {
     id: 'moonflower', name: 'Hoa Trăng', emoji: '🌙', rarity: 'uncommon',
-    growTimeMinutes: 60, baseYield: 3, sellPrice: 55, seedPrice: 110,
+    growTimeMinutes: 60, baseYield: 3, sellPrice: 55, seedPrice: 110,  // 55×3=165 vs seed 110 → +50% ✓
     description: 'Chỉ nở dưới ánh trăng. Tỏa sáng dịu dàng trong bóng tối.',
     mutationChance: 0.05, seasonBonus: ['autumn', 'winter'], weatherBonus: ['cloudy', 'foggy'],
   },
   starbloom: {
     id: 'starbloom', name: 'Tinh Hoa Sao', emoji: '⭐', rarity: 'rare',
-    growTimeMinutes: 120, baseYield: 2, sellPrice: 95, seedPrice: 280,
+    growTimeMinutes: 120, baseYield: 2, sellPrice: 210, seedPrice: 280, // 210×2=420 vs seed 280 → +50% ✓
     description: 'Một loài hoa lấp lánh như ngôi sao xa xôi.',
     mutationChance: 0.08, seasonBonus: ['winter'], weatherBonus: ['magical'],
   },
   twilight_rose: {
     id: 'twilight_rose', name: 'Hồng Hoàng Hôn', emoji: '🌹', rarity: 'common',
-    growTimeMinutes: 30, baseYield: 2, sellPrice: 25, seedPrice: 40,
+    growTimeMinutes: 30, baseYield: 2, sellPrice: 30, seedPrice: 40,   // 30×2=60 vs seed 40 → +50% ✓
     description: 'Hoa hồng cổ điển với sắc tím nhẹ vào lúc hoàng hôn.',
     mutationChance: 0.03, seasonBonus: ['spring', 'summer'], weatherBonus: ['sunny'],
   },
   crystalvine: {
     id: 'crystalvine', name: 'Dây Pha Lê', emoji: '💎', rarity: 'epic',
-    growTimeMinutes: 180, baseYield: 1, sellPrice: 230, seedPrice: 650,
+    growTimeMinutes: 180, baseYield: 1, sellPrice: 975, seedPrice: 650, // 975×1=975 vs seed 650 → +50% ✓
     description: 'Lá trong suốt như thủy tinh, lóng lánh dưới ánh sáng.',
     mutationChance: 0.12, seasonBonus: ['winter'], weatherBonus: ['magical', 'stormy'],
   },
   dreamcap: {
     id: 'dreamcap', name: 'Nấm Mộng Mơ', emoji: '🍄', rarity: 'uncommon',
-    growTimeMinutes: 45, baseYield: 2, sellPrice: 50, seedPrice: 80,
+    growTimeMinutes: 45, baseYield: 2, sellPrice: 60, seedPrice: 80,   // 60×2=120 vs seed 80 → +50% ✓
     description: 'Phát triển tốt trong rừng sương mù. Tương truyền mang lại những giấc mơ kỳ diệu.',
     mutationChance: 0.04, seasonBonus: ['autumn'], weatherBonus: ['foggy', 'rainy'],
   },
@@ -44,7 +44,7 @@ export const PLANTS: Record<string, PlantDefinition> = {
   },
   shadowbloom: {
     id: 'shadowbloom', name: 'Hoa Bóng Tối', emoji: '🌑', rarity: 'legendary',
-    growTimeMinutes: 300, baseYield: 1, sellPrice: 600, seedPrice: 1600,
+    growTimeMinutes: 300, baseYield: 1, sellPrice: 2400, seedPrice: 1600, // 2400×1=2400 vs seed 1600 → +50% ✓
     description: 'Hút ánh sáng xung quanh. Cực kỳ hiếm và quyền năng.',
     mutationChance: 0.15, seasonBonus: ['winter'], weatherBonus: ['stormy', 'foggy'],
   },
