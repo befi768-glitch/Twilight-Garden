@@ -296,6 +296,9 @@ END $$`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS player_id TEXT REFERENCES players(id) ON DELETE CASCADE`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS acquired_at TIMESTAMP NOT NULL DEFAULT NOW()`,
   `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS metadata JSONB`,
+  // item_type is a legacy NOT NULL column — add it as nullable so old rows and new INSERTs don't fail
+  `ALTER TABLE inventory ADD COLUMN IF NOT EXISTS item_type TEXT`,
+  `ALTER TABLE inventory ALTER COLUMN item_type DROP NOT NULL`,
   // inventory user_id fix is handled at the top of MIGRATION_STEPS via bare ALTER TABLE
 
   // pets
