@@ -4,19 +4,28 @@ import * as schema from './schema';
 import { logger } from '../utils/logger';
 
 const rawUrl = process.env.DATABASE_URL ?? '';
-const isLocal = rawUrl.includes('localhost') || rawUrl.includes('127.0.0.1');
-const connectionString = isLocal
+
+// Railway internal URLs (*.railway.internal) only work inside Railway's private network.
+// Fall back to DATABASE_PUBLIC_URL so the bot can connect from any environment.
+const isInternal =
+  rawUrl.includes('localhost') ||
+  rawUrl.includes('127.0.0.1') ||
+  rawUrl.includes('.railway.internal');
+
+const connectionString = isInternal
   ? (process.env.DATABASE_PUBLIC_URL ?? rawUrl)
   : rawUrl;
+
+const useSSL =
+  !connectionString.includes('localhost') &&
+  !connectionString.includes('127.0.0.1');
 
 const pool = new Pool({
   connectionString,
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 10_000,
-  ssl: connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
-    ? false
-    : { rejectUnauthorized: false },
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', (err) => {

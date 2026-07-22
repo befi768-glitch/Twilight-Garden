@@ -209,7 +209,11 @@ CREATE TABLE IF NOT EXISTS guild_config (
 `;
 
 export async function setupDatabase(): Promise<void> {
-  const rawUrl2 = process.env.DATABASE_URL ?? ""; const isLocal2 = rawUrl2.includes("localhost") || rawUrl2.includes("127.0.0.1"); const connStr2 = isLocal2 ? (process.env.DATABASE_PUBLIC_URL ?? rawUrl2) : rawUrl2; const pool = new Pool({ connectionString: connStr2, ssl: connStr2.includes("localhost") || connStr2.includes("127.0.0.1") ? false : { rejectUnauthorized: false } });
+  const rawUrl2 = process.env.DATABASE_URL ?? '';
+  const isInternal2 = rawUrl2.includes('localhost') || rawUrl2.includes('127.0.0.1') || rawUrl2.includes('.railway.internal');
+  const connStr2 = isInternal2 ? (process.env.DATABASE_PUBLIC_URL ?? rawUrl2) : rawUrl2;
+  const useSSL2 = !connStr2.includes('localhost') && !connStr2.includes('127.0.0.1');
+  const pool = new Pool({ connectionString: connStr2, ssl: useSSL2 ? { rejectUnauthorized: false } : false });
   try {
     await pool.query(SQL);
     logger.info('Database tables created/verified');
