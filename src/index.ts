@@ -40,6 +40,10 @@ async function main(): Promise<void> {
   await setupDatabase();
   await connectDatabase();
 
+  // Register slash commands BEFORE login so errors are visible
+  logger.info(`Registering commands with CLIENT_ID=${CLIENT_ID}, GUILD_ID=${process.env.GUILD_ID ?? '(global)'}`);
+  await registerSlashCommands([]);
+
   const client = new TwilightClient();
   loadCommands(client);
 
@@ -49,14 +53,6 @@ async function main(): Promise<void> {
 
     // Set bot presence
     c.user.setActivity('🌙 Twilight Garden', { type: ActivityType.Playing });
-
-    // Register slash commands
-    try {
-      const guildIds = [...c.guilds.cache.keys()];
-      await registerSlashCommands(guildIds);
-    } catch (err) {
-      logger.error('Failed to register commands', { error: String(err) });
-    }
 
     // Initialize world state for all guilds
     const guildIds = [...c.guilds.cache.keys()];
