@@ -19,12 +19,13 @@ import { command as socialCmd } from './social';
 import { command as leaderboardCmd } from './leaderboard';
 import { command as worldCmd } from './world';
 import { command as adminCmd } from './admin';
+import { command as huongdanCmd } from './huongdan';
 
 const ALL_COMMANDS = [
   gardenCmd, economyCmd, inventoryCmd, playerCmd, explorationCmd,
   petsCmd, questsCmd, npcCmd, wildlifeCmd, achievementsCmd,
   homeCmd, journalCmd, newsCmd, eventsCmd, socialCmd,
-  leaderboardCmd, worldCmd, adminCmd,
+  leaderboardCmd, worldCmd, adminCmd, huongdanCmd,
 ];
 
 export function loadCommands(client: TwilightClient): void {
