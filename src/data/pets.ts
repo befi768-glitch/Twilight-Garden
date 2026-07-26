@@ -19,9 +19,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦊",
     gia: 15_000,
     giaBanLai: 7_500,
-    giamThue: 2,   // 15% → 13%
+    giamThue: 1,   // 15% → 14%
     moTa: "Hồ ly tinh linh thoát khỏi cõi âm, mang theo phúc khí buôn bán",
-    bonusMoTa: "Giảm thuế 2% (còn 13%)",
+    bonusMoTa: "Giảm thuế 1% (còn 14%)",
   },
   {
     id: "ngoc_tho",
@@ -29,9 +29,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐇",
     gia: 25_000,
     giaBanLai: 12_500,
-    giamThue: 4,   // 15% → 11%
+    giamThue: 2,   // 15% → 13%
     moTa: "Thỏ ngọc từ Quảng Hàn cung, nhảy xuống hạ giới mang theo phước lành",
-    bonusMoTa: "Giảm thuế 4% (còn 11%)",
+    bonusMoTa: "Giảm thuế 2% (còn 13%)",
   },
   {
     id: "thanh_long",
@@ -39,9 +39,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐉",
     gia: 50_000,
     giaBanLai: 25_000,
-    giamThue: 6,   // 15% → 9%
+    giamThue: 3,   // 15% → 12%
     moTa: "Rồng xanh trấn giữ phương đông, vừa dũng mãnh vừa mang lại tài lộc",
-    bonusMoTa: "Giảm thuế 6% (còn 9%)",
+    bonusMoTa: "Giảm thuế 3% (còn 12%)",
   },
   {
     id: "phung_hoang",
@@ -49,9 +49,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦅",
     gia: 100_000,
     giaBanLai: 50_000,
-    giamThue: 8,   // 15% → 7%
+    giamThue: 4,   // 15% → 11%
     moTa: "Thần điểu bất tử, tái sinh từ tro tàn, chủ của mọi điều kỳ diệu trong Twilight Garden",
-    bonusMoTa: "Giảm thuế 8% (còn 7%)",
+    bonusMoTa: "Giảm thuế 4% (còn 11%)",
   },
 ];
 
