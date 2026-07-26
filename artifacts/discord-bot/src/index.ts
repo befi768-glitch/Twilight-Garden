@@ -24,9 +24,9 @@ client.on("error", (err) => {
   console.error("Discord client error:", err);
 });
 
-const token = process.env.DISCORD_BOT_TOKEN;
+const token = process.env.DISCORD_TOKEN ?? process.env.DISCORD_BOT_TOKEN;
 if (!token) {
-  console.error("❌ DISCORD_BOT_TOKEN chưa được thiết lập!");
+  console.error("❌ DISCORD_TOKEN chưa được thiết lập!");
   process.exit(1);
 }
 
