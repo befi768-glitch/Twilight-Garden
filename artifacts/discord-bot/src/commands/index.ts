@@ -29,7 +29,8 @@ function formatCommandError(error: unknown): string {
         break;
     }
 
-    if (databaseError.message?.toLowerCase().includes("connect")) {
+    const msg = databaseError.message?.toLowerCase() ?? "";
+    if (msg.includes("connect") || msg.includes("ssl") || msg.includes("enotfound") || msg.includes("econnrefused")) {
       return "Bot không kết nối được database. Hãy kiểm tra database đang hoạt động.";
     }
   }
