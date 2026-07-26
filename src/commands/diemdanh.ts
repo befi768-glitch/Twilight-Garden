@@ -4,11 +4,11 @@ import { db } from "../database/db";
 import { MAU_CHINH, MAU_VANG, MAU_DO, formatXu, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 function tinhThuong(streak: number): { xu: number; danhHieu: string; moTa: string } {
-  if (streak >= 30) return { xu: 300, danhHieu: "👑 Thần Nông Giác Ngộ",    moTa: "30+ ngày chăm chỉ tu luyện" };
-  if (streak >= 14) return { xu: 200, danhHieu: "💎 Linh Sư Chuyên Cần",    moTa: "14+ ngày không gián đoạn" };
-  if (streak >= 7)  return { xu: 150, danhHieu: "🌟 Đạo Nông Siêng Năng",   moTa: "7+ ngày liên tục" };
-  if (streak >= 3)  return { xu: 100, danhHieu: "🌿 Tu Sĩ Cần Mẫn",         moTa: "3+ ngày liên tục" };
-  return               { xu: 60,  danhHieu: "🌱 Tiểu Đồng Mới Nhập Môn", moTa: "Ngày đầu tu luyện" };
+  if (streak >= 30) return { xu: 80,  danhHieu: "👑 Thần Nông Giác Ngộ",    moTa: "30+ ngày chăm chỉ tu luyện" };
+  if (streak >= 14) return { xu: 60,  danhHieu: "💎 Linh Sư Chuyên Cần",    moTa: "14+ ngày không gián đoạn" };
+  if (streak >= 7)  return { xu: 45,  danhHieu: "🌟 Đạo Nông Siêng Năng",   moTa: "7+ ngày liên tục" };
+  if (streak >= 3)  return { xu: 30,  danhHieu: "🌿 Tu Sĩ Cần Mẫn",         moTa: "3+ ngày liên tục" };
+  return               { xu: 20,  danhHieu: "🌱 Tiểu Đồng Mới Nhập Môn", moTa: "Ngày đầu tu luyện" };
 }
 
 export async function xuLyDiemDanh(message: Message) {
