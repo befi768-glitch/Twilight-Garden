@@ -390,6 +390,14 @@ END $$`,
   `ALTER TABLE world_state ADD COLUMN IF NOT EXISTS world_tick INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE world_state ADD COLUMN IF NOT EXISTS last_tick_at TIMESTAMP NOT NULL DEFAULT NOW()`,
 
+  // transactions — columns may be missing if table was created with an older schema
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS from_player_id TEXT`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS to_player_id TEXT`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS item_id TEXT`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS item_quantity INTEGER`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT ''`,
+  `ALTER TABLE transactions ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW()`,
+
   // guild_config
   `ALTER TABLE guild_config ADD COLUMN IF NOT EXISTS guild_id TEXT`,
   `ALTER TABLE guild_config ADD COLUMN IF NOT EXISTS notification_channel_id TEXT`,
