@@ -80,6 +80,24 @@ export async function xuLyTrom(message: Message, args: string[]) {
     await banDB(nanNhan.id, chon.tenCay, soLuongLay);
     await themVaoTuiDo(keKhuyen.id, chon.tenCay, soLuongLay);
 
+    // Thông báo cho nạn nhân
+    const embedNanNhan = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("🚨 Bạn Vừa Bị Trộm!")
+      .setDescription(
+        `*Kẻ trộm lẻn vào Bảo Nang của bạn trong đêm tối...*\n\n` +
+        `**${message.author.displayName}** đã lấy đi: ${cay?.emoji ?? "🌿"} **${cay?.ten ?? chon.tenCay}** x${soLuongLay}\n\n` +
+        `💡 Dùng \`.trom\` hoặc \`.cuop\` để trả thù!`
+      )
+      .setFooter({ text: `Server: ${message.guild!.name}` });
+
+    try {
+      await mucTieu.send({ embeds: [embedNanNhan] });
+    } catch {
+      // DM bị tắt — thông báo trong kênh
+      await message.channel.send({ content: `<@${mucTieu.id}>`, embeds: [embedNanNhan] });
+    }
+
     const embed = new EmbedBuilder()
       .setColor(MAU_VANG)
       .setTitle("🥷 Trộm Thành Công!")

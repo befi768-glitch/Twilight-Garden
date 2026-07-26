@@ -78,6 +78,24 @@ export async function xuLyCuop(message: Message, args: string[]) {
     await truXu(nanNhan.id, soXuCuop);
     await congXuVaKinhNghiem(keKhuyen.id, soXuCuop, 0);
 
+    // Thông báo cho nạn nhân
+    const embedNanNhan = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("💸 Bạn Vừa Bị Cướp!")
+      .setDescription(
+        `*Kẻ cướp chặn đường bạn dưới ánh trăng tà...*\n\n` +
+        `**${message.author.displayName}** đã cướp đi: **${formatXu(soXuCuop)}** (15% tài sản)\n\n` +
+        `💡 Dùng \`.trom\` hoặc \`.cuop\` để trả thù!`
+      )
+      .setFooter({ text: `Server: ${message.guild!.name}` });
+
+    try {
+      await mucTieu.send({ embeds: [embedNanNhan] });
+    } catch {
+      // DM bị tắt — thông báo trong kênh
+      await message.channel.send({ content: `<@${mucTieu.id}>`, embeds: [embedNanNhan] });
+    }
+
     const embed = new EmbedBuilder()
       .setColor(MAU_VANG)
       .setTitle("💰 Cướp Thành Công!")
