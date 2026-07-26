@@ -1,5 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { MAU_CHINH, TEN_TIEN, EMOJI_TIEN, TEN_KN, EMOJI_KN, TEN_DAT } from "../utils/helpers";
+import { THUE_CO_BAN } from "../data/pets";
 
 export async function xuLyTroGiup(message: Message, prefix: string) {
   const p = prefix;
@@ -27,14 +28,15 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         value: [
           `\`${p}cuahang\` — Xem tất cả linh thảo và giá ${EMOJI_TIEN}`,
           `\`${p}mua <tên> [số]\` — Mua hạt linh thảo`,
-          `\`${p}ban <tên> [số]\` — Bán linh thảo lấy ${TEN_TIEN}`,
+          `\`${p}ban <tên> [số]\` — Bán linh thảo (chịu thuế ${THUE_CO_BAN}%)`,
           `\`${p}ban tất\` — Bán toàn bộ Bảo Nang`,
+          `💡 Dùng Pet để giảm thuế bán cây!`,
         ].join("\n"),
       },
       {
         name: "🎒 Bảo Nang — Quản Lý",
         value: [
-          `\`${p}tuidо\` — Xem Bảo Nang (túi đồ)`,
+          `\`${p}tuido\` — Xem Bảo Nang (túi đồ)`,
           `\`${p}bangxephang\` — Bảng Anh Hùng top 10`,
           `\`${p}tang @người <tên> [số]\` — Tặng linh thảo`,
         ].join("\n"),
@@ -44,6 +46,24 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         value: [
           `\`${p}diemdanh\` (hoặc \`${p}dd\`) — Nhận ${TEN_TIEN} ${EMOJI_TIEN} mỗi ngày`,
           `🔥 Duy trì chuỗi ngày để nhận thưởng cao hơn!`,
+        ].join("\n"),
+      },
+      {
+        name: "⚔️ Bóng Tối — Trộm & Cướp",
+        value: [
+          `\`${p}trom @người\` — Trộm linh thảo từ túi đồ (55% thành công, CD 2h)`,
+          `\`${p}cuop @người\` — Cướp ${TEN_TIEN} trực tiếp (40% thành công, CD 4h)`,
+          `⚠️ Thất bại sẽ bị phạt xu! Cân nhắc trước khi ra tay~`,
+        ].join("\n"),
+      },
+      {
+        name: "🐾 Thú Linh — Pet",
+        value: [
+          `\`${p}pet\` — Xem thú linh đang nuôi`,
+          `\`${p}pet danhsach\` — Xem tất cả pet (từ 15,000 ${EMOJI_TIEN})`,
+          `\`${p}pet mua <tên>\` — Nhận thú linh về nuôi`,
+          `\`${p}pet tha\` — Thả pet (nhận lại 50% giá)`,
+          `✨ Pet giúp giảm thuế bán cây từ ${THUE_CO_BAN}% xuống 0%!`,
         ].join("\n"),
       },
       {

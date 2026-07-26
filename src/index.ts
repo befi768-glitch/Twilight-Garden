@@ -12,6 +12,9 @@ import { xuLyBangXepHang } from "./commands/bangxephang";
 import { xuLyTang } from "./commands/tang";
 import { xuLyTroGiup } from "./commands/trogiup";
 import { xuLyDiemDanh } from "./commands/diemdanh";
+import { xuLyTrom } from "./commands/trom";
+import { xuLyCuop } from "./commands/cuop";
+import { xuLyPet } from "./commands/pet";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -37,18 +40,20 @@ async function khoiTaoDatabase() {
       so_o_dat INTEGER NOT NULL DEFAULT 3,
       last_check_in TIMESTAMP,
       streak INTEGER NOT NULL DEFAULT 0,
+      trom_cooldown TIMESTAMP,
+      cuop_cooldown TIMESTAMP,
+      pet_id TEXT,
       created_at TIMESTAMP DEFAULT NOW(),
       UNIQUE(user_id, guild_id)
     )
   `);
 
   // Thêm cột mới nếu chưa có (upgrade từ version cũ)
-  await db.execute(sql`
-    ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS last_check_in TIMESTAMP
-  `);
-  await db.execute(sql`
-    ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0
-  `);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS last_check_in TIMESTAMP`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS trom_cooldown TIMESTAMP`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS cuop_cooldown TIMESTAMP`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pet_id TEXT`);
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS o_dat (
@@ -84,7 +89,6 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel],
 });
 
-// Fix: dùng Events.ClientReady thay vì "ready" để tránh DeprecationWarning
 client.once(Events.ClientReady, async (readyClient) => {
   console.log(`🌸 ${readyClient.user.tag} đã online!`);
   console.log(`🌿 Prefix: ${PREFIX}`);
@@ -159,6 +163,18 @@ client.on(Events.MessageCreate, async (message) => {
       case "help":
       case "h":
         await xuLyTroGiup(message, PREFIX);
+        break;
+      // ── Tính năng mới ──
+      case "trom":
+      case "trộm":
+        await xuLyTrom(message, args);
+        break;
+      case "cuop":
+      case "cướp":
+        await xuLyCuop(message, args);
+        break;
+      case "pet":
+        await xuLyPet(message, args);
         break;
       default:
         break;
