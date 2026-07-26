@@ -1,60 +1,66 @@
 import { Message, EmbedBuilder } from "discord.js";
-import { MAU_CHINH } from "../utils/helpers";
+import { MAU_CHINH, TEN_TIEN, EMOJI_TIEN, TEN_KN, EMOJI_KN, TEN_DAT } from "../utils/helpers";
 
 export async function xuLyTroGiup(message: Message, prefix: string) {
   const p = prefix;
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle("🌸 Twilight Garden — Trợ Giúp")
+    .setTitle("🌸 Twilight Garden — Bí Kíp Tu Luyện")
     .setDescription(
-      "*\"Chào mừng đến với Vườn Twilight huyền bí — nơi mỗi hạt giống ươm mầm phép màu...\"*\n\nPrefix: `" + p + "`"
+      `*"Chào mừng đến với Twilight Garden — vùng đất nơi linh thảo nở hoa dưới ánh hoàng hôn huyền bí..."*\n\n` +
+      `**Tiền tệ:** ${TEN_TIEN} ${EMOJI_TIEN} • **Kinh nghiệm:** ${TEN_KN} ${EMOJI_KN} • **Đất:** ${TEN_DAT}\n` +
+      `**Prefix:** \`${p}\``
     )
     .addFields(
       {
-        name: "🌿 Vườn tược",
+        name: "🌿 Linh Địa — Vườn Tu Luyện",
         value: [
-          `\`${p}vuon\` — Xem vườn và thông tin nhân vật`,
-          `\`${p}trong <tên cây>\` — Trồng cây vào ô trống`,
-          `\`${p}tuoi [số ô]\` — Tưới nước (-20% thời gian, thu hoạch x2)`,
-          `\`${p}thuhoach [số ô]\` — Thu hoạch cây đã chín`,
+          `\`${p}vuon\` — Xem Linh Địa và tu vi của bạn`,
+          `\`${p}trong <tên linh thảo>\` — Gieo trồng vào Linh Địa`,
+          `\`${p}tuoi [số ô]\` — Tưới sương nguyệt (-20% thời gian, thu x2)`,
+          `\`${p}thuhoach [số ô]\` — Thu hái linh thảo đã trưởng thành`,
         ].join("\n"),
       },
       {
-        name: "🏪 Mua bán",
+        name: "🏮 Linh Thảo Các — Mua Bán",
         value: [
-          `\`${p}cuahang\` — Xem tất cả cây và giá cả`,
-          `\`${p}mua <tên cây> [số]\` — Mua hạt giống`,
-          `\`${p}ban <tên cây> [số]\` — Bán nông sản`,
-          `\`${p}ban tất\` — Bán toàn bộ túi đồ`,
+          `\`${p}cuahang\` — Xem tất cả linh thảo và giá ${EMOJI_TIEN}`,
+          `\`${p}mua <tên> [số]\` — Mua hạt linh thảo`,
+          `\`${p}ban <tên> [số]\` — Bán linh thảo lấy ${TEN_TIEN}`,
+          `\`${p}ban tất\` — Bán toàn bộ Bảo Nang`,
         ].join("\n"),
       },
       {
-        name: "🎒 Quản lý",
+        name: "🎒 Bảo Nang — Quản Lý",
         value: [
-          `\`${p}tuidо\` — Xem túi đồ`,
-          `\`${p}bangxephang\` — Top 10 server`,
-          `\`${p}tang @người <tên> [số]\` — Tặng đồ`,
+          `\`${p}tuidо\` — Xem Bảo Nang (túi đồ)`,
+          `\`${p}bangxephang\` — Bảng Anh Hùng top 10`,
+          `\`${p}tang @người <tên> [số]\` — Tặng linh thảo`,
         ].join("\n"),
       },
       {
-        name: "🎁 Hàng ngày",
+        name: "🌙 Nguyệt Lễ — Hàng Ngày",
         value: [
-          `\`${p}diemdanh\` — Điểm danh nhận xu mỗi ngày`,
-          `Streak càng dài thưởng càng cao! 🔥`,
+          `\`${p}diemdanh\` (hoặc \`${p}dd\`) — Nhận ${TEN_TIEN} ${EMOJI_TIEN} mỗi ngày`,
+          `🔥 Duy trì chuỗi ngày để nhận thưởng cao hơn!`,
         ].join("\n"),
       },
       {
-        name: "✨ Sự kiện ngẫu nhiên",
+        name: "⚡ Thiên Cơ — Sự Kiện Ngẫu Nhiên",
         value: [
-          "Khi thu hoạch có thể xảy ra sự kiện đặc biệt:",
-          "🌕 **Trăng Rằm** — Thu hoạch thêm 1 cái",
-          "🌱 **Hạt giống bí ẩn** — Nhận hạt giống miễn phí",
-          "✨ **Phép màu Twilight** — Bonus xu bất ngờ",
+          "Khi thu hái có thể xuất hiện thiên cơ:",
+          `🌕 **Nguyệt Mãn** — Thu thêm 1 linh thảo`,
+          `🌱 **Hạt Giống Thiên Số** — Nhận linh thảo miễn phí`,
+          `✨ **Phép Màu Twilight** — Bonus ${TEN_TIEN} bất ngờ`,
         ].join("\n"),
+      },
+      {
+        name: "📖 Phẩm Cấp Linh Thảo",
+        value: "⬜ Phàm Phẩm → 🟦 Linh Phẩm → 🟪 Tiên Phẩm → 🟨 Thần Phẩm",
       }
     )
-    .setFooter({ text: "🌸 Twilight Garden — Nơi mỗi hạt giống ươm mầm phép màu" })
+    .setFooter({ text: "🌸 Twilight Garden — Nơi linh thảo nở hoa dưới ánh hoàng hôn" })
     .setTimestamp();
 
   await message.reply({ embeds: [embed] });

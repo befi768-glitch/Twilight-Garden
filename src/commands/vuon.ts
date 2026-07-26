@@ -1,21 +1,19 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon } from "../database/queries";
 import { cayMap, layThongTinCap, layCapTiepTheo } from "../data/plants";
-import { formatThoiGian, formatXu, thanhTienTrinh, MAU_CHINH } from "../utils/helpers";
+import { formatThoiGian, formatXu, thanhTienTrinh, MAU_CHINH, TEN_DAT, TEN_KN, EMOJI_KN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyVuon(message: Message) {
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
   const vuon = await layVuon(player.id);
   const thongTinCap = layThongTinCap(player.capDo);
   const capTiep = layCapTiepTheo(player.capDo);
-
   const bayGio = new Date();
 
-  // Xây dựng hiển thị vườn
   let hienThiVuon = "";
   for (const o of vuon) {
     if (!o.tenCay) {
-      hienThiVuon += `**Ô ${o.viTri}** — 🟫 Trống\n`;
+      hienThiVuon += `**${TEN_DAT} ${o.viTri}** — 🌑 Trống\n`;
     } else {
       const cay = cayMap.get(o.tenCay);
       if (!cay) continue;
@@ -26,50 +24,50 @@ export async function xuLyVuon(message: Message) {
       const phanTram = Math.min(100, Math.round((daTroi / thoiGianTrong) * 100));
 
       if (conLai <= 0) {
-        hienThiVuon += `**Ô ${o.viTri}** — ${cay.emoji} ${cay.ten} ✅ **SẴN SÀNG THU HOẠCH!**\n`;
+        hienThiVuon += `**${TEN_DAT} ${o.viTri}** — ${cay.emoji} ${cay.ten} ✅ **SẴN SÀNG THU HOẠCH!**\n`;
       } else {
         const tuoiIcon = o.daTuoi ? "💧" : "🏜️";
-        hienThiVuon += `**Ô ${o.viTri}** — ${cay.emoji} ${cay.ten} ${tuoiIcon}\n`;
+        hienThiVuon += `**${TEN_DAT} ${o.viTri}** — ${cay.emoji} ${cay.ten} [${cay.doHiem}] ${tuoiIcon}\n`;
         hienThiVuon += `┗ \`${thanhTienTrinh(phanTram)}\` ${phanTram}% — còn **${formatThoiGian(conLai)}**\n`;
       }
     }
   }
 
-  // Tính KN tiếp theo
-  let kinhNghiemBar = "";
+  let linhLucBar = "";
   if (capTiep) {
     const phanTramKN = Math.round(
-      ((player.kinhNghiem - (thongTinCap.kinhNghiemCanThiet ?? 0)) /
-        (capTiep.kinhNghiemCanThiet - (thongTinCap.kinhNghiemCanThiet ?? 0))) *
-        100
+      ((player.kinhNghiem - thongTinCap.kinhNghiemCanThiet) /
+        (capTiep.kinhNghiemCanThiet - thongTinCap.kinhNghiemCanThiet)) * 100
     );
-    kinhNghiemBar = `\`${thanhTienTrinh(phanTramKN, 12)}\` ${player.kinhNghiem}/${capTiep.kinhNghiemCanThiet} KN`;
+    linhLucBar = `\`${thanhTienTrinh(phanTramKN, 12)}\` ${player.kinhNghiem}/${capTiep.kinhNghiemCanThiet} ${EMOJI_KN}`;
   } else {
-    kinhNghiemBar = `✨ Đã đạt cấp tối đa!`;
+    linhLucBar = `⚡ Đạt đỉnh cao tu luyện!`;
   }
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle(`🌿 Vườn của ${message.author.displayName}`)
-    .setDescription(hienThiVuon || "*Vườn trống trơn, hãy trồng gì đó đi!*")
+    .setTitle(`🌿 Linh Địa của ${message.author.displayName}`)
+    .setDescription(
+      `*"Khu vườn huyền bí phản chiếu tâm hồn người chủ..."*\n\n${hienThiVuon || "*Linh địa hoang vu, hãy gieo trồng linh thảo!*"}`
+    )
     .addFields(
       {
-        name: "👤 Thông tin",
-        value: `Cấp **${player.capDo}** — ${thongTinCap.tenCap}\n${kinhNghiemBar}`,
+        name: "🧘 Tu Vi",
+        value: `**Cấp ${player.capDo}** — ${thongTinCap.tenCap}\n${linhLucBar}`,
         inline: true,
       },
       {
-        name: "💰 Ví tiền",
+        name: `💠 ${EMOJI_TIEN} Nguyệt Thạch`,
         value: formatXu(player.xu),
         inline: true,
       },
       {
-        name: "🌱 Ô đất",
+        name: `🌑 ${TEN_DAT}`,
         value: `${vuon.length} ô`,
         inline: true,
       }
     )
-    .setFooter({ text: "💡 Dùng .cuahang để mua hạt giống • .trong <tên cây> để trồng" })
+    .setFooter({ text: "💡 .cuahang để xem linh thảo • .trong <tên> để gieo trồng" })
     .setTimestamp();
 
   await message.reply({ embeds: [embed] });

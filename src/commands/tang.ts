@@ -6,16 +6,15 @@ import { MAU_CHINH, MAU_DO } from "../utils/helpers";
 export async function xuLyTang(message: Message, args: string[]) {
   if (args.length < 2) {
     return message.reply(
-      "❌ Cách dùng: `.tang @người_dùng <tên cây> [số lượng]`\nVD: `.tang @bạn cà rốt 5`"
+      "❌ Cách dùng: `.tang @người_dùng <tên linh thảo> [số lượng]`\nVD: `.tang @bạn Hoàng Căn 5`"
     );
   }
 
   const nguoiNhan = message.mentions.users.first();
-  if (!nguoiNhan) return message.reply("❌ Hãy tag người bạn muốn tặng! VD: `.tang @bạn cà rốt`");
-  if (nguoiNhan.id === message.author.id) return message.reply("❌ Không thể tự tặng cho mình!");
-  if (nguoiNhan.bot) return message.reply("❌ Bot không nhận quà đâu!");
+  if (!nguoiNhan) return message.reply("❌ Hãy tag người bạn muốn tặng linh thảo!");
+  if (nguoiNhan.id === message.author.id) return message.reply("❌ Không thể tự tặng cho chính mình!");
+  if (nguoiNhan.bot) return message.reply("❌ Bot không cần linh thảo đâu bạn ơi!");
 
-  // Bỏ mention ra khỏi args
   const argsKhongMention = args.filter((a) => !a.startsWith("<@"));
 
   let soLuong = 1;
@@ -30,7 +29,9 @@ export async function xuLyTang(message: Message, args: string[]) {
   const cay = timCayTheoTen(tenCay);
 
   if (!cay) {
-    return message.reply(`❌ Không tìm thấy **${tenCay}**! Dùng \`.tuidо\` để xem túi đồ.`);
+    return message.reply(
+      `❌ Không tìm thấy linh thảo **${tenCay}**!\nDùng \`.tuidо\` để xem Bảo Nang của bạn.`
+    );
   }
 
   const nguoiTang = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
@@ -41,16 +42,20 @@ export async function xuLyTang(message: Message, args: string[]) {
   if (!ok) {
     const embed = new EmbedBuilder()
       .setColor(MAU_DO)
-      .setTitle("❌ Không đủ hàng")
-      .setDescription(`Bạn không có đủ **${soLuong}x ${cay.ten}** để tặng!\nDùng \`.tuidо\` để kiểm tra.`);
+      .setTitle("❌ Bảo Nang Không Đủ!")
+      .setDescription(
+        `Bạn không có đủ **${soLuong}x ${cay.emoji} ${cay.ten}** để tặng!\nDùng \`.tuidо\` để kiểm tra Bảo Nang.`
+      );
     return message.reply({ embeds: [embed] });
   }
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle("🎁 Đã tặng quà!")
+    .setTitle("🎁 Linh Thảo Được Trao Tặng!")
     .setDescription(
-      `${message.author} đã tặng cho ${nguoiNhan} **${soLuong}x ${cay.emoji} ${cay.ten}**!\n\n💌 *Thật tốt bụng!*`
+      `${message.author} đã tặng cho ${nguoiNhan}\n` +
+      `**${soLuong}x ${cay.emoji} ${cay.ten}** [${cay.doHiem}]\n\n` +
+      `*"Linh khí của tình bạn ấm áp hơn bất kỳ linh thảo nào..."* 💫`
     );
 
   await message.reply({ embeds: [embed] });

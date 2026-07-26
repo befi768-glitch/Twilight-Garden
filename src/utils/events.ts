@@ -1,50 +1,50 @@
-import { Cay } from "../data/plants";
+import { Cay, danhSachCay } from "../data/plants";
+import { TEN_TIEN, EMOJI_TIEN } from "./helpers";
 
 export interface SuKienNgauNhien {
-  loai: "phep_mau" | "hat_giong_bi_an" | "trang_ram" | "binh_thuong";
+  loai: "thien_co" | "linh_vat_xuat_hien" | "nguyet_man" | "binh_thuong";
   moTa: string;
   bonusXu?: number;
   bonusCay?: { id: string; soLuong: number };
   bonusSanLuong?: number;
 }
 
-const loi_chuc = [
-  "Vườn Twilight mỉm cười với bạn ✨",
-  "Nàng tiên vườn ban phước lành 🌸",
-  "Ánh trăng rọi xuống khu vườn của bạn 🌙",
-  "Gió đêm mang may mắn đến 🍃",
+const loiThienKhoi = [
+  "Thiên địa linh khí hội tụ vào khu vườn của bạn",
+  "Nàng Tiên Twilight mỉm cười ban phước lành",
+  "Nguyệt quang chiếu rọi, vạn vật thêm linh thiêng",
+  "Gió từ rừng sâu mang theo may mắn tới",
 ];
 
 export function taoSuKien(cay: Cay): SuKienNgauNhien {
   const ran = Math.random();
 
-  // 5% - Trăng Rằm: +1 sản lượng
+  // 5% — Nguyệt Mãn: +1 sản lượng
   if (ran < 0.05) {
     return {
-      loai: "trang_ram",
-      moTa: `🌕 **Trăng Rằm chiếu rọi!** ${cay.emoji} ${cay.ten} sinh trưởng thần kỳ, thu hoạch thêm 1 cái!`,
+      loai: "nguyet_man",
+      moTa: `🌕 **Nguyệt Mãn Thiên Cơ!** ${cay.emoji} **${cay.ten}** hấp thu trăng rằm, sinh trưởng bội thu — thu thêm 1 linh thảo!`,
       bonusSanLuong: 1,
     };
   }
 
-  // 10% - Hạt giống bí ẩn: nhận 1 hạt ngẫu nhiên
+  // 10% — Linh Vật Xuất Hiện: nhận hạt giống ngẫu nhiên
   if (ran < 0.15) {
-    const { danhSachCay } = require("../data/plants");
-    const cayNgauNhien = danhSachCay[Math.floor(Math.random() * 4)]; // Chỉ lấy cây thường
+    const cayNgauNhien = danhSachCay[Math.floor(Math.random() * 3)]; // Lấy từ Phàm Phẩm
     return {
-      loai: "hat_giong_bi_an",
-      moTa: `🌱 **Hạt giống bí ẩn xuất hiện!** Bạn tìm thấy 1x ${cayNgauNhien.emoji} **${cayNgauNhien.ten}** trong đất!`,
+      loai: "linh_vat_xuat_hien",
+      moTa: `🌱 **Linh Vật Xuất Hiện!** Một hạt ${cayNgauNhien.emoji} **${cayNgauNhien.ten}** từ đất thiêng rơi vào Bảo Nang của bạn!`,
       bonusCay: { id: cayNgauNhien.id, soLuong: 1 },
     };
   }
 
-  // 15% - Phép màu: +50% xu khi bán
+  // 15% — Thiên Cơ: bonus Nguyệt Thạch
   if (ran < 0.30) {
     const bonusXu = Math.floor(cay.giaBan * 0.5);
-    const loiChuc = loi_chuc[Math.floor(Math.random() * loi_chuc.length)];
+    const loiChuc = loiThienKhoi[Math.floor(Math.random() * loiThienKhoi.length)];
     return {
-      loai: "phep_mau",
-      moTa: `✨ **Phép màu Twilight!** ${loiChuc} — Nhận thêm **${bonusXu} xu** 🪙`,
+      loai: "thien_co",
+      moTa: `✨ **Thiên Cơ Giáng Lâm!** *${loiChuc}* — Nhận thêm **${bonusXu} ${EMOJI_TIEN} ${TEN_TIEN}**!`,
       bonusXu,
     };
   }
@@ -55,27 +55,27 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
 // Lời thoại ngẫu nhiên theo hành động
 export const loi_thoai = {
   trong: [
-    "*Nàng tiên khẽ thì thầm với hạt giống, truyền vào đó chút phép màu...*",
-    "*Đất đai Twilight đón nhận hạt giống với lòng biết ơn sâu sắc...*",
-    "*Một mầm sống mới vừa được đánh thức trong khu vườn huyền bí...*",
-    "*Hãy chăm sóc nó thật tốt nhé, khu vườn đang trông chờ bạn~*",
+    "*Nàng Tiên khẽ thì thầm với hạt giống, truyền vào đó linh lực của đại địa...*",
+    "*Linh Địa Twilight đón nhận hạt giống với sự trân trọng vô hạn...*",
+    "*Một mầm linh thảo mới vừa được đánh thức từ giấc ngủ ngàn năm...*",
+    "*Hãy chăm sóc nó bằng cả tấm lòng — linh thảo cảm nhận được tình cảm người trồng~*",
   ],
   tuoi: [
-    "*Những giọt sương đêm lung linh như ngọc trai rơi xuống...*",
-    "*Cây cối hít thở không khí mát lành, vươn mình đón ánh bình minh...*",
-    "*Tình yêu của người làm vườn thấm vào từng cành lá...*",
-    "*Vườn Twilight rì rào lời cảm ơn theo gió thoảng...*",
+    "*Sương nguyệt long lanh như châu ngọc rơi xuống đất thiêng...*",
+    "*Linh thảo hít thở linh khí thanh khiết, vươn mình về phía ánh trăng...*",
+    "*Tình yêu của người tu luyện thấm sâu vào từng rễ linh thảo...*",
+    "*Vườn Twilight rì rào lời cảm ơn theo ngọn gió đêm huyền bí...*",
   ],
   thuhoach: [
-    "*Thành quả của sự kiên nhẫn và tình yêu đã đến lúc...*",
-    "*Khu vườn huyền bí trao lại những gì bạn đã gieo trồng...*",
-    "*Nàng tiên vườn mỉm cười hài lòng nhìn bạn thu hoạch...*",
-    "*Mùa màng bội thu, vườn Twilight thêm rực rỡ...*",
+    "*Thành quả của bao ngày tu luyện cuối cùng đã đến lúc hái quả...*",
+    "*Linh Địa huyền bí trao lại những gì người chủ đã dày công vun đắp...*",
+    "*Nàng Tiên Twilight gật đầu hài lòng nhìn mùa thu hái bội thu...*",
+    "*Linh thảo chín rộ, linh khí tỏa hương thơm khắp Vườn Twilight...*",
   ],
   chuc_mung_cap: [
-    "Khu vườn huyền bí mở rộng theo tài năng của bạn! 🌿",
-    "Nàng tiên Twilight ban thêm đất trời cho người xứng đáng! 🌸",
-    "Ánh trăng chiếu sáng con đường trưởng thành của bạn! 🌕",
+    "Linh Địa mở rộng theo sức mạnh tu luyện của bạn! 🌿",
+    "Nàng Tiên Twilight ban thêm đất thiêng cho người xứng đáng! 🌸",
+    "Nguyệt quang chiếu sáng con đường trưởng thành của đạo nông! 🌕",
   ],
 };
 

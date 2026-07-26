@@ -1,14 +1,15 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, truXu, themVaoTuiDo } from "../database/queries";
 import { timCayTheoTen } from "../data/plants";
-import { formatXu, MAU_CHINH, MAU_DO } from "../utils/helpers";
+import { formatXu, MAU_CHINH, MAU_DO, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyMua(message: Message, args: string[]) {
   if (!args.length) {
-    return message.reply("❌ Bạn muốn mua gì? Dùng `.mua <tên cây> [số lượng]` — VD: `.mua cà rốt 5`");
+    return message.reply(
+      "❌ Bạn muốn mua linh thảo gì? Dùng `.mua <tên linh thảo> [số lượng]`\nVD: `.mua Hoàng Căn 5` hoặc `.mua huyết mai`"
+    );
   }
 
-  // Tách tên cây và số lượng
   let soLuong = 1;
   let tenArgs = [...args];
   const cuoi = parseInt(args[args.length - 1]);
@@ -21,10 +22,12 @@ export async function xuLyMua(message: Message, args: string[]) {
   const cay = timCayTheoTen(tenCay);
 
   if (!cay) {
-    return message.reply(`❌ Không tìm thấy **${tenCay}**! Dùng \`.cuahang\` để xem danh sách.`);
+    return message.reply(
+      `❌ Không tìm thấy linh thảo **${tenCay}**!\nDùng \`.cuahang\` để xem danh sách Linh Thảo Các.`
+    );
   }
 
-  if (soLuong > 99) return message.reply("❌ Mua tối đa 99 cái một lần!");
+  if (soLuong > 99) return message.reply("❌ Mua tối đa 99 hạt một lần!");
 
   const tongTien = cay.giaMua * soLuong;
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
@@ -32,9 +35,10 @@ export async function xuLyMua(message: Message, args: string[]) {
   if (player.xu < tongTien) {
     const embed = new EmbedBuilder()
       .setColor(MAU_DO)
-      .setTitle("💸 Không đủ xu!")
+      .setTitle(`💠 Không Đủ ${TEN_TIEN}!`)
       .setDescription(
-        `Bạn cần **${formatXu(tongTien)}** để mua ${soLuong}x ${cay.emoji} ${cay.ten}\nBạn đang có: **${formatXu(player.xu)}**`
+        `*"Nguyệt Thạch chưa đủ để thỉnh linh thảo quý này..."*\n\n` +
+        `Cần: **${formatXu(tongTien)}**\nBạn có: **${formatXu(player.xu)}**`
       );
     return message.reply({ embeds: [embed] });
   }
@@ -44,13 +48,16 @@ export async function xuLyMua(message: Message, args: string[]) {
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle(`✅ Mua thành công!`)
-    .setDescription(`Đã mua **${soLuong}x ${cay.emoji} ${cay.ten}** vào túi đồ!`)
-    .addFields(
-      { name: "💰 Đã trả", value: formatXu(tongTien), inline: true },
-      { name: "💼 Còn lại", value: formatXu(player.xu - tongTien), inline: true }
+    .setTitle(`✅ Thỉnh Linh Thảo Thành Công!`)
+    .setDescription(
+      `*"Nàng Tiên Các trao cho bạn ${soLuong}x ${cay.emoji} **${cay.ten}** — hãy trân trọng chúng~"*`
     )
-    .setFooter({ text: "💡 Dùng .trong <tên cây> để trồng ngay!" });
+    .addFields(
+      { name: `💠 Đã Chi`, value: formatXu(tongTien), inline: true },
+      { name: `💠 Còn Lại`, value: formatXu(player.xu - tongTien), inline: true },
+      { name: `📦 Phẩm Cấp`, value: cay.doHiem, inline: true }
+    )
+    .setFooter({ text: "💡 Dùng .trong <tên linh thảo> để gieo trồng vào Linh Địa!" });
 
   await message.reply({ embeds: [embed] });
 }

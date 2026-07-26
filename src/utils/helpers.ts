@@ -9,10 +9,20 @@ export function formatThoiGian(ms: number): string {
   return `${giay}s`;
 }
 
-// Format xu có dấu phẩy
+// Đơn vị tiền tệ: Nguyệt Thạch
+export const TEN_TIEN = "Nguyệt Thạch";
+export const EMOJI_TIEN = "💠";
+
 export function formatXu(so: number): string {
-  return so.toLocaleString("vi-VN") + " 🪙";
+  return `${so.toLocaleString("vi-VN")} ${EMOJI_TIEN}`;
 }
+
+// Đơn vị linh lực (kinh nghiệm)
+export const TEN_KN = "Linh Lực";
+export const EMOJI_KN = "✨";
+
+// Đơn vị đất: Linh Địa
+export const TEN_DAT = "Linh Địa";
 
 // Thanh tiến trình
 export function thanhTienTrinh(phanTram: number, do_dai: number = 10): string {
@@ -20,8 +30,9 @@ export function thanhTienTrinh(phanTram: number, do_dai: number = 10): string {
   return "█".repeat(day) + "░".repeat(do_dai - day);
 }
 
-// Màu embed chủ đề vườn
-export const MAU_CHINH = 0x2ecc71;
-export const MAU_VANG = 0xf1c40f;
-export const MAU_DO = 0xe74c3c;
-export const MAU_XAM = 0x95a5a6;
+// Màu chủ đề
+export const MAU_CHINH = 0x7b68ee; // Tím huyền bí — Medium Slate Blue
+export const MAU_VANG  = 0xffd700; // Vàng thần thánh
+export const MAU_DO    = 0xe74c3c;
+export const MAU_XAM   = 0x95a5a6;
+export const MAU_XANH  = 0x2ecc71;

@@ -1,30 +1,28 @@
 import { Message, EmbedBuilder } from "discord.js";
-import { danhSachCay, mauDoHiem } from "../data/plants";
-import { formatXu, MAU_CHINH } from "../utils/helpers";
-
-const NHAN_DO_HIEM: Record<string, string> = {
-  thường: "⬜",
-  hiếm: "🟦",
-  "cực hiếm": "🟪",
-  "huyền thoại": "🟨",
-};
+import { danhSachCay, iconDoHiem } from "../data/plants";
+import { formatXu, MAU_CHINH, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyCuaHang(message: Message) {
-  const lines = danhSachCay.map(
-    (c) =>
-      `${NHAN_DO_HIEM[c.doHiem]} ${c.emoji} **${c.ten}** — Mua: ${formatXu(c.giaMua)} | Bán: ${formatXu(c.giaBan)} | ⏰ ${c.thoiGianMoc < 60 ? c.thoiGianMoc + " phút" : Math.floor(c.thoiGianMoc / 60) + " giờ"}`
-  );
+  const lines = danhSachCay.map((c) => {
+    const thoiGian = c.thoiGianMoc < 60
+      ? `${c.thoiGianMoc} phút`
+      : `${Math.floor(c.thoiGianMoc / 60)} giờ`;
+    return `${iconDoHiem[c.doHiem]} ${c.emoji} **${c.ten}** [${c.doHiem}]\n┗ Mua: \`${c.giaMua} ${EMOJI_TIEN}\` • Bán: \`${c.giaBan} ${EMOJI_TIEN}\` • ⏳ ${thoiGian}\n┗ *${c.moTa}*`;
+  });
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle("🏪 Cửa Hàng Twilight Garden")
-    .setDescription(lines.join("\n"))
+    .setTitle("🏮 Linh Thảo Các — Cửa Hàng Twilight Garden")
+    .setDescription(
+      "*\"Mỗi linh thảo đều mang trong mình một câu chuyện riêng...\"*\n\n" +
+      lines.join("\n\n")
+    )
     .addFields({
-      name: "📖 Chú thích độ hiếm",
-      value: "⬜ Thường  🟦 Hiếm  🟪 Cực Hiếm  🟨 Huyền Thoại",
+      name: "📖 Phẩm Cấp Linh Thảo",
+      value: "⬜ Phàm Phẩm  🟦 Linh Phẩm  🟪 Tiên Phẩm  🟨 Thần Phẩm",
     })
     .setFooter({
-      text: "💡 Dùng .mua <tên cây> để mua hạt giống | .trong <tên cây> để trồng ngay",
+      text: `💡 Dùng .mua <tên thảo> để mua • .trong <tên thảo> để gieo trồng | Tiền tệ: ${TEN_TIEN} ${EMOJI_TIEN}`,
     })
     .setTimestamp();
 

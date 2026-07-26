@@ -2,109 +2,107 @@ export interface Cay {
   id: string;
   ten: string;
   emoji: string;
-  giaMua: number;       // xu mua hạt giống
-  giaBan: number;       // xu bán nông sản
-  thoiGianMoc: number;  // phút
-  doHiem: "thường" | "hiếm" | "cực hiếm" | "huyền thoại";
+  giaMua: number;
+  giaBan: number;
+  thoiGianMoc: number;
+  doHiem: "Phàm Phẩm" | "Linh Phẩm" | "Tiên Phẩm" | "Thần Phẩm";
   moTa: string;
-  kinhNghiem: number;   // kinh nghiệm khi thu hoạch
+  kinhNghiem: number;
 }
 
 export const danhSachCay: Cay[] = [
   {
-    id: "ca_rot",
-    ten: "Cà Rốt",
+    id: "hoang_can",
+    ten: "Hoàng Căn",
     emoji: "🥕",
     giaMua: 10,
     giaBan: 25,
     thoiGianMoc: 5,
-    doHiem: "thường",
-    moTa: "Rau củ dễ trồng, phổ biến nhất trong vườn",
+    doHiem: "Phàm Phẩm",
+    moTa: "Linh căn vàng óng ẩn dưới lòng đất, hấp thu địa khí thuần túy",
     kinhNghiem: 3,
   },
   {
-    id: "ca_chua",
-    ten: "Cà Chua",
+    id: "hoa_chau",
+    ten: "Hỏa Châu",
     emoji: "🍅",
     giaMua: 20,
     giaBan: 50,
     thoiGianMoc: 10,
-    doHiem: "thường",
-    moTa: "Ngọt và đỏ mọng, ai cũng thích",
+    doHiem: "Phàm Phẩm",
+    moTa: "Quả chứa ngọn lửa âm ỉ, đỏ rực như máu rồng",
     kinhNghiem: 5,
   },
   {
-    id: "bap_ngo",
-    ten: "Bắp Ngô",
+    id: "kim_tue",
+    ten: "Kim Tuệ",
     emoji: "🌽",
     giaMua: 30,
     giaBan: 75,
     thoiGianMoc: 15,
-    doHiem: "thường",
-    moTa: "Vàng óng, ngọt lịm, thơm phức",
+    doHiem: "Phàm Phẩm",
+    moTa: "Hạt vàng lấp lánh tựa kim tinh, ngưng tụ ánh dương thiên niên",
     kinhNghiem: 7,
   },
   {
-    id: "dau_tay",
-    ten: "Dâu Tây",
+    id: "huyet_mai",
+    ten: "Huyết Mai",
     emoji: "🍓",
     giaMua: 50,
     giaBan: 130,
     thoiGianMoc: 30,
-    doHiem: "hiếm",
-    moTa: "Hương thơm quyến rũ, chua ngọt hài hoà",
+    doHiem: "Linh Phẩm",
+    moTa: "Quả mọng đỏ thẫm hấp thu nguyệt hoa, chứa đựng linh khí tinh thuần",
     kinhNghiem: 13,
   },
   {
-    id: "nam_huong",
-    ten: "Nấm Hương",
+    id: "linh_chi",
+    ten: "Linh Chi Cổ",
     emoji: "🍄",
     giaMua: 80,
     giaBan: 220,
     thoiGianMoc: 45,
-    doHiem: "hiếm",
-    moTa: "Loại nấm thơm ngon từ rừng già",
+    doHiem: "Linh Phẩm",
+    moTa: "Loài nấm trăm năm mọc nơi rừng thiêng, thấm đẫm linh khí đại địa",
     kinhNghiem: 22,
   },
   {
-    id: "hoa_huong_duong",
-    ten: "Hướng Dương",
+    id: "nhat_hoa",
+    ten: "Nhật Thần Hoa",
     emoji: "🌻",
     giaMua: 100,
     giaBan: 280,
     thoiGianMoc: 60,
-    doHiem: "hiếm",
-    moTa: "Rực rỡ như ánh nắng ban mai",
+    doHiem: "Linh Phẩm",
+    moTa: "Loài hoa hướng về thái dương, tích lũy dương khí suốt nghìn thu",
     kinhNghiem: 28,
   },
   {
-    id: "nam_ma_thuat",
-    ten: "Nấm Ma Thuật",
+    id: "am_linh_chi",
+    ten: "Ám Nguyệt Nấm",
     emoji: "🍄‍🟫",
     giaMua: 200,
     giaBan: 600,
     thoiGianMoc: 120,
-    doHiem: "cực hiếm",
-    moTa: "Loại nấm huyền bí mọc sâu trong rừng",
+    doHiem: "Tiên Phẩm",
+    moTa: "Nấm huyền bí chỉ nảy mầm dưới bóng trăng tối, mang âm khí cực âm",
     kinhNghiem: 60,
   },
   {
     id: "hoa_twilight",
-    ten: "Hoa Twilight",
+    ten: "Nguyệt Dạ Lan",
     emoji: "🌸",
     giaMua: 500,
     giaBan: 1500,
     thoiGianMoc: 360,
-    doHiem: "huyền thoại",
-    moTa: "Chỉ nở trong bóng hoàng hôn, vô cùng quý hiếm",
+    doHiem: "Thần Phẩm",
+    moTa: "Thần hoa chỉ nở một lần trong hoàng hôn Twilight, chứa đựng linh lực của cả vũ trụ",
     kinhNghiem: 150,
   },
 ];
 
-// Map để tra cứu nhanh
 export const cayMap = new Map(danhSachCay.map((c) => [c.id, c]));
 
-// Tìm cây theo tên (không phân biệt hoa thường)
 export function timCayTheoTen(query: string): Cay | undefined {
   const q = query.toLowerCase().trim();
   return danhSachCay.find(
@@ -112,31 +110,38 @@ export function timCayTheoTen(query: string): Cay | undefined {
       c.ten.toLowerCase() === q ||
       c.id === q ||
       c.ten.toLowerCase().includes(q) ||
-      c.id.includes(q)
+      c.id.includes(q.replace(/\s/g, "_"))
   );
 }
 
-// Màu embed theo độ hiếm
+// Màu embed theo phẩm
 export const mauDoHiem: Record<string, number> = {
-  thường: 0x57f287,
-  hiếm: 0x3498db,
-  "cực hiếm": 0x9b59b6,
-  "huyền thoại": 0xffd700,
+  "Phàm Phẩm":  0x95a5a6,
+  "Linh Phẩm":  0x3498db,
+  "Tiên Phẩm":  0x9b59b6,
+  "Thần Phẩm":  0xffd700,
 };
 
-// Hệ thống cấp độ
+// Icon phẩm
+export const iconDoHiem: Record<string, string> = {
+  "Phàm Phẩm":  "⬜",
+  "Linh Phẩm":  "🟦",
+  "Tiên Phẩm":  "🟪",
+  "Thần Phẩm":  "🟨",
+};
+
+// Hệ thống cấp độ — phong cách tu tiên
 export const mucCapDo = [
-  { cap: 1, kinhNghiemCanThiet: 0, soODat: 3, tenCap: "Người Mới" },
-  { cap: 2, kinhNghiemCanThiet: 100, soODat: 4, tenCap: "Nông Dân" },
-  { cap: 3, kinhNghiemCanThiet: 300, soODat: 5, tenCap: "Nông Dân Lành Nghề" },
-  { cap: 4, kinhNghiemCanThiet: 700, soODat: 6, tenCap: "Thợ Làm Vườn" },
-  { cap: 5, kinhNghiemCanThiet: 1500, soODat: 7, tenCap: "Chuyên Gia Làm Vườn" },
-  { cap: 6, kinhNghiemCanThiet: 3000, soODat: 8, tenCap: "Bậc Thầy Vườn Tược" },
-  { cap: 7, kinhNghiemCanThiet: 6000, soODat: 9, tenCap: "Người Giữ Vườn Huyền Bí" },
-  { cap: 8, kinhNghiemCanThiet: 12000, soODat: 10, tenCap: "Chủ Nhân Twilight Garden" },
+  { cap: 1,  kinhNghiemCanThiet: 0,     soODat: 3,  tenCap: "Tiểu Đồng" },
+  { cap: 2,  kinhNghiemCanThiet: 100,   soODat: 4,  tenCap: "Học Đồ" },
+  { cap: 3,  kinhNghiemCanThiet: 300,   soODat: 5,  tenCap: "Tu Sĩ" },
+  { cap: 4,  kinhNghiemCanThiet: 700,   soODat: 6,  tenCap: "Linh Nông" },
+  { cap: 5,  kinhNghiemCanThiet: 1500,  soODat: 7,  tenCap: "Đạo Nông" },
+  { cap: 6,  kinhNghiemCanThiet: 3000,  soODat: 8,  tenCap: "Linh Sư" },
+  { cap: 7,  kinhNghiemCanThiet: 6000,  soODat: 9,  tenCap: "Vườn Chủ" },
+  { cap: 8,  kinhNghiemCanThiet: 12000, soODat: 10, tenCap: "Thần Nông" },
 ];
 
-// Lấy thông tin cấp độ
 export function layThongTinCap(cap: number) {
   return mucCapDo.find((m) => m.cap === cap) ?? mucCapDo[0];
 }
