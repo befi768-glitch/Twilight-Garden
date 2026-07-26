@@ -128,6 +128,15 @@ export function timCayTheoTen(query: string): Cay | undefined {
   );
 }
 
+// Tìm cây theo tên, ID cây, hoặc ID hạt giống (hat_<id>)
+export function timCayTheoTenHoacHat(query: string): Cay | undefined {
+  const q = query.toLowerCase().trim();
+  if (q.startsWith("hat_")) {
+    return cayMap.get(q.slice(4));
+  }
+  return timCayTheoTen(q);
+}
+
 // Màu embed theo phẩm
 export const mauDoHiem: Record<string, number> = {
   "Phàm Phẩm":  0x95a5a6,

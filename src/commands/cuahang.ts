@@ -7,7 +7,7 @@ export async function xuLyCuaHang(message: Message) {
     const thoiGian = c.thoiGianMoc < 60
       ? `${c.thoiGianMoc} phút`
       : `${Math.floor(c.thoiGianMoc / 60)} giờ`;
-    return `${iconDoHiem[c.doHiem]} ${c.emoji} **${c.ten}** [${c.doHiem}]\n┗ Mua: \`${c.giaMua} ${EMOJI_TIEN}\` • Bán: \`${c.giaBan} ${EMOJI_TIEN}\` • ⏳ ${thoiGian}\n┗ *${c.moTa}*`;
+    return `${iconDoHiem[c.doHiem]} ${c.emoji} **${c.ten}** [${c.doHiem}]\n┗ ID: \`${c.id}\` • Hạt: \`hat_${c.id}\`\n┗ Mua: \`${c.giaMua} ${EMOJI_TIEN}\` • Bán: \`${c.giaBan} ${EMOJI_TIEN}\` • ⏳ ${thoiGian}\n┗ *${c.moTa}*`;
   });
 
   const embed = new EmbedBuilder()
@@ -23,7 +23,7 @@ export async function xuLyCuaHang(message: Message) {
       value: "⬜ Phàm Phẩm  🟦 Linh Phẩm  🟪 Tiên Phẩm  🟨 Thần Phẩm",
     })
     .setFooter({
-      text: `💡 Dùng .mua <tên thảo> để mua • .trong <tên thảo> để gieo trồng | Tiền tệ: ${TEN_TIEN} ${EMOJI_TIEN}`,
+      text: `💡 .mua <tên | id> • .trong <tên | id | hat_id> • .ban <tên | id> | Tiền tệ: ${TEN_TIEN} ${EMOJI_TIEN}`,
     })
     .setTimestamp();
 

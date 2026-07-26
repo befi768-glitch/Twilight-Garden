@@ -27,20 +27,20 @@ export async function xuLyTuiDo(message: Message) {
       // Hạt giống — không bán được, chỉ dùng để trồng
       const cay = layCayTuHatGiong(item.tenCay);
       if (cay) {
-        danhSachHat.push(`🌱 **Hạt ${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ *(Hạt giống — dùng .trong để gieo)*`);
+        danhSachHat.push(`🌱 **Hạt ${cay.ten}** x${item.soLuong}\n┗ ID: \`${item.tenCay}\` • dùng \`.trong ${cay.id}\` hoặc \`.trong ${item.tenCay}\` để gieo`);
       } else {
-        danhSachHat.push(`🌱 ${item.tenCay} x${item.soLuong} *(hạt giống không xác định)*`);
+        danhSachHat.push(`🌱 \`${item.tenCay}\` x${item.soLuong} *(hạt giống không xác định)*`);
       }
     } else {
       // Cây đã thu hoạch — có thể bán
       const cay = cayMap.get(item.tenCay);
       if (!cay) {
-        danhSachCay.push(`❓ ${item.tenCay} x${item.soLuong} *(không xác định)*`);
+        danhSachCay.push(`❓ \`${item.tenCay}\` x${item.soLuong} *(không xác định)*`);
         continue;
       }
       const giaTri = cay.giaBan * item.soLuong;
       tongGiaTri += giaTri;
-      danhSachCay.push(`${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ Trị giá: ${formatXu(giaTri)}`);
+      danhSachCay.push(`${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ ID: \`${cay.id}\` • Trị giá: ${formatXu(giaTri)} • \`.ban ${cay.id}\``);
     }
   }
 

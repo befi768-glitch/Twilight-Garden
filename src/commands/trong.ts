@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon, trong as trongDB, layTuiDo, ban as banDB } from "../database/queries";
-import { timCayTheoTen, mauDoHiem, layHatGiongId } from "../data/plants";
+import { timCayTheoTenHoacHat, mauDoHiem, layHatGiongId } from "../data/plants";
 import { MAU_DO, MAU_CHINH } from "../utils/helpers";
 import { layLoiThoaiNgauNhien } from "../utils/events";
 
@@ -10,7 +10,7 @@ export async function xuLyTrong(message: Message, args: string[]) {
   }
 
   const tenCay = args.join(" ");
-  const cay = timCayTheoTen(tenCay);
+  const cay = timCayTheoTenHoacHat(tenCay);
 
   if (!cay) {
     return message.reply(`❌ Không tìm thấy cây **${tenCay}**! Dùng \`.cuahang\` để xem danh sách cây.`);
