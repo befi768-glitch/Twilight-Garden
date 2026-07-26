@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, schema } from '../database';
 import { Wildlife, PlayerWildlife, AreaType, Season, Weather, TimeOfDay } from '../models/types';
 import { chance, randomFrom, clamp } from '../utils/helpers';
@@ -104,11 +104,24 @@ export class WildlifeService {
       .where(and(eq(schema.wildlifeDiscoveries.playerId, playerId), eq(schema.wildlifeDiscoveries.wildlifeId, wildlifeId))).limit(1);
 
     if (existing.length > 0) {
-      await db.update(schema.wildlifeDiscoveries).set({ timesSeen: existing[0].timesSeen + 1 }).where(eq(schema.wildlifeDiscoveries.id, existing[0].id));
+      // FIX: atomic increment for timesSeen — replaces stale read+write with SQL expression
+      await db.update(schema.wildlifeDiscoveries)
+        .set({ timesSeen: sql`times_seen + 1` })
+        .where(eq(schema.wildlifeDiscoveries.id, existing[0].id));
       return false;
     }
 
-    await db.insert(schema.wildlifeDiscoveries).values({ id: randomUUID(), userId: playerId, playerId, wildlifeId, firstSeenAt: new Date(), timesSeen: 1, tamed: false }); // userId mirrors playerId (legacy NOT NULL col)
+    try {
+      await db.insert(schema.wildlifeDiscoveries).values({
+        id: randomUUID(), userId: playerId, playerId, wildlifeId,
+        firstSeenAt: new Date(), timesSeen: 1, tamed: false,
+      }); // userId mirrors playerId (legacy NOT NULL col)
+    } catch (_dupErr) {
+      // FIX: concurrent calls can both pass the "existing" check and race to insert.
+      // If this insert fails due to a unique violation, the other caller already
+      // inserted and incremented the stat — we can safely return false here.
+      return false;
+    }
     await PlayerService.incrementStat(playerId, 'wildlifeFound');
     return true;
   }

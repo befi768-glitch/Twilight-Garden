@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, schema } from '../database';
 import { Player, PlayerStats } from '../models/types';
 import { xpToLevel } from '../utils/helpers';
@@ -23,23 +23,35 @@ export class PlayerService {
     }
 
     const id = randomUUID();
-    await db.insert(schema.players).values({
-      id,
-      discordId,
-      guildId,
-      username,
-      coins: 200,
-      gems: 5,
-      xp: 0,
-      level: 1,
-      currentArea: 'village',
-      reputation: 0,
-      energyMax: 100,
-      energyCurrent: 100,
-      stats: {},
-      lastSeen: new Date(),
-      createdAt: new Date(),
-    });
+    try {
+      await db.insert(schema.players).values({
+        id,
+        discordId,
+        guildId,
+        username,
+        coins: 200,
+        gems: 5,
+        xp: 0,
+        level: 1,
+        currentArea: 'village',
+        reputation: 0,
+        energyMax: 100,
+        energyCurrent: 100,
+        stats: {},
+        lastSeen: new Date(),
+        createdAt: new Date(),
+      });
+    } catch (insertErr: any) {
+      // FIX: if concurrent insert wins the race (duplicate discordId+guildId),
+      // fall back to fetching the row that was just inserted by the other request
+      const race = await db
+        .select()
+        .from(schema.players)
+        .where(and(eq(schema.players.discordId, discordId), eq(schema.players.guildId, guildId)))
+        .limit(1);
+      if (race.length > 0) return race[0] as unknown as Player;
+      throw insertErr;
+    }
 
     // Create home
     const { HomeService } = await import('./HomeService');
@@ -75,18 +87,25 @@ export class PlayerService {
     const newLevel = xpToLevel(newXp);
     const leveledUp = newLevel > player.level;
 
-    await db.update(schema.players).set({ xp: newXp, level: newLevel }).where(eq(schema.players.id, playerId));
+    // FIX: use atomic SQL for xp increment to prevent lost updates in concurrent scenarios
+    await db.update(schema.players)
+      .set({ xp: sql`xp + ${amount}`, level: newLevel })
+      .where(eq(schema.players.id, playerId));
 
     return { leveledUp, newLevel, oldLevel: player.level };
   }
 
-  /** Add or subtract coins */
+  /** Add or subtract coins — atomic to prevent race conditions */
   static async updateCoins(playerId: string, delta: number): Promise<number> {
     const player = await PlayerService.getById(playerId);
     if (!player) throw new Error('Player not found');
-    const newCoins = Math.max(0, player.coins + delta);
-    await db.update(schema.players).set({ coins: newCoins }).where(eq(schema.players.id, playerId));
-    return newCoins;
+    // FIX: atomic SQL update — prevents read-modify-write race condition where
+    // two concurrent calls both read the same value and overwrite each other
+    const result = await db.update(schema.players)
+      .set({ coins: sql`GREATEST(0, coins + ${delta})` })
+      .where(eq(schema.players.id, playerId))
+      .returning({ coins: schema.players.coins });
+    return result[0]?.coins ?? 0;
   }
 
   /** Check if player has enough coins */
@@ -95,15 +114,16 @@ export class PlayerService {
     return (player?.coins ?? 0) >= amount;
   }
 
-  /** Use energy */
+  /** Use energy — atomic check-and-deduct to prevent race conditions */
   static async useEnergy(playerId: string, amount: number): Promise<boolean> {
-    const player = await PlayerService.getById(playerId);
-    if (!player || player.energyCurrent < amount) return false;
-    await db
-      .update(schema.players)
-      .set({ energyCurrent: player.energyCurrent - amount })
-      .where(eq(schema.players.id, playerId));
-    return true;
+    // FIX: single atomic UPDATE that only succeeds when energy is sufficient.
+    // Replaces the old read-then-check-then-write pattern which allowed two
+    // concurrent commands to both pass the check and over-consume energy.
+    const result = await db.update(schema.players)
+      .set({ energyCurrent: sql`GREATEST(0, energy_current - ${amount})` })
+      .where(and(eq(schema.players.id, playerId), sql`energy_current >= ${amount}`))
+      .returning({ energyCurrent: schema.players.energyCurrent });
+    return result.length > 0;
   }
 
   /** Regenerate energy (called periodically) — max once every 15 minutes per player */
@@ -117,9 +137,12 @@ export class PlayerService {
     const lastRegen = player.energyRegenAt ? new Date(player.energyRegenAt).getTime() : 0;
     if (Date.now() - lastRegen < REGEN_COOLDOWN_MS) return;
 
-    const newEnergy = Math.min(player.energyMax, player.energyCurrent + 10);
+    // FIX: atomic LEAST ensures we never exceed energyMax even under concurrent calls
     await db.update(schema.players)
-      .set({ energyCurrent: newEnergy, energyRegenAt: new Date() })
+      .set({
+        energyCurrent: sql`LEAST(energy_max, energy_current + 10)`,
+        energyRegenAt: new Date(),
+      })
       .where(eq(schema.players.id, playerId));
   }
 
@@ -128,13 +151,11 @@ export class PlayerService {
     await db.update(schema.players).set({ currentArea: area }).where(eq(schema.players.id, playerId));
   }
 
-  /** Update reputation */
+  /** Update reputation — atomic increment */
   static async addReputation(playerId: string, amount: number): Promise<void> {
-    const player = await PlayerService.getById(playerId);
-    if (!player) return;
-    await db
-      .update(schema.players)
-      .set({ reputation: player.reputation + amount })
+    // FIX: atomic SQL increment — no read needed, prevents race condition
+    await db.update(schema.players)
+      .set({ reputation: sql`reputation + ${amount}` })
       .where(eq(schema.players.id, playerId));
   }
 

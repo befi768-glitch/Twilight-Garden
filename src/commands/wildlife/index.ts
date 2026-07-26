@@ -53,7 +53,14 @@ export const command: Command = {
       const { wildlife, isNew } = result;
       const drops = await WildlifeService.collectDrops(player.id, wildlife.id);
       let dropMsg = '';
-      if (drops.length) dropMsg = '\n\n**Vật phẩm rơi:** ' + drops.map((d) => `${d.quantity}x ${d.itemId}`).join(', ');
+      if (drops.length) {
+        // FIX: show human-readable item names and emoji instead of raw itemId strings
+        const { ITEMS } = await import('../../services/EconomyService');
+        dropMsg = '\n\n**Vật phẩm rơi:** ' + drops.map((d) => {
+          const def = ITEMS[d.itemId];
+          return `${def?.emoji ?? '📦'} **${def?.name ?? d.itemId}** x${d.quantity}`;
+        }).join(', ');
+      }
       return void message.reply({ embeds: [createEmbed({
         title: `${wildlife.emoji} ${wildlife.name}${isNew ? ' — Khám Phá Mới! 🆕' : ''}`,
         description: `${wildlife.description}\n*Độ hiếm: ${rarityEmoji[wildlife.rarity]} ${wildlife.rarity}*${dropMsg}`,

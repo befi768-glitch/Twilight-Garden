@@ -1,9 +1,9 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, schema } from '../database';
 import { Npc, PlayerNpcRelation, NpcRelation } from '../models/types';
 import { PlayerService } from './PlayerService';
 import { InventoryService } from './InventoryService';
-import { randomFrom, randomInt, clamp } from '../utils/helpers';
+import { randomFrom, clamp } from '../utils/helpers';
 import { randomUUID } from 'crypto';
 
 export const NPCS: Record<string, Npc> = {
@@ -113,7 +113,17 @@ export class NpcService {
     if (existing) return existing;
 
     const id = randomUUID();
-    await db.insert(schema.npcRelations).values({ id, userId: playerId, playerId, npcId, relationScore: 0, relation: 'stranger', giftsGiven: 0 }); // userId mirrors playerId (legacy NOT NULL col)
+    try {
+      await db.insert(schema.npcRelations).values({
+        id, userId: playerId, playerId, npcId,  // userId mirrors playerId (legacy NOT NULL col)
+        relationScore: 0, relation: 'stranger', giftsGiven: 0,
+      });
+    } catch (_dupErr) {
+      // FIX: if a concurrent call inserted the row first, fetch and return the existing row
+      const race = await NpcService.getRelation(playerId, npcId);
+      if (race) return race;
+      throw _dupErr;
+    }
     return (await NpcService.getRelation(playerId, npcId))!;
   }
 
@@ -182,28 +192,26 @@ export class NpcService {
     }
 
     const { EconomyService } = await import('./EconomyService');
-
-    // Check player has what they need to give
     const give = trade.give;
+
+    // Check and remove what player gives
     if ('itemId' in give) {
       const hasItem = await InventoryService.hasItem(playerId, give.itemId, give.quantity);
       if (!hasItem) {
         const itemDef = EconomyService.getItem(give.itemId);
         throw new Error(`Cần ${give.quantity}x ${itemDef?.name ?? give.itemId} để trao đổi.`);
       }
-    } else {
-      const hasEnough = await PlayerService.hasEnoughCoins(playerId, give.coins);
-      if (!hasEnough) throw new Error(`Cần ${give.coins} xu để trao đổi.`);
-    }
-
-    // Execute: remove what player gives
-    if ('itemId' in give) {
       await InventoryService.removeItem(playerId, give.itemId, give.quantity);
     } else {
-      await PlayerService.updateCoins(playerId, -give.coins);
+      // FIX: atomic check-and-deduct prevents race condition between check and deduct
+      const deducted = await db.update(schema.players)
+        .set({ coins: sql`coins - ${give.coins}` })
+        .where(and(eq(schema.players.id, playerId), sql`coins >= ${give.coins}`))
+        .returning();
+      if (!deducted.length) throw new Error(`Cần ${give.coins} xu để trao đổi.`);
     }
 
-    // Execute: add what player receives
+    // Give what player receives
     const receive = trade.receive;
     let receiveDesc: string;
     if ('itemId' in receive) {
@@ -211,7 +219,9 @@ export class NpcService {
       const itemDef = EconomyService.getItem(receive.itemId);
       receiveDesc = `${receive.quantity}x ${itemDef?.name ?? receive.itemId}`;
     } else {
-      await PlayerService.updateCoins(playerId, receive.coins);
+      await db.update(schema.players)
+        .set({ coins: sql`coins + ${receive.coins}` })
+        .where(eq(schema.players.id, playerId));
       receiveDesc = `${receive.coins} xu`;
     }
 

@@ -45,11 +45,16 @@ export const command: Command = {
 
       if (itemId === 'healing_herb') {
         await InventoryService.removeItem(player.id, itemId, 1);
-        const newEnergy = Math.min(player.energyMax, player.energyCurrent + 30);
+        // FIX: use atomic SQL (LEAST prevents exceeding energyMax) then re-fetch for accurate display.
+        // Previously computed newEnergy from the stale player object before removal, then wrote
+        // an absolute value — racing with any concurrent energy changes.
         const { db, schema } = await import('../../database');
-        const { eq } = await import('drizzle-orm');
-        await db.update(schema.players).set({ energyCurrent: newEnergy }).where(eq(schema.players.id, player.id));
-        return void message.reply({ embeds: [createEmbed({ title: '✅ Đã dùng Thảo Dược Chữa Lành', description: `Hồi phục **30 năng lượng**! Năng lượng: ${newEnergy}/${player.energyMax}`, color: 0x2ecc71 })] });
+        const { eq, sql } = await import('drizzle-orm');
+        await db.update(schema.players)
+          .set({ energyCurrent: sql`LEAST(energy_max, energy_current + 30)` })
+          .where(eq(schema.players.id, player.id));
+        const fresh = await PlayerService.getById(player.id);
+        return void message.reply({ embeds: [createEmbed({ title: '✅ Đã dùng Thảo Dược Chữa Lành', description: `Hồi phục **30 năng lượng**! Năng lượng: **${fresh?.energyCurrent ?? player.energyCurrent}/${fresh?.energyMax ?? player.energyMax}**`, color: 0x2ecc71 })] });
       }
 
       if (itemId === 'growth_potion') {

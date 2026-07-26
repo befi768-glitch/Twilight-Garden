@@ -49,15 +49,25 @@ export const command: Command = {
     }
 
     if (sub === 'cho_do') {
-      const itemId = args[2];
+      const itemId = args[2]?.toLowerCase();
       const qty = parseInt(args[3] ?? '1') || 1;
       if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.xa_hoi cho_do @người <mãVật> [slg]`')] });
       const has = await InventoryService.hasItem(player.id, itemId, qty);
-      if (!has) return void message.reply({ embeds: [errorEmbed(`Bạn không có ${qty}x ${itemId} trong túi đồ.`)] });
-      await InventoryService.removeItem(player.id, itemId, qty);
-      await InventoryService.addItem(targetPlayer.id, itemId, qty);
       const { ITEMS } = await import('../../services/EconomyService');
       const def = ITEMS[itemId];
+      if (!has) return void message.reply({ embeds: [errorEmbed(`Bạn không có ${qty}x ${def?.name ?? itemId} trong túi đồ.`)] });
+      // FIX: wrap remove+add in try/catch so if addItem fails we don't silently lose the item.
+      // InventoryService.removeItem and addItem each have their own internal transactions,
+      // so we can't roll them back as one unit — instead we guarantee the add is attempted
+      // and surface the error explicitly if it fails.
+      await InventoryService.removeItem(player.id, itemId, qty);
+      try {
+        await InventoryService.addItem(targetPlayer.id, itemId, qty);
+      } catch (err) {
+        // Credit back the sender so they don't lose the item
+        await InventoryService.addItem(player.id, itemId, qty);
+        return void message.reply({ embeds: [errorEmbed('Không thể trao vật phẩm. Đã hoàn lại cho bạn.')] });
+      }
       return void message.reply({ embeds: [successEmbed(`Đã cho **${qty}x ${def?.emoji ?? ''} ${def?.name ?? itemId}** cho **${targetPlayer.username}**! 🎁`)] });
     }
 

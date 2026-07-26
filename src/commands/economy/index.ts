@@ -49,7 +49,8 @@ export const command: Command = {
     }
 
     if (sub === 'mua') {
-      const itemId = args[1];
+      // FIX: toLowerCase() so "Seed_Sunpetal" or "SEED_SUNPETAL" works the same as "seed_sunpetal"
+      const itemId = args[1]?.toLowerCase();
       const qty = parseInt(args[2] ?? '1') || 1;
       if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte mua <mãVật> [sốLượng]`')] });
       try {
@@ -63,7 +64,8 @@ export const command: Command = {
     }
 
     if (sub === 'ban') {
-      const itemId = args[1];
+      // FIX: toLowerCase() so mixed-case itemIds are normalised consistently
+      const itemId = args[1]?.toLowerCase();
       const qty = parseInt(args[2] ?? '1') || 1;
       if (!itemId) return void message.reply({ embeds: [errorEmbed('Cách dùng: `.kinhte ban <mãVật> [sốLượng]`')] });
       try {

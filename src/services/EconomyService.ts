@@ -1,7 +1,6 @@
-import { eq, and, desc, lt } from 'drizzle-orm';
+import { eq, and, desc, lt, sql } from 'drizzle-orm';
 import { db, schema } from '../database';
 import { ItemDefinition, ItemCategory, Rarity, AuctionListing } from '../models/types';
-import { PlayerService } from './PlayerService';
 import { InventoryService } from './InventoryService';
 import { randomUUID } from 'crypto';
 
@@ -71,17 +70,24 @@ export class EconomyService {
     if (!shopEntry) throw new Error('Vật phẩm này không có trong cửa hàng.');
 
     const totalCost = shopEntry.price * quantity;
-    const hasEnough = await PlayerService.hasEnoughCoins(playerId, totalCost);
-    if (!hasEnough) throw new Error('Không đủ xu để mua.');
 
-    await PlayerService.updateCoins(playerId, -totalCost);
+    // FIX: atomic check-and-deduct replaces the old hasEnoughCoins → updateCoins
+    // two-step pattern. A single UPDATE that only applies when coins >= totalCost
+    // prevents two concurrent purchases from both passing the balance check and
+    // double-spending more coins than the player has.
+    const deducted = await db.update(schema.players)
+      .set({ coins: sql`coins - ${totalCost}` })
+      .where(and(eq(schema.players.id, playerId), sql`coins >= ${totalCost}`))
+      .returning({ coins: schema.players.coins });
+
+    if (!deducted.length) throw new Error('Không đủ xu để mua.');
+
     await InventoryService.addItem(playerId, itemId, quantity);
 
     // Log transaction
     await EconomyService.logTransaction(null, playerId, 'spend', totalCost, itemId, quantity, `Mua ${quantity}x ${ITEMS[itemId]?.name ?? itemId} từ cửa hàng`);
 
-    const player = await PlayerService.getById(playerId);
-    return { spent: totalCost, newBalance: player?.coins ?? 0 };
+    return { spent: totalCost, newBalance: deducted[0].coins };
   }
 
   /** Sell an item */
@@ -89,28 +95,47 @@ export class EconomyService {
     const item = ITEMS[itemId];
     if (!item) throw new Error('Không tìm thấy vật phẩm này.');
 
+    // removeItem is already wrapped in a transaction internally (atomic check+remove)
     const hasItem = await InventoryService.hasItem(playerId, itemId, quantity);
     if (!hasItem) throw new Error('Không đủ số lượng vật phẩm trong túi đồ.');
 
     await InventoryService.removeItem(playerId, itemId, quantity);
     const earned = Math.floor(item.sellPrice * quantity * (1 - SELL_TAX_RATE));
-    await PlayerService.updateCoins(playerId, earned);
+
+    // Atomic coin increment — can't fail due to insufficient balance (adding, not subtracting)
+    const result = await db.update(schema.players)
+      .set({ coins: sql`coins + ${earned}` })
+      .where(eq(schema.players.id, playerId))
+      .returning({ coins: schema.players.coins });
 
     await EconomyService.logTransaction(playerId, null, 'earn', earned, itemId, quantity, `Bán ${quantity}x ${item.name}`);
 
-    const player = await PlayerService.getById(playerId);
-    return { earned, newBalance: player?.coins ?? 0 };
+    return { earned, newBalance: result[0]?.coins ?? 0 };
   }
 
   /** Transfer coins between players */
   static async transfer(fromId: string, toId: string, amount: number): Promise<void> {
-    // FIX: wrap in transaction so if toId update fails, fromId is not debited
-    await db.transaction(async (_tx) => {
-      const hasEnough = await PlayerService.hasEnoughCoins(fromId, amount);
-      if (!hasEnough) throw new Error('Không đủ xu để chuyển.');
-      await PlayerService.updateCoins(fromId, -amount);
-      await PlayerService.updateCoins(toId, amount);
-      await EconomyService.logTransaction(fromId, toId, 'transfer', amount, null, null, 'Chuyển xu');
+    // FIX: previously this called PlayerService.updateCoins() inside the transaction
+    // but PlayerService.updateCoins() used the outer `db` object, not `tx` — making
+    // the transaction a no-op. Now we use `tx` directly for both updates so the
+    // entire transfer is truly atomic: if the recipient credit fails, the sender
+    // debit is rolled back.
+    await db.transaction(async (tx) => {
+      const deducted = await tx.update(schema.players)
+        .set({ coins: sql`coins - ${amount}` })
+        .where(and(eq(schema.players.id, fromId), sql`coins >= ${amount}`))
+        .returning();
+      if (!deducted.length) throw new Error('Không đủ xu để chuyển.');
+
+      await tx.update(schema.players)
+        .set({ coins: sql`coins + ${amount}` })
+        .where(eq(schema.players.id, toId));
+
+      await tx.insert(schema.transactions).values({
+        id: randomUUID(), fromPlayerId: fromId, toPlayerId: toId,
+        type: 'transfer', amount, itemId: null, itemQuantity: null,
+        description: 'Chuyển xu', createdAt: new Date(),
+      });
     });
   }
 
@@ -129,8 +154,9 @@ export class EconomyService {
 
   /** Bid on an auction */
   static async bid(auctionId: string, bidderId: string, amount: number): Promise<void> {
-    // FIX: wrap entire bid in a transaction to prevent race conditions where
-    // two simultaneous bids could double-refund or double-charge coins
+    // FIX: previously called PlayerService.updateCoins() inside db.transaction(tx => ...)
+    // but PlayerService uses the outer `db`, not `tx`, making the transaction a no-op.
+    // Now all DB writes go through `tx` so the bid is truly atomic.
     await db.transaction(async (tx) => {
       const result = await tx.select().from(schema.auctions).where(eq(schema.auctions.id, auctionId)).limit(1);
       if (!result.length) throw new Error('Không tìm thấy phiên đấu giá.');
@@ -139,16 +165,23 @@ export class EconomyService {
       if (new Date() > auction.endsAt) throw new Error('Phiên đấu giá đã kết thúc.');
       if (amount <= auction.currentBid) throw new Error('Giá đặt phải cao hơn giá hiện tại.');
 
-      const hasEnough = await PlayerService.hasEnoughCoins(bidderId, amount);
-      if (!hasEnough) throw new Error('Không đủ xu để đặt giá.');
+      // Atomic check-and-deduct from bidder
+      const deducted = await tx.update(schema.players)
+        .set({ coins: sql`coins - ${amount}` })
+        .where(and(eq(schema.players.id, bidderId), sql`coins >= ${amount}`))
+        .returning();
+      if (!deducted.length) throw new Error('Không đủ xu để đặt giá.');
 
-      // Refund previous bidder
+      // Refund previous bidder within the same transaction
       if (auction.highestBidderId) {
-        await PlayerService.updateCoins(auction.highestBidderId, auction.currentBid);
+        await tx.update(schema.players)
+          .set({ coins: sql`coins + ${auction.currentBid}` })
+          .where(eq(schema.players.id, auction.highestBidderId));
       }
-      // Hold bid amount
-      await PlayerService.updateCoins(bidderId, -amount);
-      await tx.update(schema.auctions).set({ currentBid: amount, highestBidderId: bidderId }).where(eq(schema.auctions.id, auctionId));
+
+      await tx.update(schema.auctions)
+        .set({ currentBid: amount, highestBidderId: bidderId })
+        .where(eq(schema.auctions.id, auctionId));
     });
   }
 
@@ -157,14 +190,22 @@ export class EconomyService {
     const expired = await db.select().from(schema.auctions).where(and(eq(schema.auctions.status, 'active'), lt(schema.auctions.endsAt, new Date())));
     for (const auction of expired) {
       try {
-        await db.transaction(async (_tx) => {
+        // FIX: previously used PlayerService.updateCoins() inside db.transaction(tx => ...)
+        // but PlayerService uses the outer `db`, not `tx` — making the transaction a no-op.
+        // Now all coin updates go through `tx` directly so the resolve is truly atomic.
+        await db.transaction(async (tx) => {
           if (auction.highestBidderId) {
+            // Credit seller with winning bid inside the transaction
+            await tx.update(schema.players)
+              .set({ coins: sql`coins + ${auction.currentBid}` })
+              .where(eq(schema.players.id, auction.sellerId));
+            await tx.update(schema.auctions).set({ status: 'sold' }).where(eq(schema.auctions.id, auction.id));
+            // Give item to winner (addItem has its own internal transaction — acceptable)
             await InventoryService.addItem(auction.highestBidderId, auction.itemId, auction.quantity);
-            await PlayerService.updateCoins(auction.sellerId, auction.currentBid);
-            await db.update(schema.auctions).set({ status: 'sold' }).where(eq(schema.auctions.id, auction.id));
           } else {
+            // No bids — return item to seller
+            await tx.update(schema.auctions).set({ status: 'expired' }).where(eq(schema.auctions.id, auction.id));
             await InventoryService.addItem(auction.sellerId, auction.itemId, auction.quantity);
-            await db.update(schema.auctions).set({ status: 'expired' }).where(eq(schema.auctions.id, auction.id));
           }
         });
       } catch (err: any) {
