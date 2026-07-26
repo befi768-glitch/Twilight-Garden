@@ -9,7 +9,6 @@ export interface SuKienNgauNhien {
     | "sau_linh"
     | "loi_kiep"
     | "cuong_phong"
-    | "nu_tiep_ruong"
     | "binh_thuong";
   moTa: string;
   // Có lợi
@@ -18,8 +17,17 @@ export interface SuKienNgauNhien {
   bonusSanLuong?: number;
   // Bất lợi
   matXu?: number;
-  matSanLuong?: number; // Trừ vào số lượng thu hoạch (tối thiểu còn 1)
+  matSanLuong?: number; // số nguyên dương = mất đúng số đó; -1 = mất 30%
 }
+
+// ── Xác suất mỗi loại (tổng có lợi = 15%, tổng bất lợi = 15%) ──
+// Vùng [0, 0.05)  → Nguyệt Mãn        +1 sản lượng
+// Vùng [0.05,0.10)→ Linh Vật           +hạt giống
+// Vùng [0.10,0.15)→ Thiên Cơ           +xu
+// Vùng [0.15,0.20)→ Sâu Linh           -1 sản lượng
+// Vùng [0.20,0.25)→ Lôi Kiếp           -xu
+// Vùng [0.25,0.30)→ Cuồng Phong        -30% sản lượng
+// Vùng [0.30,1.00)→ Bình thường        (70%)
 
 const loiThienKhoi = [
   "Thiên địa linh khí hội tụ vào khu vườn của bạn",
@@ -28,71 +36,82 @@ const loiThienKhoi = [
   "Gió từ rừng sâu mang theo may mắn tới",
 ];
 
+const loiThoiXau = [
+  "Nghiệp chướng từ kiếp trước chưa trả hết",
+  "Vận số buổi sáng nay kém cỏi",
+  "Âm khí vượng, linh lực tổn thất",
+  "Thiên đạo vô tình, thịnh cực thì suy",
+];
+
 export function taoSuKien(cay: Cay): SuKienNgauNhien {
   const ran = Math.random();
 
-  // ── Sự kiện CÓ LỢI (30% tổng) ────────────────────────────────
+  // ── CÓ LỢI (5% mỗi loại, tổng 15%) ─────────────────────────
 
   // 5% — Nguyệt Mãn: +1 sản lượng
   if (ran < 0.05) {
     return {
       loai: "nguyet_man",
-      moTa: `🌕 **Nguyệt Mãn Thiên Cơ!** ${cay.emoji} **${cay.ten}** hấp thu trăng rằm, sinh trưởng bội thu — thu thêm 1 linh thảo!`,
+      moTa: `🌕 **Nguyệt Mãn Thiên Cơ!** ${cay.emoji} **${cay.ten}** hấp thu trăng rằm, sinh trưởng bội thu — thu thêm 1!`,
       bonusSanLuong: 1,
     };
   }
 
-  // 10% — Linh Vật Xuất Hiện: nhận hạt giống ngẫu nhiên
-  if (ran < 0.15) {
+  // 5% — Linh Vật Xuất Hiện: nhận hạt giống ngẫu nhiên Phàm Phẩm
+  if (ran < 0.10) {
     const cayNgauNhien = danhSachCay[Math.floor(Math.random() * 3)];
     return {
       loai: "linh_vat_xuat_hien",
-      moTa: `🌱 **Linh Vật Xuất Hiện!** Một hạt ${cayNgauNhien.emoji} **${cayNgauNhien.ten}** từ đất thiêng rơi vào Bảo Nang của bạn!`,
+      moTa: `🌱 **Linh Vật Xuất Hiện!** Hạt ${cayNgauNhien.emoji} **${cayNgauNhien.ten}** từ đất thiêng rơi vào Bảo Nang!`,
       bonusCay: { id: cayNgauNhien.id, soLuong: 1 },
     };
   }
 
-  // 15% — Thiên Cơ: bonus Nguyệt Thạch
-  if (ran < 0.30) {
-    const bonusXu = Math.floor(cay.giaBan * 0.5);
-    const loiChuc = loiThienKhoi[Math.floor(Math.random() * loiThienKhoi.length)];
+  // 5% — Thiên Cơ: bonus xu bằng 40% giá bán
+  if (ran < 0.15) {
+    const bonusXu = Math.floor(cay.giaBan * 0.4);
+    const loi = loiThienKhoi[Math.floor(Math.random() * loiThienKhoi.length)];
     return {
       loai: "thien_co",
-      moTa: `✨ **Thiên Cơ Giáng Lâm!** *${loiChuc}* — Nhận thêm **${bonusXu} ${EMOJI_TIEN} ${TEN_TIEN}**!`,
+      moTa: `✨ **Thiên Cơ Giáng Lâm!** *${loi}* — Nhận thêm **${bonusXu} ${EMOJI_TIEN}**!`,
       bonusXu,
     };
   }
 
-  // ── Sự kiện BẤT LỢI (20% tổng) ───────────────────────────────
+  // ── BẤT LỢI (5% mỗi loại, tổng 15%) ────────────────────────
 
-  // 7% — Sâu Linh: mất 1 linh thảo vừa hái
-  if (ran < 0.37) {
+  // 5% — Sâu Linh: mất 1 sản lượng (nếu chỉ có 1 thì không mất)
+  if (ran < 0.20) {
+    const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
       loai: "sau_linh",
-      moTa: `🐛 **Sâu Linh Xâm Thực!** *Loài sâu huyền bí từ vùng tối xuất hiện, cắn ngấu nghiến linh thảo vừa hái!* — Mất 1 ${cay.emoji} **${cay.ten}**!`,
+      moTa: `🐛 **Sâu Linh Xâm Thực!** *${loi}* — Sâu ăn mất 1 ${cay.emoji} **${cay.ten}**!`,
       matSanLuong: 1,
     };
   }
 
-  // 7% — Lôi Kiếp: mất xu
-  if (ran < 0.44) {
-    const matXu = Math.max(10, Math.floor(cay.giaBan * 0.3));
+  // 5% — Lôi Kiếp: mất xu bằng 20% giá bán
+  if (ran < 0.25) {
+    const matXu = Math.max(5, Math.floor(cay.giaBan * 0.2));
+    const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
       loai: "loi_kiep",
-      moTa: `⚡ **Lôi Kiếp Giáng Xuống!** *Thiên lôi nổi giận bởi linh khí quá vượng, đánh thẳng vào Bảo Khố của bạn!* — Mất **${matXu} ${EMOJI_TIEN} ${TEN_TIEN}**!`,
+      moTa: `⚡ **Lôi Kiếp Giáng Xuống!** *${loi}* — Mất **${matXu} ${EMOJI_TIEN} ${TEN_TIEN}**!`,
       matXu,
     };
   }
 
-  // 6% — Nữ Tiếp Ruộng: mất nửa sản lượng (nếu > 1)
-  if (ran < 0.50) {
+  // 5% — Cuồng Phong: mất 30% sản lượng (tối thiểu 1)
+  if (ran < 0.30) {
+    const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
-      loai: "nu_tiep_ruong",
-      moTa: `🌪️ **Cuồng Phong Linh Thổi Qua!** *Cơn gió lạ từ Hư Vô quét qua khu vườn, cuốn đi một phần linh thảo vừa thu hái!* — Mất nửa sản lượng!`,
-      matSanLuong: -1, // -1 = mất 50%, xử lý đặc biệt trong thuhoach.ts
+      loai: "cuong_phong",
+      moTa: `🌪️ **Cuồng Phong Linh Thổi Qua!** *${loi}* — Gió cuốn mất 30% sản lượng!`,
+      matSanLuong: -1, // -1 = mất 30%, xử lý trong thuhoach.ts
     };
   }
 
+  // 70% — Bình thường
   return { loai: "binh_thuong", moTa: "" };
 }
 

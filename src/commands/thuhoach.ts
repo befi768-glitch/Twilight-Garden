@@ -38,8 +38,8 @@ async function apDungSuKien(
   // Bất lợi — mất sản lượng
   if (suKien.matSanLuong !== undefined) {
     if (suKien.matSanLuong === -1) {
-      // Mất 50% sản lượng (tối thiểu 1 cái bị mất, tối thiểu còn 0 — đã thu hoạch rồi nên xóa khỏi túi)
-      const soMat = Math.max(1, Math.floor(soLuongThuHoach / 2));
+      // Mất 30% sản lượng (tối thiểu 1 cái bị mất)
+      const soMat = Math.max(1, Math.floor(soLuongThuHoach * 0.3));
       await banDB(playerId, cayId, soMat); // Xóa khỏi túi đồ
     } else if (suKien.matSanLuong > 0 && soLuongThuHoach > 0) {
       const soMat = Math.min(suKien.matSanLuong, soLuongThuHoach);
