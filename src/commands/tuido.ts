@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layTuiDo } from "../database/queries";
-import { cayMap } from "../data/plants";
+import { cayMap, layCayTuHatGiong, laHatGiong } from "../data/plants";
 import { formatXu, MAU_CHINH, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyTuiDo(message: Message) {
@@ -19,26 +19,48 @@ export async function xuLyTuiDo(message: Message) {
   }
 
   let tongGiaTri = 0;
-  const danhSach = tuiDo.map((item) => {
-    const cay = cayMap.get(item.tenCay);
-    if (!cay) return `❓ ${item.tenCay} x${item.soLuong} *(linh thảo không xác định)*`;
-    const giaTri = cay.giaBan * item.soLuong;
-    tongGiaTri += giaTri;
-    return `${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ Trị giá: ${formatXu(giaTri)}`;
-  });
+  const danhSachCay: string[] = [];
+  const danhSachHat: string[] = [];
+
+  for (const item of tuiDo) {
+    if (laHatGiong(item.tenCay)) {
+      // Hạt giống — không bán được, chỉ dùng để trồng
+      const cay = layCayTuHatGiong(item.tenCay);
+      if (cay) {
+        danhSachHat.push(`🌱 **Hạt ${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ *(Hạt giống — dùng .trong để gieo)*`);
+      } else {
+        danhSachHat.push(`🌱 ${item.tenCay} x${item.soLuong} *(hạt giống không xác định)*`);
+      }
+    } else {
+      // Cây đã thu hoạch — có thể bán
+      const cay = cayMap.get(item.tenCay);
+      if (!cay) {
+        danhSachCay.push(`❓ ${item.tenCay} x${item.soLuong} *(không xác định)*`);
+        continue;
+      }
+      const giaTri = cay.giaBan * item.soLuong;
+      tongGiaTri += giaTri;
+      danhSachCay.push(`${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ Trị giá: ${formatXu(giaTri)}`);
+    }
+  }
+
+  const moTa: string[] = ["*\"Mỗi linh thảo trong Bảo Nang đều mang linh khí của người trồng...\"*"];
+  if (danhSachCay.length) {
+    moTa.push("\n🧺 **Linh Thảo (có thể bán):**\n" + danhSachCay.join("\n"));
+  }
+  if (danhSachHat.length) {
+    moTa.push("\n🌱 **Hạt Giống (dùng .trong để gieo):**\n" + danhSachHat.join("\n"));
+  }
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
     .setTitle(`🎒 Bảo Nang của ${message.author.displayName}`)
-    .setDescription(
-      `*"Mỗi linh thảo trong Bảo Nang đều mang linh khí của người trồng..."*\n\n` +
-      danhSach.join("\n")
-    )
+    .setDescription(moTa.join("\n"))
     .addFields(
       { name: `💠 ${TEN_TIEN} Hiện Có`, value: formatXu(player.xu), inline: true },
-      { name: `📦 Tổng Trị Giá`,        value: formatXu(tongGiaTri), inline: true }
+      { name: `📦 Tổng Trị Giá Linh Thảo`, value: formatXu(tongGiaTri), inline: true }
     )
-    .setFooter({ text: `💡 .ban <tên> [số] để bán lấy ${TEN_TIEN} ${EMOJI_TIEN} • .ban tất để bán hết` });
+    .setFooter({ text: `💡 .ban <tên> [số] để bán linh thảo • .ban tất để bán hết (hạt giống không bán được)` });
 
   await message.reply({ embeds: [embed] });
 }

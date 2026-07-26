@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, ban as banDB, congXuVaKinhNghiem, layTuiDo } from "../database/queries";
-import { timCayTheoTen, cayMap } from "../data/plants";
+import { timCayTheoTen, cayMap, laHatGiong, layCayTuHatGiong } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, MAU_VANG } from "../utils/helpers";
 
 export async function xuLyBan(message: Message, args: string[]) {
@@ -13,8 +13,16 @@ export async function xuLyBan(message: Message, args: string[]) {
 
     let tongTien = 0;
     const danhSachBan: string[] = [];
+    let soHatBiBoQua = 0;
 
     for (const item of tuiDo) {
+      // Hạt giống không thể bán — chỉ dùng để trồng
+      if (laHatGiong(item.tenCay)) {
+        const cay = layCayTuHatGiong(item.tenCay);
+        soHatBiBoQua += item.soLuong;
+        if (cay) danhSachBan.push(`🌱 *(Bỏ qua: Hạt ${cay.ten} x${item.soLuong} — dùng .trong để gieo)*`);
+        continue;
+      }
       const cay = cayMap.get(item.tenCay);
       if (!cay) continue;
       const tien = cay.giaBan * item.soLuong;
@@ -23,13 +31,23 @@ export async function xuLyBan(message: Message, args: string[]) {
       danhSachBan.push(`${cay.emoji} ${cay.ten} x${item.soLuong} → ${formatXu(tien)}`);
     }
 
-    await congXuVaKinhNghiem(player.id, tongTien, 0);
+    if (tongTien === 0 && soHatBiBoQua === 0) {
+      return message.reply("🧺 Không có linh thảo nào để bán!");
+    }
+
+    if (tongTien > 0) {
+      await congXuVaKinhNghiem(player.id, tongTien, 0);
+    }
 
     const embed = new EmbedBuilder()
       .setColor(MAU_VANG)
-      .setTitle("💰 Đã bán tất cả!")
-      .setDescription(danhSachBan.join("\n"))
-      .addFields({ name: "🤑 Tổng thu", value: formatXu(tongTien) });
+      .setTitle(tongTien > 0 ? "💰 Đã bán tất cả linh thảo!" : "🌱 Chỉ có hạt giống trong túi!")
+      .setDescription(danhSachBan.join("\n") || "*(không có gì để bán)*");
+
+    if (tongTien > 0) {
+      embed.addFields({ name: "🤑 Tổng thu", value: formatXu(tongTien) });
+    }
+
     return message.reply({ embeds: [embed] });
   }
 
@@ -46,15 +64,24 @@ export async function xuLyBan(message: Message, args: string[]) {
   const cay = timCayTheoTen(tenCay);
 
   if (!cay) {
-    return message.reply(`❌ Không tìm thấy **${tenCay}**! Dùng \`.tuidо\` để xem túi đồ của bạn.`);
+    return message.reply(`❌ Không tìm thấy **${tenCay}**! Dùng \`.tuido\` để xem túi đồ của bạn.`);
   }
+
+  // Kiểm tra xem có hạt giống của loại này không (để đưa ra gợi ý hữu ích)
+  const tuiDo = await layTuiDo(player.id);
+  const coHatGiong = tuiDo.some((item) => item.tenCay === "hat_" + cay.id);
 
   const ok = await banDB(player.id, cay.id, soLuong);
   if (!ok) {
     const embedLoi = new EmbedBuilder()
       .setColor(MAU_DO)
       .setTitle("❌ Không đủ hàng")
-      .setDescription(`Bạn không có đủ **${soLuong}x ${cay.ten}** trong túi đồ!\nDùng \`.tuidо\` để kiểm tra.`);
+      .setDescription(
+        `Bạn không có đủ **${soLuong}x ${cay.ten}** (đã thu hoạch) trong túi đồ!\n` +
+        (coHatGiong
+          ? `💡 Bạn có hạt giống — dùng \`.trong ${cay.ten}\` để gieo trồng và thu hoạch trước.`
+          : `Dùng \`.tuido\` để kiểm tra.`)
+      );
     return message.reply({ embeds: [embedLoi] });
   }
 

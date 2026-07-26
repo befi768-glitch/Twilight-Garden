@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, truXu, themVaoTuiDo } from "../database/queries";
-import { timCayTheoTen } from "../data/plants";
+import { timCayTheoTen, layHatGiongId } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyMua(message: Message, args: string[]) {
@@ -44,20 +44,21 @@ export async function xuLyMua(message: Message, args: string[]) {
   }
 
   await truXu(player.id, tongTien);
-  await themVaoTuiDo(player.id, cay.id, soLuong);
+  // Lưu hạt giống vào túi đồ (không phải cây thật — phải trồng trước mới thu hoạch được)
+  await themVaoTuiDo(player.id, layHatGiongId(cay.id), soLuong);
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
-    .setTitle(`✅ Thỉnh Linh Thảo Thành Công!`)
+    .setTitle(`✅ Mua Hạt Giống Thành Công!`)
     .setDescription(
-      `*"Nàng Tiên Các trao cho bạn ${soLuong}x ${cay.emoji} **${cay.ten}** — hãy trân trọng chúng~"*`
+      `*"Nàng Tiên Các trao cho bạn ${soLuong}x 🌱 **Hạt ${cay.ten}** — hãy gieo trồng để thu hoạch~"*`
     )
     .addFields(
       { name: `💠 Đã Chi`, value: formatXu(tongTien), inline: true },
       { name: `💠 Còn Lại`, value: formatXu(player.xu - tongTien), inline: true },
       { name: `📦 Phẩm Cấp`, value: cay.doHiem, inline: true }
     )
-    .setFooter({ text: "💡 Dùng .trong <tên linh thảo> để gieo trồng vào Linh Địa!" });
+    .setFooter({ text: "💡 Dùng .trong <tên linh thảo> để gieo hạt vào Linh Địa!" });
 
   await message.reply({ embeds: [embed] });
 }

@@ -103,6 +103,20 @@ export const danhSachCay: Cay[] = [
 
 export const cayMap = new Map(danhSachCay.map((c) => [c.id, c]));
 
+// Seed helpers — mua trả về "hat_<id>", trong tiêu thụ "hat_<id>"
+export function layHatGiongId(cayId: string): string {
+  return "hat_" + cayId;
+}
+
+export function layCayTuHatGiong(hatId: string): Cay | undefined {
+  if (!hatId.startsWith("hat_")) return undefined;
+  return cayMap.get(hatId.slice(4));
+}
+
+export function laHatGiong(tenCay: string): boolean {
+  return tenCay.startsWith("hat_");
+}
+
 export function timCayTheoTen(query: string): Cay | undefined {
   const q = query.toLowerCase().trim();
   return danhSachCay.find(

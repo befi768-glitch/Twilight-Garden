@@ -1,12 +1,12 @@
 import { Message, EmbedBuilder } from "discord.js";
-import { layHoacTaoNguoiChoi, layVuon, trong as trongDB, truXu } from "../database/queries";
-import { timCayTheoTen, mauDoHiem } from "../data/plants";
-import { formatXu, MAU_DO, MAU_CHINH } from "../utils/helpers";
+import { layHoacTaoNguoiChoi, layVuon, trong as trongDB, layTuiDo, ban as banDB } from "../database/queries";
+import { timCayTheoTen, mauDoHiem, layHatGiongId } from "../data/plants";
+import { MAU_DO, MAU_CHINH } from "../utils/helpers";
 import { layLoiThoaiNgauNhien } from "../utils/events";
 
 export async function xuLyTrong(message: Message, args: string[]) {
   if (!args.length) {
-    return message.reply("❌ Bạn muốn trồng cây gì? Dùng `.trong <tên cây>` — VD: `.trong cà rốt`");
+    return message.reply("❌ Bạn muốn trồng cây gì? Dùng `.trong <tên cây>` — VD: `.trong hoàng căn`");
   }
 
   const tenCay = args.join(" ");
@@ -28,13 +28,25 @@ export async function xuLyTrong(message: Message, args: string[]) {
     return message.reply({ embeds: [embed] });
   }
 
-  if (player.xu < cay.giaMua) {
-    return message.reply(
-      `❌ Không đủ xu! Bạn có ${formatXu(player.xu)}, cần ${formatXu(cay.giaMua)} để mua hạt giống **${cay.ten}**.`
-    );
+  // Kiểm tra hạt giống trong túi đồ
+  const hatGiongId = layHatGiongId(cay.id);
+  const tuiDo = await layTuiDo(player.id);
+  const hatTrongTui = tuiDo.find((item) => item.tenCay === hatGiongId);
+
+  if (!hatTrongTui || hatTrongTui.soLuong < 1) {
+    const embed = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("🌱 Không Có Hạt Giống!")
+      .setDescription(
+        `*"Linh Địa cần hạt giống để gieo trồng..."*\n\n` +
+        `Bạn không có **Hạt ${cay.ten}** trong Bảo Nang!\n` +
+        `Dùng \`.mua ${cay.ten}\` để mua hạt giống tại Linh Thảo Các trước.`
+      );
+    return message.reply({ embeds: [embed] });
   }
 
-  await truXu(player.id, cay.giaMua);
+  // Tiêu thụ 1 hạt giống từ túi đồ
+  await banDB(player.id, hatGiongId, 1);
   await trongDB(player.id, oTrong.viTri, cay.id, cay.thoiGianMoc);
 
   const chinLuc = new Date(Date.now() + cay.thoiGianMoc * 60 * 1000);
@@ -44,11 +56,11 @@ export async function xuLyTrong(message: Message, args: string[]) {
   const embed = new EmbedBuilder()
     .setColor(mauDoHiem[cay.doHiem] ?? MAU_CHINH)
     .setTitle(`${cay.emoji} Đã trồng ${cay.ten}!`)
-    .setDescription(`${loiThoai}\n\n**${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}** 🌱`)
+    .setDescription(`${loiThoai}\n\n🌱 **Hạt ${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}** 🌱`)
     .addFields(
       { name: "⏰ Thu hoạch", value: gioChin, inline: true },
-      { name: "💰 Chi phí", value: formatXu(cay.giaMua), inline: true },
-      { name: "📦 Bán được", value: formatXu(cay.giaBan) + " / cái", inline: true }
+      { name: "📦 Hạt còn lại", value: `${hatTrongTui.soLuong - 1} hạt`, inline: true },
+      { name: "💰 Bán được", value: `${cay.giaBan} xu / cái`, inline: true }
     )
     .setFooter({ text: "💧 Tưới nước để giảm 20% thời gian và thu hoạch x2!" });
 

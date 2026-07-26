@@ -14,7 +14,8 @@ export async function xuLyCuaHang(message: Message) {
     .setColor(MAU_CHINH)
     .setTitle("🏮 Linh Thảo Các — Cửa Hàng Twilight Garden")
     .setDescription(
-      "*\"Mỗi linh thảo đều mang trong mình một câu chuyện riêng...\"*\n\n" +
+      "*\"Mỗi gói hạt giống đều mang trong mình một câu chuyện riêng...\"*\n\n" +
+      "🌱 *Cửa hàng bán **gói hạt giống** — mua về rồi dùng `.trong` để gieo, sau đó `.thuhoach` để thu hoạch!*\n\n" +
       lines.join("\n\n")
     )
     .addFields({
