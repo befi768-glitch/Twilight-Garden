@@ -69,8 +69,7 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent, // Bắt buộc bật trong Developer Portal
   ],
   partials: [Partials.Message, Partials.Channel],
 });
@@ -96,7 +95,6 @@ client.on("messageCreate", async (message) => {
 
   try {
     switch (lenh) {
-      // Vườn tược
       case "vuon":
       case "vườn":
         await xuLyVuon(message);
@@ -118,7 +116,6 @@ client.on("messageCreate", async (message) => {
         await xuLyThuHoach(message, args);
         break;
 
-      // Mua bán
       case "cuahang":
       case "cửahàng":
       case "shop":
@@ -134,7 +131,6 @@ client.on("messageCreate", async (message) => {
         await xuLyBan(message, args);
         break;
 
-      // Quản lý
       case "tuido":
       case "túiđồ":
       case "tui":
@@ -152,7 +148,6 @@ client.on("messageCreate", async (message) => {
         await xuLyTang(message, args);
         break;
 
-      // Trợ giúp
       case "trogiup":
       case "trợgiúp":
       case "help":
@@ -161,7 +156,6 @@ client.on("messageCreate", async (message) => {
         break;
 
       default:
-        // Không phản hồi lệnh không hợp lệ để tránh spam
         break;
     }
   } catch (err) {
