@@ -111,7 +111,28 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
     };
   }
 
-  // 70% — Bình thường
+  // 5% — Hắc Sương Độc: mất xu = 50% giá bán (nặng hơn Lôi Kiếp)
+  if (ran < 0.35) {
+    const matXu = Math.max(10, Math.floor(cay.giaBan * 0.5));
+    const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
+    return {
+      loai: "loi_kiep",
+      moTa: `🌫️ **Hắc Sương Độc Phủ!** *${loi}* — Sương âm khí bao trùm, linh lực tan biến — Mất **${matXu} ${EMOJI_TIEN} ${TEN_TIEN}**!`,
+      matXu,
+    };
+  }
+
+  // 5% — Quỷ Tinh Quấy Phá: mất thêm 2 sản lượng (nặng hơn Sâu Linh)
+  if (ran < 0.40) {
+    const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
+    return {
+      loai: "sau_linh",
+      moTa: `👺 **Quỷ Tinh Quấy Phá!** *${loi}* — Bầy quỷ tinh ập vào, nghiền nát linh thảo — Mất 2 ${cay.emoji} **${cay.ten}**!`,
+      matSanLuong: 2,
+    };
+  }
+
+  // 60% — Bình thường
   return { loai: "binh_thuong", moTa: "" };
 }
 
