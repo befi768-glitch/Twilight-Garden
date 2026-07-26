@@ -25,5 +25,9 @@ COPY . .
 # Build lib declarations (needed for @workspace/db types)
 RUN pnpm run typecheck:libs
 
-# Run the bot
-CMD ["pnpm", "--filter", "@workspace/discord-bot", "run", "start"]
+# Copy startup script
+COPY artifacts/discord-bot/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+# Push schema + start bot
+CMD ["sh", "./start.sh"]
