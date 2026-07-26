@@ -49,10 +49,12 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         ].join("\n"),
       },
       {
-        name: "⚔️ Bóng Tối — Trộm & Cướp",
+        name: "⚔️ Bóng Tối — Trộm, Cướp & Phá",
         value: [
           `\`${p}trom @người\` — Trộm linh thảo từ túi đồ (55% thành công, CD 2h)`,
           `\`${p}cuop @người\` — Cướp ${TEN_TIEN} trực tiếp (40% thành công, CD 4h)`,
+          `\`${p}pavuon @người\` — Phá 1-2 cây đang trồng trong vườn (60% thành công, CD 6h)`,
+          `\`${p}xenlen @người\` — Lén xem vườn người khác (30% bị phát hiện)`,
           `⚠️ Thất bại sẽ bị phạt xu! Cân nhắc trước khi ra tay~`,
         ].join("\n"),
       },

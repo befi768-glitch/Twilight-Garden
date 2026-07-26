@@ -17,6 +17,8 @@ import { xuLyCuop } from "./commands/cuop";
 import { xuLyPet } from "./commands/pet";
 import { xuLySetup } from "./commands/setup";
 import { xuLyAdmin } from "./commands/admin";
+import { xuLyXenLen } from "./commands/xenlen";
+import { xuLyPhaVuon } from "./commands/pavuon";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -56,6 +58,7 @@ async function khoiTaoDatabase() {
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS trom_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS cuop_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pet_id TEXT`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pavuon_cooldown TIMESTAMP`);
 
   // Bảng kênh được phép dùng bot
   await db.execute(sql`
@@ -210,6 +213,15 @@ client.on(Events.MessageCreate, async (message) => {
         break;
       case "admin":
         await xuLyAdmin(message, args, client);
+        break;
+      case "xenlen":
+      case "xenlén":
+        await xuLyXenLen(message, args);
+        break;
+      case "pavuon":
+      case "phávườn":
+      case "phaVuon":
+        await xuLyPhaVuon(message, args);
         break;
       default:
         break;
