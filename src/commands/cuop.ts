@@ -93,7 +93,7 @@ export async function xuLyCuop(message: Message, args: string[]) {
       await mucTieu.send({ embeds: [embedNanNhan] });
     } catch {
       // DM bị tắt — thông báo trong kênh
-      await message.channel.send({ content: `<@${mucTieu.id}>`, embeds: [embedNanNhan] });
+      if (message.channel.isSendable()) await message.channel.send({ content: `<@${mucTieu.id}>`, embeds: [embedNanNhan] });
     }
 
     const embed = new EmbedBuilder()
