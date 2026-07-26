@@ -1,10 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "🔄 Running database migrations..."
-cd /app/lib/db
-pnpm exec drizzle-kit migrate --config ./drizzle.config.ts
+echo "🔄 Pushing database schema..."
+cd /app
+yes | pnpm --filter @workspace/db run push || true
 
 echo "🌱 Starting Twilight Garden Bot..."
-cd /app
 pnpm --filter @workspace/discord-bot run start
