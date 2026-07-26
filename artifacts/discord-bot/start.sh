@@ -1,9 +1,9 @@
 #!/bin/sh
 set -e
 
-echo "🔄 Pushing database schema..."
+echo "🔄 Running database migrations..."
 cd /app
-pnpm --filter @workspace/db run push-force
+pnpm --filter @workspace/db run migrate
 
 echo "🌱 Starting Twilight Garden Bot..."
 pnpm --filter @workspace/discord-bot run start
