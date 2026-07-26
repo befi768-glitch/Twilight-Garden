@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon, thuHoach as thuHoachDB, congXuVaKinhNghiem, themVaoTuiDo } from "../database/queries";
-import { cayMap } from "../data/plants";
+import { cayMap, layAnhCay } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, MAU_VANG } from "../utils/helpers";
 import { taoSuKien, layLoiThoaiNgauNhien } from "../utils/events";
 
@@ -27,12 +27,10 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     const cay = cayMap.get(ketQua.tenCay);
     if (!cay) return message.reply("❌ Lỗi không xác định!");
 
-    // Sự kiện ngẫu nhiên
     const suKien = taoSuKien(cay);
     const ke = cay.kinhNghiem * ketQua.soLuong;
     const capInfo = await congXuVaKinhNghiem(player.id, 0, ke);
 
-    // Xử lý bonus từ sự kiện
     let bonusText = "";
     if (suKien.loai !== "binh_thuong") {
       bonusText = `\n\n${suKien.moTa}`;
@@ -45,13 +43,14 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
 
     const embed = new EmbedBuilder()
       .setColor(MAU_VANG)
-      .setTitle(`🧺 Thu hoạch thành công!`)
-      .setDescription(`${loiThoai}\n\n${cay.emoji} **${cay.ten}** x${ketQua.soLuong} đã vào túi đồ! +${ke} ✨ KN${bonusText}`)
+      .setTitle(`Thu hoạch thành công!`)
+      .setDescription(`${loiThoai}\n\n**${cay.ten}** x${ketQua.soLuong} đã vào túi đồ! +${ke} ✨ KN${bonusText}`)
+      .setThumbnail(`attachment://${cay.id}.png`)
       .addFields(
         { name: "📦 Thu hoạch", value: `${ketQua.soLuong}x ${cay.ten}`, inline: true },
         { name: "💰 Giá bán", value: formatXu(cay.giaBan) + " / cái", inline: true }
       )
-      .setFooter({ text: "💡 Dùng .ban để bán • .tuidо để xem túi đồ" });
+      .setFooter({ text: "💡 Dùng .ban để bán • .tuido để xem túi đồ" });
 
     if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
       const { loi_thoai } = await import("../utils/events");
@@ -59,7 +58,10 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
       embed.addFields({ name: `🎉 LÊN CẤP ${capInfo.capDoMoi}!`, value: loiCap });
     }
 
-    return message.reply({ embeds: [embed] });
+    return message.reply({
+      files: [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }],
+      embeds: [embed],
+    });
   }
 
   // Thu hoạch tất cả
@@ -86,7 +88,7 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
 
     const ke = cay.kinhNghiem * ketQua.soLuong;
     tongKe += ke;
-    danhSachThuHoach.push(`${cay.emoji} **${cay.ten}** x${ketQua.soLuong}`);
+    danhSachThuHoach.push(`**${cay.ten}** x${ketQua.soLuong}`);
 
     const suKien = taoSuKien(cay);
     if (suKien.loai !== "binh_thuong") {

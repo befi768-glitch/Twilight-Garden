@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon, tuoi as tuoiDB } from "../database/queries";
-import { cayMap } from "../data/plants";
+import { cayMap, layAnhCay } from "../data/plants";
 import { formatThoiGian, MAU_CHINH, MAU_DO } from "../utils/helpers";
 import { layLoiThoaiNgauNhien } from "../utils/events";
 
@@ -30,13 +30,16 @@ export async function xuLyTuoi(message: Message, args: string[]) {
     const embed = new EmbedBuilder()
       .setColor(MAU_CHINH)
       .setTitle(`💧 Đã tưới ô ${viTri}!`)
-      .setDescription(`${loiThoai}\n\n${cay?.emoji} **${cay?.ten}** được tưới đẫm nước sương!`)
+      .setDescription(`${loiThoai}\n\n**${cay?.ten}** được tưới đẫm nước sương!`)
+      .setThumbnail(cay ? `attachment://${cay.id}.png` : null)
       .addFields(
         { name: "⏰ Thời gian còn lại", value: formatThoiGian(moiConLai), inline: true },
         { name: "✨ Hiệu ứng", value: "-5~10% thời gian", inline: true }
       );
 
-    return message.reply({ embeds: [embed] });
+    const replyOptions: Parameters<typeof message.reply>[0] = { embeds: [embed] };
+    if (cay) (replyOptions as any).files = [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }];
+    return message.reply(replyOptions);
   }
 
   const chuaTuoi = vuon.filter((o) => o.tenCay && !o.daTuoi && o.truongThanhLuc && o.truongThanhLuc > bayGio);

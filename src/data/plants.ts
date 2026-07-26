@@ -1,3 +1,9 @@
+import path from "path";
+
+export function layAnhCay(cayId: string): string {
+  return path.join(__dirname, "../assets/plants", `${cayId}.png`);
+}
+
 export interface Cay {
   id: string;
   ten: string;

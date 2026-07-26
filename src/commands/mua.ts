@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, truXu, themVaoTuiDo } from "../database/queries";
-import { timCayTheoTen, layHatGiongId } from "../data/plants";
+import { timCayTheoTen, layHatGiongId, layAnhCay } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyMua(message: Message, args: string[]) {
@@ -39,20 +39,24 @@ export async function xuLyMua(message: Message, args: string[]) {
       .setDescription(
         `*"Nguyệt Thạch chưa đủ để thỉnh linh thảo quý này..."*\n\n` +
         `Cần: **${formatXu(tongTien)}**\nBạn có: **${formatXu(player.xu)}**`
-      );
-    return message.reply({ embeds: [embed] });
+      )
+      .setThumbnail(`attachment://${cay.id}.png`);
+    return message.reply({
+      files: [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }],
+      embeds: [embed],
+    });
   }
 
   await truXu(player.id, tongTien);
-  // Lưu hạt giống vào túi đồ (không phải cây thật — phải trồng trước mới thu hoạch được)
   await themVaoTuiDo(player.id, layHatGiongId(cay.id), soLuong);
 
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
     .setTitle(`✅ Mua Hạt Giống Thành Công!`)
     .setDescription(
-      `*"Nàng Tiên Các trao cho bạn ${soLuong}x 🌱 **Hạt ${cay.ten}** — hãy gieo trồng để thu hoạch~"*`
+      `*"Nàng Tiên Các trao cho bạn ${soLuong}x **Hạt ${cay.ten}** — hãy gieo trồng để thu hoạch~"*`
     )
+    .setThumbnail(`attachment://${cay.id}.png`)
     .addFields(
       { name: `💠 Đã Chi`, value: formatXu(tongTien), inline: true },
       { name: `💠 Còn Lại`, value: formatXu(player.xu - tongTien), inline: true },
@@ -60,5 +64,8 @@ export async function xuLyMua(message: Message, args: string[]) {
     )
     .setFooter({ text: "💡 Dùng .trong <tên linh thảo> để gieo hạt vào Linh Địa!" });
 
-  await message.reply({ embeds: [embed] });
+  await message.reply({
+    files: [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }],
+    embeds: [embed],
+  });
 }

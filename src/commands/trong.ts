@@ -1,6 +1,6 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon, trong as trongDB, layTuiDo, ban as banDB } from "../database/queries";
-import { timCayTheoTenHoacHat, mauDoHiem, layHatGiongId } from "../data/plants";
+import { timCayTheoTenHoacHat, mauDoHiem, layHatGiongId, layAnhCay } from "../data/plants";
 import { MAU_DO, MAU_CHINH } from "../utils/helpers";
 import { layLoiThoaiNgauNhien } from "../utils/events";
 
@@ -24,7 +24,7 @@ export async function xuLyTrong(message: Message, args: string[]) {
     const embed = new EmbedBuilder()
       .setColor(MAU_DO)
       .setTitle("🌿 Vườn đã đầy!")
-      .setDescription("*Nàng tiên vườn lắc đầu buồn bã...*\n\nKhông còn ô đất trống! Hãy thu hoạch cây đã chín trước, hoặc lên cấp để mở thêm ô đất 🌱");
+      .setDescription("*Nàng tiên vườn lắc đầu buồn bã...*\n\nKhông còn ô đất trống! Hãy thu hoạch cây đã chín trước, hoặc lên cấp để mở thêm ô đất.");
     return message.reply({ embeds: [embed] });
   }
 
@@ -41,8 +41,12 @@ export async function xuLyTrong(message: Message, args: string[]) {
         `*"Linh Địa cần hạt giống để gieo trồng..."*\n\n` +
         `Bạn không có **Hạt ${cay.ten}** trong Bảo Nang!\n` +
         `Dùng \`.mua ${cay.ten}\` để mua hạt giống tại Linh Thảo Các trước.`
-      );
-    return message.reply({ embeds: [embed] });
+      )
+      .setThumbnail(`attachment://${cay.id}.png`);
+    return message.reply({
+      files: [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }],
+      embeds: [embed],
+    });
   }
 
   // Tiêu thụ 1 hạt giống từ túi đồ
@@ -55,8 +59,9 @@ export async function xuLyTrong(message: Message, args: string[]) {
 
   const embed = new EmbedBuilder()
     .setColor(mauDoHiem[cay.doHiem] ?? MAU_CHINH)
-    .setTitle(`${cay.emoji} Đã trồng ${cay.ten}!`)
-    .setDescription(`${loiThoai}\n\n🌱 **Hạt ${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}** 🌱`)
+    .setTitle(`Đã gieo trồng ${cay.ten}!`)
+    .setDescription(`${loiThoai}\n\n**Hạt ${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}**`)
+    .setThumbnail(`attachment://${cay.id}.png`)
     .addFields(
       { name: "⏰ Thu hoạch", value: gioChin, inline: true },
       { name: "📦 Hạt còn lại", value: `${hatTrongTui.soLuong - 1} hạt`, inline: true },
@@ -64,5 +69,8 @@ export async function xuLyTrong(message: Message, args: string[]) {
     )
     .setFooter({ text: "💧 Tưới nước để giảm 5~10% thời gian!" });
 
-  await message.reply({ embeds: [embed] });
+  await message.reply({
+    files: [{ attachment: layAnhCay(cay.id), name: `${cay.id}.png` }],
+    embeds: [embed],
+  });
 }
