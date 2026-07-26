@@ -15,6 +15,7 @@ import { xuLyDiemDanh } from "./commands/diemdanh";
 import { xuLyTrom } from "./commands/trom";
 import { xuLyCuop } from "./commands/cuop";
 import { xuLyPet } from "./commands/pet";
+import { xuLySetup } from "./commands/setup";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -54,6 +55,16 @@ async function khoiTaoDatabase() {
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS trom_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS cuop_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pet_id TEXT`);
+
+  // Bảng kênh được phép dùng bot
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS kenh_bot (
+      id SERIAL PRIMARY KEY,
+      guild_id TEXT NOT NULL,
+      channel_id TEXT NOT NULL,
+      UNIQUE(guild_id, channel_id)
+    )
+  `);
 
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS o_dat (
@@ -107,6 +118,23 @@ client.on(Events.MessageCreate, async (message) => {
   const content = message.content.slice(PREFIX.length).trim();
   const args = content.split(/\s+/);
   const lenh = args.shift()?.toLowerCase() ?? "";
+
+  // Các lệnh luôn được phép bất kể setup kênh
+  const LENH_MIEN_TRAM = ["setup", "trogiup", "trợgiúp", "help", "h"];
+
+  // Kiểm tra kênh được phép (chỉ check nếu đã có cấu hình)
+  if (!LENH_MIEN_TRAM.includes(lenh)) {
+    const kenhConfig = await db.execute(
+      sql`SELECT channel_id FROM kenh_bot WHERE guild_id = ${message.guild.id} LIMIT 1`
+    );
+    if (kenhConfig.rows.length > 0) {
+      // Guild đã cấu hình → kiểm tra kênh hiện tại
+      const duocPhep = await db.execute(
+        sql`SELECT 1 FROM kenh_bot WHERE guild_id = ${message.guild.id} AND channel_id = ${message.channelId} LIMIT 1`
+      );
+      if (duocPhep.rows.length === 0) return; // Kênh không được phép, bỏ qua
+    }
+  }
 
   try {
     switch (lenh) {
@@ -175,6 +203,9 @@ client.on(Events.MessageCreate, async (message) => {
         break;
       case "pet":
         await xuLyPet(message, args);
+        break;
+      case "setup":
+        await xuLySetup(message, args);
         break;
       default:
         break;

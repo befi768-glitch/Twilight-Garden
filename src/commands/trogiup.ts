@@ -76,6 +76,16 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         ].join("\n"),
       },
       {
+        name: "⚙️ Quản Trị Server",
+        value: [
+          `\`${p}setup\` — Xem danh sách kênh được phép dùng bot`,
+          `\`${p}setup them #kênh\` — Thêm kênh được phép (cần quyền Quản lý Server)`,
+          `\`${p}setup xoa #kênh\` — Xoá kênh khỏi danh sách`,
+          `\`${p}setup xoahet\` — Bỏ giới hạn, bot hoạt động mọi kênh`,
+          `💡 Khi chưa setup: bot hoạt động ở tất cả kênh!`,
+        ].join("\n"),
+      },
+      {
         name: "📖 Phẩm Cấp Linh Thảo",
         value: "⬜ Phàm Phẩm → 🟦 Linh Phẩm → 🟪 Tiên Phẩm → 🟨 Thần Phẩm",
       }
