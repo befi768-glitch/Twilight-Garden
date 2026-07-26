@@ -1,8 +1,55 @@
 import { Message, EmbedBuilder } from "discord.js";
-import { layHoacTaoNguoiChoi, layVuon, thuHoach as thuHoachDB, congXuVaKinhNghiem, themVaoTuiDo } from "../database/queries";
+import { layHoacTaoNguoiChoi, layVuon, thuHoach as thuHoachDB, congXuVaKinhNghiem, themVaoTuiDo, truXu, ban as banDB } from "../database/queries";
 import { cayMap, layAnhCay } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, MAU_VANG } from "../utils/helpers";
 import { taoSuKien, layLoiThoaiNgauNhien } from "../utils/events";
+
+// Áp dụng sự kiện và trả về mô tả bonus/penalty thực tế
+async function apDungSuKien(
+  playerId: number,
+  suKien: ReturnType<typeof taoSuKien>,
+  soLuongThuHoach: number,
+  cayId: string
+): Promise<{ bonusText: string; xuBonus: number; xuPhat: number }> {
+  let bonusText = "";
+  let xuBonus = 0;
+  let xuPhat = 0;
+
+  if (suKien.loai === "binh_thuong") return { bonusText, xuBonus, xuPhat };
+
+  // Có lợi
+  if (suKien.bonusXu) {
+    xuBonus += suKien.bonusXu;
+    await congXuVaKinhNghiem(playerId, suKien.bonusXu, 0);
+  }
+  if (suKien.bonusCay) {
+    await themVaoTuiDo(playerId, suKien.bonusCay.id, suKien.bonusCay.soLuong);
+  }
+  if (suKien.bonusSanLuong) {
+    await themVaoTuiDo(playerId, cayId, suKien.bonusSanLuong);
+  }
+
+  // Bất lợi — mất xu
+  if (suKien.matXu) {
+    xuPhat += suKien.matXu;
+    await truXu(playerId, suKien.matXu);
+  }
+
+  // Bất lợi — mất sản lượng
+  if (suKien.matSanLuong !== undefined) {
+    if (suKien.matSanLuong === -1) {
+      // Mất 50% sản lượng (tối thiểu 1 cái bị mất, tối thiểu còn 0 — đã thu hoạch rồi nên xóa khỏi túi)
+      const soMat = Math.max(1, Math.floor(soLuongThuHoach / 2));
+      await banDB(playerId, cayId, soMat); // Xóa khỏi túi đồ
+    } else if (suKien.matSanLuong > 0 && soLuongThuHoach > 0) {
+      const soMat = Math.min(suKien.matSanLuong, soLuongThuHoach);
+      await banDB(playerId, cayId, soMat);
+    }
+  }
+
+  bonusText = `\n\n${suKien.moTa}`;
+  return { bonusText, xuBonus, xuPhat };
+}
 
 export async function xuLyThuHoach(message: Message, args: string[]) {
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
@@ -31,18 +78,14 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     const ke = cay.kinhNghiem * ketQua.soLuong;
     const capInfo = await congXuVaKinhNghiem(player.id, 0, ke);
 
-    let bonusText = "";
-    if (suKien.loai !== "binh_thuong") {
-      bonusText = `\n\n${suKien.moTa}`;
-      if (suKien.bonusXu) await congXuVaKinhNghiem(player.id, suKien.bonusXu, 0);
-      if (suKien.bonusCay) await themVaoTuiDo(player.id, suKien.bonusCay.id, suKien.bonusCay.soLuong);
-      if (suKien.bonusSanLuong) await themVaoTuiDo(player.id, cay.id, suKien.bonusSanLuong);
-    }
-
+    const { bonusText, xuPhat } = await apDungSuKien(player.id, suKien, ketQua.soLuong, cay.id);
     const loiThoai = layLoiThoaiNgauNhien("thuhoach");
 
+    const laBatLoi = ["sau_linh", "loi_kiep", "nu_tiep_ruong"].includes(suKien.loai);
+    const mauEmbed = laBatLoi ? MAU_DO : MAU_VANG;
+
     const embed = new EmbedBuilder()
-      .setColor(MAU_VANG)
+      .setColor(mauEmbed)
       .setTitle(`Thu hoạch thành công!`)
       .setDescription(`${loiThoai}\n\n**${cay.ten}** x${ketQua.soLuong} đã vào túi đồ! +${ke} ✨ KN${bonusText}`)
       .setThumbnail(`attachment://${cay.id}.png`)
@@ -51,6 +94,10 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
         { name: "💰 Giá bán", value: formatXu(cay.giaBan) + " / cái", inline: true }
       )
       .setFooter({ text: "💡 Dùng .ban để bán • .tuido để xem túi đồ" });
+
+    if (xuPhat > 0) {
+      embed.addFields({ name: "💸 Tổn Thất", value: `-${formatXu(xuPhat)}`, inline: true });
+    }
 
     if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
       const { loi_thoai } = await import("../utils/events");
@@ -77,8 +124,10 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
 
   let tongKe = 0;
   let tongBonus = 0;
+  let tongPhat = 0;
   const danhSachThuHoach: string[] = [];
-  const danhSachSuKien: string[] = [];
+  const danhSachSuKienTot: string[] = [];
+  const danhSachSuKienXau: string[] = [];
 
   for (const o of dayChin) {
     const ketQua = await thuHoachDB(player.id, o.viTri);
@@ -88,30 +137,43 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
 
     const ke = cay.kinhNghiem * ketQua.soLuong;
     tongKe += ke;
-    danhSachThuHoach.push(`**${cay.ten}** x${ketQua.soLuong}`);
+    danhSachThuHoach.push(`${cay.emoji} **${cay.ten}** x${ketQua.soLuong}`);
 
     const suKien = taoSuKien(cay);
     if (suKien.loai !== "binh_thuong") {
-      danhSachSuKien.push(suKien.moTa);
-      if (suKien.bonusXu) tongBonus += suKien.bonusXu;
-      if (suKien.bonusCay) await themVaoTuiDo(player.id, suKien.bonusCay.id, suKien.bonusCay.soLuong);
-      if (suKien.bonusSanLuong) await themVaoTuiDo(player.id, cay.id, suKien.bonusSanLuong);
+      const laBatLoi = ["sau_linh", "loi_kiep", "nu_tiep_ruong"].includes(suKien.loai);
+      const { xuBonus, xuPhat } = await apDungSuKien(player.id, suKien, ketQua.soLuong, cay.id);
+      tongBonus += xuBonus;
+      tongPhat += xuPhat;
+      if (laBatLoi) {
+        danhSachSuKienXau.push(suKien.moTa);
+      } else {
+        danhSachSuKienTot.push(suKien.moTa);
+      }
     }
   }
 
-  if (tongBonus > 0) await congXuVaKinhNghiem(player.id, tongBonus, 0);
   const capInfo = await congXuVaKinhNghiem(player.id, 0, tongKe);
   const loiThoai = layLoiThoaiNgauNhien("thuhoach");
 
   let moTa = `${loiThoai}\n\n${danhSachThuHoach.join("\n")}`;
-  if (danhSachSuKien.length) moTa += `\n\n${danhSachSuKien.join("\n")}`;
+  if (danhSachSuKienTot.length) moTa += `\n\n${danhSachSuKienTot.join("\n")}`;
+  if (danhSachSuKienXau.length) moTa += `\n\n${danhSachSuKienXau.join("\n")}`;
 
   const embed = new EmbedBuilder()
     .setColor(MAU_VANG)
     .setTitle(`🧺 Thu hoạch ${dayChin.length} cây!`)
     .setDescription(moTa)
-    .addFields({ name: "✨ Kinh nghiệm", value: `+${tongKe} KN`, inline: true })
-    .setFooter({ text: "💡 Dùng .ban để bán nông sản lấy xu!" });
+    .addFields({ name: "✨ Kinh nghiệm", value: `+${tongKe} KN`, inline: true });
+
+  if (tongBonus > 0) {
+    embed.addFields({ name: "🎁 Bonus Nguyệt Thạch", value: `+${formatXu(tongBonus)}`, inline: true });
+  }
+  if (tongPhat > 0) {
+    embed.addFields({ name: "💸 Tổn Thất", value: `-${formatXu(tongPhat)}`, inline: true });
+  }
+
+  embed.setFooter({ text: "💡 Dùng .ban để bán nông sản lấy xu!" });
 
   if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
     const { loi_thoai } = await import("../utils/events");
