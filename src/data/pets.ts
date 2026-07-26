@@ -9,8 +9,8 @@ export interface Pet {
   bonusMoTa: string;        // Mô tả bonus ngắn
 }
 
-// Thuế cơ bản: 25%
-export const THUE_CO_BAN = 25;
+// Thuế cơ bản: 15%
+export const THUE_CO_BAN = 15;
 
 export const danhSachPet: Pet[] = [
   {
@@ -19,9 +19,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦊",
     gia: 15_000,
     giaBanLai: 7_500,
-    giamThue: 4,   // 25% → 21%
+    giamThue: 2,   // 15% → 13%
     moTa: "Hồ ly tinh linh thoát khỏi cõi âm, mang theo phúc khí buôn bán",
-    bonusMoTa: "Giảm thuế 4% (còn 21%)",
+    bonusMoTa: "Giảm thuế 2% (còn 13%)",
   },
   {
     id: "ngoc_tho",
@@ -29,9 +29,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐇",
     gia: 25_000,
     giaBanLai: 12_500,
-    giamThue: 7,   // 25% → 18%
+    giamThue: 4,   // 15% → 11%
     moTa: "Thỏ ngọc từ Quảng Hàn cung, nhảy xuống hạ giới mang theo phước lành",
-    bonusMoTa: "Giảm thuế 7% (còn 18%)",
+    bonusMoTa: "Giảm thuế 4% (còn 11%)",
   },
   {
     id: "thanh_long",
@@ -39,9 +39,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐉",
     gia: 50_000,
     giaBanLai: 25_000,
-    giamThue: 11,  // 25% → 14%
+    giamThue: 6,   // 15% → 9%
     moTa: "Rồng xanh trấn giữ phương đông, vừa dũng mãnh vừa mang lại tài lộc",
-    bonusMoTa: "Giảm thuế 11% (còn 14%)",
+    bonusMoTa: "Giảm thuế 6% (còn 9%)",
   },
   {
     id: "phung_hoang",
@@ -49,9 +49,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦅",
     gia: 100_000,
     giaBanLai: 50_000,
-    giamThue: 15,  // 25% → 10%
+    giamThue: 8,   // 15% → 7%
     moTa: "Thần điểu bất tử, tái sinh từ tro tàn, chủ của mọi điều kỳ diệu trong Twilight Garden",
-    bonusMoTa: "Giảm thuế 15% (còn 10%)",
+    bonusMoTa: "Giảm thuế 8% (còn 7%)",
   },
 ];
 
@@ -73,5 +73,5 @@ export function tinhThue(petId: string | null): number {
   if (!petId) return THUE_CO_BAN;
   const pet = petMap.get(petId);
   if (!pet) return THUE_CO_BAN;
-  return Math.max(1, THUE_CO_BAN - pet.giamThue); // Không bao giờ về 0
+  return Math.max(1, THUE_CO_BAN - pet.giamThue);
 }
