@@ -4,7 +4,7 @@ import { db } from "../database/db";
 import { nguoiChoi } from "../database/schema";
 import { eq } from "drizzle-orm";
 import { MAU_CHINH, MAU_DO, MAU_VANG, MAU_XANH, MAU_XAM, formatXu } from "../utils/helpers";
-import { danhSachPet, petMap, timPetTheoTen, tinhThue, THUE_CO_BAN } from "../data/pets";
+import { danhSachPet, petMap, timPetTheoTen, tinhThue, THUE_CO_BAN, coChongPhaVuon } from "../data/pets";
 
 async function layPetHienTai(playerId: number): Promise<string | null> {
   const row = await db.execute<{ pet_id: string | null }>(
@@ -36,13 +36,16 @@ export async function xuLyPet(message: Message, args: string[]) {
 
     const pet = petMap.get(petId)!;
     const thue = tinhThue(petId);
+    const truongHopThueSurf = pet.giamThue > 0
+      ? `${thue}% (giảm từ ${THUE_CO_BAN}%)`
+      : `${THUE_CO_BAN}% (không giảm)`;
     const embed = new EmbedBuilder()
       .setColor(MAU_CHINH)
       .setTitle(`${pet.emoji} Thú Linh — ${pet.ten}`)
       .setDescription(`*${pet.moTa}*`)
       .addFields(
         { name: "✨ Phúc Lợi", value: pet.bonusMoTa, inline: true },
-        { name: "💰 Thuế Bán Cây", value: `${thue}% (giảm từ ${THUE_CO_BAN}%)`, inline: true },
+        { name: "💰 Thuế Bán Cây", value: truongHopThueSurf, inline: true },
         { name: "💠 Giá Bán Lại", value: formatXu(pet.giaBanLai), inline: true }
       )
       .setFooter({ text: `Dùng .pet tha để thả pet (nhận lại ${formatXu(pet.giaBanLai)})` });
@@ -69,6 +72,10 @@ export async function xuLyPet(message: Message, args: string[]) {
         danhSach.join("\n\n") +
         `\n\n💠 Số dư của bạn: **${formatXu(xuHienTai)}**`
       )
+      .addFields({
+        name: "⚠️ Lưu Ý",
+        value: "Chỉ nuôi được **1 pet** tại một thời điểm — hiệu ứng **không cộng dồn**.\nPet giảm thuế và pet chống phá vườn là hai lựa chọn riêng biệt.",
+      })
       .setFooter({ text: "Dùng .pet mua <tên> để nhận thú linh về nuôi" });
     return message.reply({ embeds: [embed] });
   }
@@ -128,7 +135,11 @@ export async function xuLyPet(message: Message, args: string[]) {
       )
       .addFields(
         { name: "✨ Phúc Lợi", value: pet.bonusMoTa, inline: true },
-        { name: "💰 Thuế Mới", value: `${thue}% (giảm từ ${THUE_CO_BAN}%)`, inline: true }
+        {
+          name: "💰 Thuế Bán Cây",
+          value: pet.giamThue > 0 ? `${thue}% (giảm từ ${THUE_CO_BAN}%)` : `${THUE_CO_BAN}% (không giảm)`,
+          inline: true,
+        }
       )
       .setFooter({ text: `Đã trừ ${formatXu(pet.gia)} • Bán lại: ${formatXu(pet.giaBanLai)}` });
     return message.reply({ embeds: [embed] });

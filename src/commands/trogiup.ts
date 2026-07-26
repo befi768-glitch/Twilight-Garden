@@ -62,10 +62,12 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         name: "🐾 Thú Linh — Pet",
         value: [
           `\`${p}pet\` — Xem thú linh đang nuôi`,
-          `\`${p}pet danhsach\` — Xem tất cả pet (từ 15,000 ${EMOJI_TIEN})`,
+          `\`${p}pet danhsach\` — Xem tất cả pet (từ 10,000 ${EMOJI_TIEN})`,
           `\`${p}pet mua <tên>\` — Nhận thú linh về nuôi`,
           `\`${p}pet tha\` — Thả pet (nhận lại 50% giá)`,
-          `✨ Pet giúp giảm thuế bán cây từ ${THUE_CO_BAN}% xuống 0%!`,
+          `🐢 **Linh Quy** (10k) — Chặn 100% \`.pavuon\` • không giảm thuế`,
+          `🦊 **Linh Hồ / Ngọc Thỏ / Thanh Long / Phụng Hoàng** — Giảm thuế bán cây`,
+          `⚠️ Chỉ nuôi 1 pet — hiệu ứng **không cộng dồn**!`,
         ].join("\n"),
       },
       {

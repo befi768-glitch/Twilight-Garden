@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm";
 import { oDat } from "../database/schema";
 import { eq, and, isNotNull } from "drizzle-orm";
 import { cayMap } from "../data/plants";
+import { coChongPhaVuon } from "../data/pets";
 import { MAU_DO, MAU_VANG, MAU_XANH, MAU_CHINH, formatXu } from "../utils/helpers";
 
 const COOLDOWN_MS   = 6 * 60 * 60 * 1000; // 6 tiếng
@@ -53,6 +54,29 @@ export async function xuLyPhaVuon(message: Message, args: string[]) {
         );
       return message.reply({ embeds: [embed] });
     }
+  }
+
+  // ── Kiểm tra pet chống phá vườn của nạn nhân ─────────────────────────────
+  const petNanNhan = await db.execute<{ pet_id: string | null }>(
+    `SELECT pet_id FROM nguoi_choi WHERE id = ${chuVuon.id}`
+  );
+  const petIdNanNhan = petNanNhan.rows[0]?.pet_id ?? null;
+
+  if (coChongPhaVuon(petIdNanNhan)) {
+    // Bị chặn bởi Linh Quy — coi như thất bại, mất xu
+    const okPhat = await truXu(kePha.id, PHAT_THAT_BAI);
+    const embed = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("🛡️ Bị Linh Quy Chặn Đứng!")
+      .setDescription(
+        `*Bạn lao vào vườn của **${mucTieu.displayName}** nhưng...*\n\n` +
+        `🐢 **Linh Quy** của họ đang trấn giữ! Mai thần rùa cứng như thép, bạn không thể xâm nhập!\n\n` +
+        `Bạn bị phạt **${formatXu(PHAT_THAT_BAI)}**${!okPhat ? " *(không đủ xu)*" : ""} vì cố xâm phạm linh địa được bảo vệ!\n\n` +
+        `*(Cooldown đã được tính)*`
+      )
+      .setFooter({ text: "Cooldown: 6 tiếng • Linh Quy chặn 100% .pavuon" })
+      .setTimestamp();
+    return message.reply({ embeds: [embed] });
   }
 
   // ── Lấy danh sách ô đang có cây (chưa thu hoạch) ─────────────────────────
