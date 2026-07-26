@@ -13,11 +13,18 @@ client.on("messageCreate", async (msg) => {
   if (msg.author.bot) return;
   if (!msg.content.startsWith(PREFIX)) return;
 
-  const args = msg.content.slice(PREFIX.length).trim().split(/\s+/);
+  const content = msg.content.slice(PREFIX.length).trim();
+  if (!content) return;
+
+  const args = content.split(/\s+/);
   const command = args.shift()?.toLowerCase();
   if (!command) return;
 
-  await handleCommand(msg, command, args);
+  try {
+    await handleCommand(msg, command, args);
+  } catch (err) {
+    console.error(`Unhandled message command error (${command}):`, err);
+  }
 });
 
 client.on("error", (err) => {

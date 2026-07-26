@@ -11,6 +11,40 @@ import { handleGuildCmd } from "./guild";
 import { handleMarket, handleAuction } from "./market";
 import { handleHelp } from "./help";
 
+function formatCommandError(error: unknown): string {
+  if (error && typeof error === "object") {
+    const databaseError = error as { code?: string; message?: string };
+
+    switch (databaseError.code) {
+      case "42P01":
+        return "Database chưa có đủ bảng của bot. Hãy chạy migration rồi thử lại.";
+      case "42703":
+        return "Database đang thiếu cột cần thiết. Hãy cập nhật schema rồi thử lại.";
+      case "23505":
+        return "Dữ liệu đã tồn tại, hãy thử lại với thông tin khác.";
+      case "28P01":
+      case "3D000":
+        return "Bot không kết nối được database. Hãy kiểm tra cấu hình database.";
+      default:
+        break;
+    }
+
+    if (databaseError.message?.toLowerCase().includes("connect")) {
+      return "Bot không kết nối được database. Hãy kiểm tra database đang hoạt động.";
+    }
+  }
+
+  return "Lệnh gặp lỗi ngoài dự kiến. Hãy thử lại sau giây lát.";
+}
+
+async function replyWithCommandError(msg: Message, content: string) {
+  try {
+    await msg.reply(`❌ ${content}`);
+  } catch (replyError) {
+    console.error("Could not send command error reply:", replyError);
+  }
+}
+
 export async function handleCommand(msg: Message, command: string, args: string[]) {
   try {
     switch (command) {
@@ -115,6 +149,6 @@ export async function handleCommand(msg: Message, command: string, args: string[
     }
   } catch (err) {
     console.error(`Error handling command ${command}:`, err);
-    await msg.reply("❌ Có lỗi xảy ra! Thử lại sau nhé.");
+    await replyWithCommandError(msg, formatCommandError(err));
   }
 }
