@@ -67,11 +67,12 @@ export async function tuoi(nguoiChoiId: number, viTri: number): Promise<boolean>
 
   if (!o[0] || !o[0].tenCay || o[0].daTuoi) return false;
 
-  // Tưới nước giảm 20% thời gian còn lại
+  // Tưới nước giảm 5-10% thời gian còn lại (ngẫu nhiên)
   const chinLuc = o[0].truongThanhLuc!;
   const bayGio = new Date();
   const conLai = chinLuc.getTime() - bayGio.getTime();
-  const moiChin = new Date(chinLuc.getTime() - conLai * 0.2);
+  const phanTramGiam = 0.05 + Math.random() * 0.05; // 5% đến 10%
+  const moiChin = new Date(chinLuc.getTime() - conLai * phanTramGiam);
 
   await db
     .update(oDat)
