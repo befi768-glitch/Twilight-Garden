@@ -7,14 +7,16 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
     .setTitle("🌸 Twilight Garden — Trợ Giúp")
-    .setDescription("Bot trồng cây Discord bằng tiếng Việt! Bắt đầu với `" + p + "vuon`")
+    .setDescription(
+      "*\"Chào mừng đến với Vườn Twilight huyền bí — nơi mỗi hạt giống ươm mầm phép màu...\"*\n\nPrefix: `" + p + "`"
+    )
     .addFields(
       {
         name: "🌿 Vườn tược",
         value: [
-          `\`${p}vuon\` — Xem vườn và thông tin của bạn`,
+          `\`${p}vuon\` — Xem vườn và thông tin nhân vật`,
           `\`${p}trong <tên cây>\` — Trồng cây vào ô trống`,
-          `\`${p}tuoi [số ô]\` — Tưới nước (giảm 20% thời gian, thu hoạch x2)`,
+          `\`${p}tuoi [số ô]\` — Tưới nước (-20% thời gian, thu hoạch x2)`,
           `\`${p}thuhoach [số ô]\` — Thu hoạch cây đã chín`,
         ].join("\n"),
       },
@@ -23,7 +25,7 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         value: [
           `\`${p}cuahang\` — Xem tất cả cây và giá cả`,
           `\`${p}mua <tên cây> [số]\` — Mua hạt giống`,
-          `\`${p}ban <tên cây> [số]\` — Bán nông sản lấy xu`,
+          `\`${p}ban <tên cây> [số]\` — Bán nông sản`,
           `\`${p}ban tất\` — Bán toàn bộ túi đồ`,
         ].join("\n"),
       },
@@ -31,20 +33,28 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         name: "🎒 Quản lý",
         value: [
           `\`${p}tuidо\` — Xem túi đồ`,
-          `\`${p}bangxephang\` — Top 10 người chơi trong server`,
-          `\`${p}tang @người <tên> [số]\` — Tặng đồ cho người khác`,
+          `\`${p}bangxephang\` — Top 10 server`,
+          `\`${p}tang @người <tên> [số]\` — Tặng đồ`,
         ].join("\n"),
       },
       {
-        name: "📖 Hệ thống cấp độ",
+        name: "🎁 Hàng ngày",
         value: [
-          "Thu hoạch cây để nhận kinh nghiệm → lên cấp → mở thêm ô đất",
-          "Tưới nước trước khi thu hoạch để nhận x2 sản phẩm!",
-          "Cây huyền thoại **Hoa Twilight** cho nhiều KN nhất 🌸",
+          `\`${p}diemdanh\` — Điểm danh nhận xu mỗi ngày`,
+          `Streak càng dài thưởng càng cao! 🔥`,
+        ].join("\n"),
+      },
+      {
+        name: "✨ Sự kiện ngẫu nhiên",
+        value: [
+          "Khi thu hoạch có thể xảy ra sự kiện đặc biệt:",
+          "🌕 **Trăng Rằm** — Thu hoạch thêm 1 cái",
+          "🌱 **Hạt giống bí ẩn** — Nhận hạt giống miễn phí",
+          "✨ **Phép màu Twilight** — Bonus xu bất ngờ",
         ].join("\n"),
       }
     )
-    .setFooter({ text: `Prefix: ${p} | Twilight Garden Bot` })
+    .setFooter({ text: "🌸 Twilight Garden — Nơi mỗi hạt giống ươm mầm phép màu" })
     .setTimestamp();
 
   await message.reply({ embeds: [embed] });

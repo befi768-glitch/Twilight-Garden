@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
 import * as dotenv from "dotenv";
 import { xuLyVuon } from "./commands/vuon";
 import { xuLyTrong } from "./commands/trong";
@@ -11,6 +11,7 @@ import { xuLyTuiDo } from "./commands/tuido";
 import { xuLyBangXepHang } from "./commands/bangxephang";
 import { xuLyTang } from "./commands/tang";
 import { xuLyTroGiup } from "./commands/trogiup";
+import { xuLyDiemDanh } from "./commands/diemdanh";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -24,7 +25,6 @@ if (!TOKEN) {
   process.exit(1);
 }
 
-// Khởi tạo bảng database
 async function khoiTaoDatabase() {
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS nguoi_choi (
@@ -35,9 +35,19 @@ async function khoiTaoDatabase() {
       kinh_nghiem INTEGER NOT NULL DEFAULT 0,
       cap_do INTEGER NOT NULL DEFAULT 1,
       so_o_dat INTEGER NOT NULL DEFAULT 3,
+      last_check_in TIMESTAMP,
+      streak INTEGER NOT NULL DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW(),
       UNIQUE(user_id, guild_id)
     )
+  `);
+
+  // Thêm cột mới nếu chưa có (upgrade từ version cũ)
+  await db.execute(sql`
+    ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS last_check_in TIMESTAMP
+  `);
+  await db.execute(sql`
+    ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0
   `);
 
   await db.execute(sql`
@@ -69,22 +79,23 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent, // Bắt buộc bật trong Developer Portal
+    GatewayIntentBits.MessageContent,
   ],
   partials: [Partials.Message, Partials.Channel],
 });
 
-client.once("ready", async () => {
-  console.log(`🌸 ${client.user?.tag} đã online!`);
+// Fix: dùng Events.ClientReady thay vì "ready" để tránh DeprecationWarning
+client.once(Events.ClientReady, async (readyClient) => {
+  console.log(`🌸 ${readyClient.user.tag} đã online!`);
   console.log(`🌿 Prefix: ${PREFIX}`);
-  console.log(`📡 Đang phục vụ ${client.guilds.cache.size} server`);
+  console.log(`📡 Đang phục vụ ${readyClient.guilds.cache.size} server`);
 
   await khoiTaoDatabase();
 
-  client.user?.setActivity(`${PREFIX}trogiup | Twilight Garden 🌸`, { type: 3 });
+  readyClient.user.setActivity(`${PREFIX}trogiup | Twilight Garden 🌸`, { type: 3 });
 });
 
-client.on("messageCreate", async (message) => {
+client.on(Events.MessageCreate, async (message) => {
   if (message.author.bot) return;
   if (!message.guild) return;
   if (!message.content.startsWith(PREFIX)) return;
@@ -99,68 +110,62 @@ client.on("messageCreate", async (message) => {
       case "vườn":
         await xuLyVuon(message);
         break;
-
       case "trong":
       case "trồng":
         await xuLyTrong(message, args);
         break;
-
       case "tuoi":
       case "tưới":
         await xuLyTuoi(message, args);
         break;
-
       case "thuhoach":
       case "thu":
       case "thuhoạch":
         await xuLyThuHoach(message, args);
         break;
-
       case "cuahang":
       case "cửahàng":
       case "shop":
         await xuLyCuaHang(message);
         break;
-
       case "mua":
         await xuLyMua(message, args);
         break;
-
       case "ban":
       case "bán":
         await xuLyBan(message, args);
         break;
-
       case "tuido":
       case "túiđồ":
       case "tui":
         await xuLyTuiDo(message);
         break;
-
       case "bangxephang":
       case "top":
       case "bxh":
         await xuLyBangXepHang(message);
         break;
-
       case "tang":
       case "tặng":
         await xuLyTang(message, args);
         break;
-
+      case "diemdanh":
+      case "điểmdanh":
+      case "dd":
+        await xuLyDiemDanh(message);
+        break;
       case "trogiup":
       case "trợgiúp":
       case "help":
       case "h":
         await xuLyTroGiup(message, PREFIX);
         break;
-
       default:
         break;
     }
   } catch (err) {
     console.error(`Lỗi khi xử lý lệnh ${lenh}:`, err);
-    await message.reply("❌ Có lỗi xảy ra! Vui lòng thử lại sau.").catch(() => {});
+    await message.reply("❌ *Nàng tiên vườn vấp ngã...* Có lỗi xảy ra! Vui lòng thử lại sau.").catch(() => {});
   }
 });
 
