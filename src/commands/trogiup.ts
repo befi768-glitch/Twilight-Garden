@@ -65,7 +65,7 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
           `\`${p}pet danhsach\` — Xem tất cả pet (từ 10,000 ${EMOJI_TIEN})`,
           `\`${p}pet mua <tên>\` — Nhận thú linh về nuôi`,
           `\`${p}pet tha\` — Thả pet (nhận lại 50% giá)`,
-          `🐢 **Linh Quy** (10k) — Chặn 100% \`.pavuon\` • không giảm thuế`,
+          `🐢 **Linh Quy** (10k) — Giảm tỷ lệ bị phá vườn 60%→20% • không giảm thuế`,
           `🦊 **Linh Hồ / Ngọc Thỏ / Thanh Long / Phụng Hoàng** — Giảm thuế bán cây`,
           `⚠️ Chỉ nuôi 1 pet — hiệu ứng **không cộng dồn**!`,
         ].join("\n"),

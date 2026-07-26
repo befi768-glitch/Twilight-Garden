@@ -23,7 +23,7 @@ export const danhSachPet: Pet[] = [
     giamThue: 0,
     chongPhaVuon: true,
     moTa: "Thần Rùa ngàn tuổi, mai cứng như thép, trấn giữ linh địa khỏi kẻ phá hoại",
-    bonusMoTa: "🛡️ Chặn hoàn toàn .pavuon (không giảm thuế)",
+    bonusMoTa: "🛡️ Giảm tỷ lệ bị phá vườn từ 60% → 20% (không giảm thuế)",
   },
   {
     id: "linh_ho",

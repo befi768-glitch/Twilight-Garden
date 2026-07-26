@@ -9,8 +9,9 @@ import { coChongPhaVuon } from "../data/pets";
 import { MAU_DO, MAU_VANG, MAU_XANH, MAU_CHINH, formatXu } from "../utils/helpers";
 
 const COOLDOWN_MS   = 6 * 60 * 60 * 1000; // 6 tiếng
-const TY_LE_THANH_CONG = 0.6;             // 60%
-const PHAT_THAT_BAI    = 150;             // Mất 150 xu nếu thất bại
+const TY_LE_THANH_CONG      = 0.6;        // 60% bình thường
+const TY_LE_THANH_CONG_QUY  = 0.2;        // 20% khi nạn nhân có Linh Quy
+const PHAT_THAT_BAI          = 150;        // Mất 150 xu nếu thất bại
 const SO_O_PHA_MIN     = 1;
 const SO_O_PHA_MAX     = 2;
 
@@ -62,22 +63,8 @@ export async function xuLyPhaVuon(message: Message, args: string[]) {
   );
   const petIdNanNhan = petNanNhan.rows[0]?.pet_id ?? null;
 
-  if (coChongPhaVuon(petIdNanNhan)) {
-    // Bị chặn bởi Linh Quy — coi như thất bại, mất xu
-    const okPhat = await truXu(kePha.id, PHAT_THAT_BAI);
-    const embed = new EmbedBuilder()
-      .setColor(MAU_DO)
-      .setTitle("🛡️ Bị Linh Quy Chặn Đứng!")
-      .setDescription(
-        `*Bạn lao vào vườn của **${mucTieu.displayName}** nhưng...*\n\n` +
-        `🐢 **Linh Quy** của họ đang trấn giữ! Mai thần rùa cứng như thép, bạn không thể xâm nhập!\n\n` +
-        `Bạn bị phạt **${formatXu(PHAT_THAT_BAI)}**${!okPhat ? " *(không đủ xu)*" : ""} vì cố xâm phạm linh địa được bảo vệ!\n\n` +
-        `*(Cooldown đã được tính)*`
-      )
-      .setFooter({ text: "Cooldown: 6 tiếng • Linh Quy chặn 100% .pavuon" })
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+  const coQuy = coChongPhaVuon(petIdNanNhan);
+  const tyLe = coQuy ? TY_LE_THANH_CONG_QUY : TY_LE_THANH_CONG;
 
   // ── Lấy danh sách ô đang có cây (chưa thu hoạch) ─────────────────────────
   const vuon = await layVuon(chuVuon.id);
@@ -98,7 +85,7 @@ export async function xuLyPhaVuon(message: Message, args: string[]) {
     return message.reply({ embeds: [embed] });
   }
 
-  const thanhCong = Math.random() < TY_LE_THANH_CONG;
+  const thanhCong = Math.random() < tyLe;
 
   if (thanhCong) {
     // Chọn ngẫu nhiên 1-2 ô để phá
@@ -150,7 +137,7 @@ export async function xuLyPhaVuon(message: Message, args: string[]) {
         `Bạn đã phá **${soOPha} ô cây**:\n${cayBiPha.join("\n")}\n\n` +
         `⚠️ *Linh vệ truy tìm kẻ phá hoại... hãy cẩn thận!*`
       )
-      .setFooter({ text: `Cooldown: 6 tiếng • Tỷ lệ thành công: 60%` })
+      .setFooter({ text: `Cooldown: 6 tiếng • Tỷ lệ thành công: ${Math.round(tyLe * 100)}%${coQuy ? " (Linh Quy giảm từ 60%)" : ""}` })
       .setTimestamp();
 
     return message.reply({ embeds: [embed] });
@@ -167,7 +154,7 @@ export async function xuLyPhaVuon(message: Message, args: string[]) {
         `Bạn bị phạt **${formatXu(PHAT_THAT_BAI)}**${!okPhat ? " *(không đủ xu)*" : ""}!\n\n` +
         `😔 *Phá hoại không phải lúc nào cũng dễ dàng...*`
       )
-      .setFooter({ text: "Cooldown: 6 tiếng • Tỷ lệ thành công: 60%" })
+      .setFooter({ text: `Cooldown: 6 tiếng • Tỷ lệ thành công: ${Math.round(tyLe * 100)}%${coQuy ? " (Linh Quy giảm từ 60%)" : ""}` })
       .setTimestamp();
 
     return message.reply({ embeds: [embed] });
