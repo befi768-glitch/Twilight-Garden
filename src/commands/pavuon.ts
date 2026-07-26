@@ -1,12 +1,11 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layVuon, truXu } from "../database/queries";
 import { db } from "../database/db";
-import { sql } from "drizzle-orm";
+import { sql, eq, and } from "drizzle-orm";
 import { oDat } from "../database/schema";
-import { eq, and, isNotNull } from "drizzle-orm";
 import { cayMap } from "../data/plants";
 import { coChongPhaVuon } from "../data/pets";
-import { MAU_DO, MAU_VANG, MAU_XANH, MAU_CHINH, formatXu } from "../utils/helpers";
+import { MAU_DO, MAU_VANG, MAU_XANH, formatXu } from "../utils/helpers";
 
 const COOLDOWN_MS   = 6 * 60 * 60 * 1000; // 6 tiếng
 const TY_LE_THANH_CONG      = 0.6;        // 60% bình thường
