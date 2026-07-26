@@ -4,10 +4,13 @@ export interface Pet {
   emoji: string;
   gia: number;              // Giá mua
   giaBanLai: number;        // Giá bán lại (50%)
-  giamThue: number;         // % giảm thuế (0–100)
+  giamThue: number;         // Số % thuế được giảm (điểm phần trăm tuyệt đối)
   moTa: string;
   bonusMoTa: string;        // Mô tả bonus ngắn
 }
+
+// Thuế cơ bản: 25%
+export const THUE_CO_BAN = 25;
 
 export const danhSachPet: Pet[] = [
   {
@@ -16,9 +19,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦊",
     gia: 15_000,
     giaBanLai: 7_500,
-    giamThue: 30,   // Giảm 30% thuế (thuế gốc 10% → còn 7%)
+    giamThue: 4,   // 25% → 21%
     moTa: "Hồ ly tinh linh thoát khỏi cõi âm, mang theo phúc khí buôn bán",
-    bonusMoTa: "Giảm 30% thuế bán cây",
+    bonusMoTa: "Giảm thuế 4% (còn 21%)",
   },
   {
     id: "ngoc_tho",
@@ -26,9 +29,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐇",
     gia: 25_000,
     giaBanLai: 12_500,
-    giamThue: 50,   // Giảm 50% thuế → còn 5%
+    giamThue: 7,   // 25% → 18%
     moTa: "Thỏ ngọc từ Quảng Hàn cung, nhảy xuống hạ giới mang theo phước lành",
-    bonusMoTa: "Giảm 50% thuế bán cây",
+    bonusMoTa: "Giảm thuế 7% (còn 18%)",
   },
   {
     id: "thanh_long",
@@ -36,9 +39,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🐉",
     gia: 50_000,
     giaBanLai: 25_000,
-    giamThue: 80,   // Giảm 80% thuế → còn 2%
+    giamThue: 11,  // 25% → 14%
     moTa: "Rồng xanh trấn giữ phương đông, vừa dũng mãnh vừa mang lại tài lộc",
-    bonusMoTa: "Giảm 80% thuế bán cây",
+    bonusMoTa: "Giảm thuế 11% (còn 14%)",
   },
   {
     id: "phung_hoang",
@@ -46,9 +49,9 @@ export const danhSachPet: Pet[] = [
     emoji: "🦅",
     gia: 100_000,
     giaBanLai: 50_000,
-    giamThue: 100,  // Miễn hoàn toàn
+    giamThue: 15,  // 25% → 10%
     moTa: "Thần điểu bất tử, tái sinh từ tro tàn, chủ của mọi điều kỳ diệu trong Twilight Garden",
-    bonusMoTa: "Miễn hoàn toàn thuế bán cây",
+    bonusMoTa: "Giảm thuế 15% (còn 10%)",
   },
 ];
 
@@ -65,13 +68,10 @@ export function timPetTheoTen(query: string): Pet | undefined {
   );
 }
 
-// Thuế cơ bản: 10%
-export const THUE_CO_BAN = 10;
-
+// Tính thuế thực tế dựa theo pet (giamThue là điểm % tuyệt đối)
 export function tinhThue(petId: string | null): number {
   if (!petId) return THUE_CO_BAN;
   const pet = petMap.get(petId);
   if (!pet) return THUE_CO_BAN;
-  const giamPhanTram = pet.giamThue / 100;
-  return Math.round(THUE_CO_BAN * (1 - giamPhanTram));
+  return Math.max(1, THUE_CO_BAN - pet.giamThue); // Không bao giờ về 0
 }
