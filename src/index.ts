@@ -16,6 +16,7 @@ import { xuLyTrom } from "./commands/trom";
 import { xuLyCuop } from "./commands/cuop";
 import { xuLyPet } from "./commands/pet";
 import { xuLySetup } from "./commands/setup";
+import { xuLyAdmin } from "./commands/admin";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -120,7 +121,7 @@ client.on(Events.MessageCreate, async (message) => {
   const lenh = args.shift()?.toLowerCase() ?? "";
 
   // Các lệnh luôn được phép bất kể setup kênh
-  const LENH_MIEN_TRAM = ["setup", "trogiup", "trợgiúp", "help", "h"];
+  const LENH_MIEN_TRAM = ["setup", "admin", "trogiup", "trợgiúp", "help", "h"];
 
   // Kiểm tra kênh được phép (chỉ check nếu đã có cấu hình)
   if (!LENH_MIEN_TRAM.includes(lenh)) {
@@ -206,6 +207,9 @@ client.on(Events.MessageCreate, async (message) => {
         break;
       case "setup":
         await xuLySetup(message, args);
+        break;
+      case "admin":
+        await xuLyAdmin(message, args, client);
         break;
       default:
         break;
