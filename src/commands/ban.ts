@@ -51,13 +51,11 @@ export async function xuLyBan(message: Message, args: string[]) {
 
   const ok = await banDB(player.id, cay.id, soLuong);
   if (!ok) {
-    return message.reply(
-      new EmbedBuilder()
-        .setColor(MAU_DO)
-        .setTitle("❌ Không đủ hàng")
-        .setDescription(`Bạn không có đủ **${soLuong}x ${cay.ten}** trong túi đồ!\nDùng \`.tuidо\` để kiểm tra.`)
-        .toJSON()
-    );
+    const embedLoi = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("❌ Không đủ hàng")
+      .setDescription(`Bạn không có đủ **${soLuong}x ${cay.ten}** trong túi đồ!\nDùng \`.tuidо\` để kiểm tra.`);
+    return message.reply({ embeds: [embedLoi] });
   }
 
   const tongTien = cay.giaBan * soLuong;
