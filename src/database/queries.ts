@@ -75,7 +75,7 @@ export async function tuoi(nguoiChoiId: number, viTri: number): Promise<boolean>
 
   await db
     .update(oDat)
-    .set({ daTuoi: true, truongThanhLuc: moiChin, soLuongThuHoach: 2 })
+    .set({ daTuoi: true, truongThanhLuc: moiChin })
     .where(and(eq(oDat.nguoiChoiId, nguoiChoiId), eq(oDat.viTri, viTri)));
 
   return true;

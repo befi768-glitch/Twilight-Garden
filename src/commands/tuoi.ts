@@ -33,7 +33,7 @@ export async function xuLyTuoi(message: Message, args: string[]) {
       .setDescription(`${loiThoai}\n\n${cay?.emoji} **${cay?.ten}** được tưới đẫm nước sương!`)
       .addFields(
         { name: "⏰ Thời gian còn lại", value: formatThoiGian(moiConLai), inline: true },
-        { name: "✨ Hiệu ứng", value: "-20% thời gian • Thu hoạch x2", inline: true }
+        { name: "✨ Hiệu ứng", value: "-20% thời gian", inline: true }
       );
 
     return message.reply({ embeds: [embed] });
@@ -68,7 +68,7 @@ export async function xuLyTuoi(message: Message, args: string[]) {
     .setColor(MAU_CHINH)
     .setTitle(`💧 Đã tưới ${daTuoi} cây!`)
     .setDescription(`${loiThoai}\n\n${danhSachTuoi}`)
-    .setFooter({ text: "✨ Thời gian giảm 20% • Thu hoạch x2!" });
+    .setFooter({ text: "✨ Thời gian giảm 20%!" });
 
   await message.reply({ embeds: [embed] });
 }

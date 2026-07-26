@@ -62,7 +62,7 @@ export async function xuLyTrong(message: Message, args: string[]) {
       { name: "📦 Hạt còn lại", value: `${hatTrongTui.soLuong - 1} hạt`, inline: true },
       { name: "💰 Bán được", value: `${cay.giaBan} xu / cái`, inline: true }
     )
-    .setFooter({ text: "💧 Tưới nước để giảm 20% thời gian và thu hoạch x2!" });
+    .setFooter({ text: "💧 Tưới nước để giảm 20% thời gian!" });
 
   await message.reply({ embeds: [embed] });
 }
