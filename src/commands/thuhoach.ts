@@ -3,6 +3,8 @@ import { layHoacTaoNguoiChoi, layVuon, thuHoach as thuHoachDB, congXuVaKinhNghie
 import { cayMap, layAnhCay } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_DO, MAU_VANG } from "../utils/helpers";
 import { taoSuKien, layLoiThoaiNgauNhien } from "../utils/events";
+import { layThoiTietHomNay } from "../utils/weather";
+import { db } from "../database/db";
 
 // Áp dụng sự kiện và trả về mô tả bonus/penalty thực tế
 async function apDungSuKien(
@@ -55,6 +57,7 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
   const vuon = await layVuon(player.id);
   const bayGio = new Date();
+  const thoiTiet = layThoiTietHomNay(message.guildId!);
 
   if (args[0]) {
     const viTri = parseInt(args[0]);
@@ -129,11 +132,19 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
   const danhSachSuKienTot: string[] = [];
   const danhSachSuKienXau: string[] = [];
 
+  let tongBonusThoiTiet = 0; // Số cây bonus từ Linh Vũ
+
   for (const o of dayChin) {
     const ketQua = await thuHoachDB(player.id, o.viTri);
     if (!ketQua) continue;
     const cay = cayMap.get(ketQua.tenCay);
     if (!cay) continue;
+
+    // Thời tiết Linh Vũ: +1 sản lượng mỗi lần thu hoạch
+    if (thoiTiet.bonusSanLuong > 0) {
+      await themVaoTuiDo(player.id, ketQua.tenCay, thoiTiet.bonusSanLuong);
+      tongBonusThoiTiet += thoiTiet.bonusSanLuong;
+    }
 
     const ke = cay.kinhNghiem * ketQua.soLuong;
     tongKe += ke;
@@ -153,10 +164,16 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     }
   }
 
+  // Cộng tổng thu hoạch vào thống kê
+  await db.execute(
+    `UPDATE nguoi_choi SET tong_thu_hoach = COALESCE(tong_thu_hoach,0) + ${dayChin.length} WHERE id = ${player.id}`
+  );
+
   const capInfo = await congXuVaKinhNghiem(player.id, 0, tongKe);
   const loiThoai = layLoiThoaiNgauNhien("thuhoach");
 
   let moTa = `${loiThoai}\n\n${danhSachThuHoach.join("\n")}`;
+  if (tongBonusThoiTiet > 0) moTa += `\n\n${thoiTiet.emoji} **${thoiTiet.ten}**: +${tongBonusThoiTiet} sản lượng bonus!`;
   if (danhSachSuKienTot.length) moTa += `\n\n${danhSachSuKienTot.join("\n")}`;
   if (danhSachSuKienXau.length) moTa += `\n\n${danhSachSuKienXau.join("\n")}`;
 
@@ -173,7 +190,7 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     embed.addFields({ name: "💸 Tổn Thất", value: `-${formatXu(tongPhat)}`, inline: true });
   }
 
-  embed.setFooter({ text: "💡 Dùng .ban để bán nông sản lấy xu!" });
+  embed.setFooter({ text: `💡 Dùng .ban để bán nông sản lấy xu! • ${thoiTiet.emoji} ${thoiTiet.ten} hôm nay` });
 
   if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
     const { loi_thoai } = await import("../utils/events");

@@ -3,6 +3,7 @@ import { layHoacTaoNguoiChoi, layVuon, trong as trongDB, layTuiDo, ban as banDB 
 import { timCayTheoTenHoacHat, mauDoHiem, layHatGiongId, layAnhCay } from "../data/plants";
 import { MAU_DO, MAU_CHINH } from "../utils/helpers";
 import { layLoiThoaiNgauNhien } from "../utils/events";
+import { layThoiTietHomNay } from "../utils/weather";
 
 export async function xuLyTrong(message: Message, args: string[]) {
   if (!args.length) {
@@ -49,18 +50,35 @@ export async function xuLyTrong(message: Message, args: string[]) {
     });
   }
 
+  // Tính thời gian mọc có xét thời tiết
+  const thoiTiet = layThoiTietHomNay(message.guildId!);
+  let thoiGianMocThucTe = cay.thoiGianMoc;
+  let thoiTietNote = "";
+
+  if (thoiTiet.giamThoiGianTrong > 0) {
+    thoiGianMocThucTe = Math.max(1, Math.round(cay.thoiGianMoc * (1 - thoiTiet.giamThoiGianTrong / 100)));
+    thoiTietNote = `\n${thoiTiet.emoji} **${thoiTiet.ten}**: Giảm ${thoiTiet.giamThoiGianTrong}% thời gian!`;
+  }
+
   // Tiêu thụ 1 hạt giống từ túi đồ
   await banDB(player.id, hatGiongId, 1);
-  await trongDB(player.id, oTrong.viTri, cay.id, cay.thoiGianMoc);
+  await trongDB(player.id, oTrong.viTri, cay.id, thoiGianMocThucTe);
 
-  const chinLuc = new Date(Date.now() + cay.thoiGianMoc * 60 * 1000);
+  // Tự động tưới nếu thời tiết Linh Vũ
+  if (thoiTiet.tuTuoiKhiTrong) {
+    const { tuoi } = await import("../database/queries");
+    await tuoi(player.id, oTrong.viTri);
+    thoiTietNote = `\n${thoiTiet.emoji} **${thoiTiet.ten}**: Cây đã được tự động tưới!`;
+  }
+
+  const chinLuc = new Date(Date.now() + thoiGianMocThucTe * 60 * 1000);
   const gioChin = `<t:${Math.floor(chinLuc.getTime() / 1000)}:R>`;
   const loiThoai = layLoiThoaiNgauNhien("trong");
 
   const embed = new EmbedBuilder()
     .setColor(mauDoHiem[cay.doHiem] ?? MAU_CHINH)
     .setTitle(`Đã gieo trồng ${cay.ten}!`)
-    .setDescription(`${loiThoai}\n\n**Hạt ${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}**`)
+    .setDescription(`${loiThoai}\n\n**Hạt ${cay.ten}** đã được gieo xuống **Ô ${oTrong.viTri}**${thoiTietNote}`)
     .setThumbnail(`attachment://${cay.id}.png`)
     .addFields(
       { name: "⏰ Thu hoạch", value: gioChin, inline: true },

@@ -19,6 +19,10 @@ import { xuLySetup } from "./commands/setup";
 import { xuLyAdmin } from "./commands/admin";
 import { xuLyXenLen } from "./commands/xenlen";
 import { xuLyPhaVuon } from "./commands/pavuon";
+import { xuLyThoiTiet } from "./commands/thoitiet";
+import { xuLyCho } from "./commands/cho";
+import { xuLyLuyenDan } from "./commands/luyendan";
+import { xuLyProfile } from "./commands/profile";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -59,6 +63,21 @@ async function khoiTaoDatabase() {
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS cuop_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pet_id TEXT`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pavuon_cooldown TIMESTAMP`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS tong_thu_hoach INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS tong_ban_buon INTEGER NOT NULL DEFAULT 0`);
+
+  // Bảng chợ người chơi
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS cho_buon (
+      id SERIAL PRIMARY KEY,
+      guild_id TEXT NOT NULL,
+      nguoi_ban_id INTEGER REFERENCES nguoi_choi(id) ON DELETE CASCADE,
+      ten_cay TEXT NOT NULL,
+      so_luong INTEGER NOT NULL,
+      gia_moi_cai INTEGER NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
 
   // Bảng kênh được phép dùng bot
   await db.execute(sql`
@@ -222,6 +241,25 @@ client.on(Events.MessageCreate, async (message) => {
       case "phávườn":
       case "phaVuon":
         await xuLyPhaVuon(message, args);
+        break;
+      case "thoitiet":
+      case "thờitiết":
+      case "tt":
+        await xuLyThoiTiet(message);
+        break;
+      case "cho":
+      case "chợ":
+        await xuLyCho(message, args);
+        break;
+      case "luyendan":
+      case "luyệnđan":
+      case "ld":
+        await xuLyLuyenDan(message, args);
+        break;
+      case "profile":
+      case "hs":
+      case "hoso":
+        await xuLyProfile(message, args);
         break;
       default:
         break;

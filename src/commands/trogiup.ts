@@ -80,6 +80,44 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         ].join("\n"),
       },
       {
+        name: "🌦️ Thời Tiết Linh Địa",
+        value: [
+          `\`${p}thoitiet\` (hoặc \`${p}tt\`) — Xem thời tiết hôm nay + dự báo 4 ngày tới`,
+          `☀️ Quang Minh — Giảm 15% thời gian trồng`,
+          `🌧️ Linh Vũ — Tự động tưới + +1 sản lượng khi thu hoạch`,
+          `🌪️ Cuồng Phong — Tăng sự kiện xấu + giảm 10% giá bán`,
+          `🌕 Nguyệt Sắc — Tăng 20% giá bán linh thảo`,
+          `⛅ Âm Vân — Ngày bình thường, không buff/debuff`,
+        ].join("\n"),
+      },
+      {
+        name: "🏪 Linh Thảo Chợ — Chợ Người Chơi",
+        value: [
+          `\`${p}cho\` — Xem các linh thảo đang được bán`,
+          `\`${p}cho dang <tên> <số lượng> <giá>\` — Đăng bán (phí ${5}%)`,
+          `\`${p}cho mua <id>\` — Mua hàng từ người chơi khác`,
+          `\`${p}cho huy <id>\` — Huỷ đơn hàng của bạn`,
+          `\`${p}cho cuatoi\` — Xem đơn hàng của bạn`,
+        ].join("\n"),
+      },
+      {
+        name: "⚗️ Đan Lò — Luyện Đan",
+        value: [
+          `\`${p}luyendan\` (hoặc \`${p}ld\`) — Xem công thức và nguyên liệu cần có`,
+          `\`${p}luyendan <tên đan>\` — Luyện đan (tiêu thụ linh thảo, nhận KN/xu/mở đất)`,
+          `💊 **Linh Đan Cơ Sở** — 3 Hoàng Căn + 2 Hỏa Châu → +80 KN`,
+          `🟣 **Huyết Tinh Đan** — Linh Chi + Nhật Hoa + Ám Nguyệt → +1200 KN`,
+          `🟫 **Linh Địa Bảo** — 3 Nhật Hoa + 2 Ám Nguyệt → Mở thêm 1 ô đất`,
+        ].join("\n"),
+      },
+      {
+        name: "📜 Hồ Sơ Tu Sĩ",
+        value: [
+          `\`${p}profile\` (hoặc \`${p}hs\`) — Xem hồ sơ và thống kê của bạn`,
+          `\`${p}profile @người\` — Xem hồ sơ người chơi khác`,
+        ].join("\n"),
+      },
+      {
         name: "⚙️ Quản Trị Server",
         value: [
           `\`${p}setup\` — Xem danh sách kênh được phép dùng bot`,

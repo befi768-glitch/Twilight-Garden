@@ -4,6 +4,7 @@ import { timCayTheoTen, cayMap, laHatGiong, layCayTuHatGiong } from "../data/pla
 import { formatXu, MAU_CHINH, MAU_DO, MAU_VANG } from "../utils/helpers";
 import { tinhThue, THUE_CO_BAN } from "../data/pets";
 import { db } from "../database/db";
+import { layThoiTietHomNay } from "../utils/weather";
 
 async function layPetId(playerId: number): Promise<string | null> {
   const row = await db.execute<{ pet_id: string | null }>(
@@ -15,7 +16,15 @@ async function layPetId(playerId: number): Promise<string | null> {
 export async function xuLyBan(message: Message, args: string[]) {
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
   const petId = await layPetId(player.id);
-  const tyLeThue = tinhThue(petId); // % thuế hiện tại (0–10)
+  const tyLeThue = tinhThue(petId); // % thuế hiện tại
+
+  // Tính hệ số giá theo thời tiết
+  const thoiTiet = layThoiTietHomNay(message.guildId!);
+  const heSoGia = 1 + (thoiTiet.bonusGiaBan - thoiTiet.giamGiaBan) / 100;
+  const coThoiTietAnhHuong = thoiTiet.bonusGiaBan > 0 || thoiTiet.giamGiaBan > 0;
+  const thoiTietNote = coThoiTietAnhHuong
+    ? ` *(${thoiTiet.emoji} ${thoiTiet.bonusGiaBan > 0 ? `+${thoiTiet.bonusGiaBan}%` : `-${thoiTiet.giamGiaBan}%`} giá)*`
+    : "";
 
   // Bán tất cả nếu không có args
   if (!args.length || args[0] === "tat" || args[0] === "tất") {
@@ -37,13 +46,13 @@ export async function xuLyBan(message: Message, args: string[]) {
       }
       const cay = cayMap.get(item.tenCay);
       if (!cay) continue;
-      const tienGoc = cay.giaBan * item.soLuong;
+      const tienGoc = Math.round(cay.giaBan * item.soLuong * heSoGia);
       const thue = Math.floor(tienGoc * tyLeThue / 100);
       const tienNhan = tienGoc - thue;
       tongTienTruocThue += tienGoc;
       tongThue += thue;
       await banDB(player.id, item.tenCay, item.soLuong);
-      danhSachBan.push(`${cay.emoji} ${cay.ten} x${item.soLuong} → ${formatXu(tienNhan)}${thue > 0 ? ` *(thuế: ${formatXu(thue)})*` : ""}`);
+      danhSachBan.push(`${cay.emoji} ${cay.ten} x${item.soLuong} → ${formatXu(tienNhan)}${thue > 0 ? ` *(thuế: ${formatXu(thue)})*` : ""}${coThoiTietAnhHuong ? thoiTietNote : ""}`);
     }
 
     const tongNhan = tongTienTruocThue - tongThue;
@@ -73,6 +82,9 @@ export async function xuLyBan(message: Message, args: string[]) {
         embed.addFields(
           { name: "✅ Miễn Thuế", value: "Pet Phụng Hoàng buff!", inline: true },
         );
+      }
+      if (coThoiTietAnhHuong) {
+        embed.addFields({ name: `${thoiTiet.emoji} Thời Tiết`, value: thoiTiet.hieu_ung.split("\n")[0], inline: false });
       }
     }
 
@@ -113,7 +125,7 @@ export async function xuLyBan(message: Message, args: string[]) {
     return message.reply({ embeds: [embedLoi] });
   }
 
-  const tienGoc = cay.giaBan * soLuong;
+  const tienGoc = Math.round(cay.giaBan * soLuong * heSoGia);
   const thue = Math.floor(tienGoc * tyLeThue / 100);
   const tongTien = tienGoc - thue;
   await congXuVaKinhNghiem(player.id, tongTien, 0);
@@ -121,7 +133,7 @@ export async function xuLyBan(message: Message, args: string[]) {
   const embed = new EmbedBuilder()
     .setColor(MAU_CHINH)
     .setTitle(`💰 Đã bán!`)
-    .setDescription(`${cay.emoji} **${cay.ten}** x${soLuong}`)
+    .setDescription(`${cay.emoji} **${cay.ten}** x${soLuong}${coThoiTietAnhHuong ? thoiTietNote : ""}`)
     .addFields(
       { name: "💵 Giá gốc", value: formatXu(tienGoc), inline: true },
     );
@@ -138,7 +150,7 @@ export async function xuLyBan(message: Message, args: string[]) {
     );
   }
 
-  embed.setFooter({ text: `Thuế ${tyLeThue}% • Dùng .pet để giảm thuế • .ban tất để bán hết túi` });
+  embed.setFooter({ text: `Thuế ${tyLeThue}% • ${thoiTiet.emoji} ${thoiTiet.ten} • .ban tất để bán hết túi` });
 
   await message.reply({ embeds: [embed] });
 }
