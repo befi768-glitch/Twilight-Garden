@@ -10,6 +10,7 @@ const PHI_DANG_BAN = 5; // 5% phí đăng bán
 const MAX_DON_MOI_NGUOI = 5;
 
 interface ChoBuonRow {
+  [key: string]: unknown;
   id: number;
   nguoi_ban_id: number;
   user_id: string;

@@ -3,7 +3,7 @@ import { layHoacTaoNguoiChoi, layTuiDo, congXuVaKinhNghiem } from "../database/q
 import { db } from "../database/db";
 import { nguoiChoi, oDat } from "../database/schema";
 import { eq, sql } from "drizzle-orm";
-import { congThucDanhSach, timCongThucTheoTen, cayMap as congThucCayMap, mauDoKho } from "../data/crafting";
+import { congThucDanhSach, timCongThucTheoTen, mauDoKho } from "../data/crafting";
 import { cayMap } from "../data/plants";
 import { formatXu, MAU_CHINH, MAU_VANG, MAU_DO, EMOJI_KN, EMOJI_TIEN } from "../utils/helpers";
 
