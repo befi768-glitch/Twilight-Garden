@@ -11,7 +11,11 @@ export function formatThoiGian(ms: number): string {
 
 // Đơn vị tiền tệ: Nguyệt Thạch
 export const TEN_TIEN = "Nguyệt Thạch";
-export const EMOJI_TIEN = "💠";
+// Dùng export let để emojiManager có thể cập nhật live khi bot ready
+export let EMOJI_TIEN = "💠";
+export function setEmojiTien(emoji: string) {
+  EMOJI_TIEN = emoji;
+}
 
 export function formatXu(so: number): string {
   return `${so.toLocaleString("vi-VN")} ${EMOJI_TIEN}`;
