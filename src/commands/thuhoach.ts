@@ -103,9 +103,13 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     }
 
     if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
-      const { loi_thoai } = await import("../utils/events");
-      const loiCap = loi_thoai.chuc_mung_cap[Math.floor(Math.random() * loi_thoai.chuc_mung_cap.length)];
-      embed.addFields({ name: `🎉 LÊN CẤP ${capInfo.capDoMoi}!`, value: loiCap });
+      const { layLoiLenCap } = await import("../utils/events");
+      const { tenCap } = await import("../data/plants").then(m => m.layThongTinCap(capInfo.capDoMoi));
+      const loiCap = layLoiLenCap(capInfo.capDoMoi);
+      embed.addFields({
+        name: `${loiCap.tieuDe} — ${tenCap}`,
+        value: loiCap.moTa,
+      });
     }
 
     return message.reply({
@@ -193,9 +197,13 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
   embed.setFooter({ text: `💡 Dùng .ban để bán nông sản lấy xu! • ${thoiTiet.emoji} ${thoiTiet.ten} hôm nay` });
 
   if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
-    const { loi_thoai } = await import("../utils/events");
-    const loiCap = loi_thoai.chuc_mung_cap[Math.floor(Math.random() * loi_thoai.chuc_mung_cap.length)];
-    embed.addFields({ name: `🎉 LÊN CẤP ${capInfo.capDoMoi}!`, value: loiCap });
+    const { layLoiLenCap } = await import("../utils/events");
+    const { tenCap } = await import("../data/plants").then(m => m.layThongTinCap(capInfo.capDoMoi));
+    const loiCap = layLoiLenCap(capInfo.capDoMoi);
+    embed.addFields({
+      name: `${loiCap.tieuDe} — ${tenCap}`,
+      value: loiCap.moTa,
+    });
   }
 
   await message.reply({ embeds: [embed] });

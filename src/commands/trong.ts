@@ -7,14 +7,29 @@ import { layThoiTietHomNay } from "../utils/weather";
 
 export async function xuLyTrong(message: Message, args: string[]) {
   if (!args.length) {
-    return message.reply("❌ Bạn muốn trồng cây gì? Dùng `.trong <tên cây>` — VD: `.trong hoàng căn`");
+    const embed = new EmbedBuilder()
+      .setColor(MAU_CHINH)
+      .setTitle("🌱 Gieo Hạt Vào Linh Địa")
+      .setDescription(
+        "*Nàng Tiên khẽ nghiêng đầu hỏi: \"Ngươi muốn gieo loại linh thảo nào hôm nay~?\"*\n\n" +
+        "Dùng `.trong <tên cây>` để gieo hạt — VD: `.trong hoàng căn`\n" +
+        "Hoặc `.cuahang` để xem danh sách linh thảo."
+      );
+    return message.reply({ embeds: [embed] });
   }
 
   const tenCay = args.join(" ");
   const cay = timCayTheoTenHoacHat(tenCay);
 
   if (!cay) {
-    return message.reply(`❌ Không tìm thấy cây **${tenCay}**! Dùng \`.cuahang\` để xem danh sách cây.`);
+    const embed = new EmbedBuilder()
+      .setColor(MAU_DO)
+      .setTitle("🍃 Linh Thảo Chưa Được Ghi Chép")
+      .setDescription(
+        `*Nàng Tiên lật qua từng trang thư tịch cổ... nhưng không thấy tên \"**${tenCay}**\" ở đâu.*\n\n` +
+        `Dùng \`.cuahang\` để xem danh sách linh thảo hiện có tại Linh Thảo Các.`
+      );
+    return message.reply({ embeds: [embed] });
   }
 
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);

@@ -130,7 +130,25 @@ client.once(Events.ClientReady, async (readyClient) => {
 
   await khoiTaoDatabase();
 
-  readyClient.user.setActivity(`${PREFIX}trogiup | Twilight Garden 🌸`, { type: 3 });
+  const danhSachStatus = [
+    { text: `${PREFIX}trogiup | Twilight Garden 🌸`, type: 3 },
+    { text: "Đang tưới vườn linh thảo... 💧", type: 3 },
+    { text: "Ngắm trăng tại Linh Địa Twilight 🌕", type: 3 },
+    { text: "Luyện đan trong đêm khuya... ⚗️", type: 3 },
+    { text: "Thu hoạch linh thảo bội thu 🌿", type: 3 },
+    { text: "Thì thầm với những hạt giống 🌱", type: 3 },
+    { text: "Canh gác khu vườn huyền bí 🏯", type: 3 },
+    { text: "Gieo đạo vào lòng đất Linh Địa ✨", type: 3 },
+    { text: "Đang pha trà linh thảo cho nàng tiên 🍵", type: 3 },
+    { text: "Quan sát mây trời thay thời tiết ⛅", type: 3 },
+  ];
+  let statusIdx = 0;
+  readyClient.user.setActivity(danhSachStatus[0].text, { type: danhSachStatus[0].type as 3 });
+  setInterval(() => {
+    statusIdx = (statusIdx + 1) % danhSachStatus.length;
+    const s = danhSachStatus[statusIdx];
+    readyClient.user.setActivity(s.text, { type: s.type as 3 });
+  }, 30 * 60 * 1000);
 });
 
 client.on(Events.MessageCreate, async (message) => {

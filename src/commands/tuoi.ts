@@ -11,10 +11,10 @@ export async function xuLyTuoi(message: Message, args: string[]) {
 
   if (args[0]) {
     const viTri = parseInt(args[0]);
-    if (isNaN(viTri)) return message.reply("❌ Số ô không hợp lệ! VD: `.tuoi 1`");
+    if (isNaN(viTri)) return message.reply("*Nàng Tiên nhíu mày: \"Ô đất nào vậy? Hãy cho ta biết con số~\" — VD: `.tuoi 1`*");
 
     const o = vuon.find((v) => v.viTri === viTri);
-    if (!o || !o.tenCay) return message.reply(`❌ Ô ${viTri} trống hoặc không tồn tại!`);
+    if (!o || !o.tenCay) return message.reply(`*Nàng Tiên nhìn quanh: \"Ô ${viTri} trống không có gì để tưới cả~\"*`);
     if (o.daTuoi) {
       return message.reply(`💧 *Nàng tiên vườn thì thầm: "Ô ${viTri} đã đủ nước rồi, đừng tưới quá nhiều~"*`);
     }

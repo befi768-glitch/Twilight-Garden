@@ -120,7 +120,10 @@ export async function xuLyLuyenDan(message: Message, args: string[]) {
     const capInfo = await congXuVaKinhNghiem(player.id, 0, hieu.soLuong);
     ketQua = `+${hieu.soLuong.toLocaleString("vi-VN")} ${EMOJI_KN} Linh Lực`;
     if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
-      ketQua += `\n🎉 **LÊN CẤP ${capInfo.capDoMoi}!**`;
+      const { layLoiLenCap } = await import("../utils/events");
+      const { tenCap } = await import("../data/plants").then(m => m.layThongTinCap(capInfo.capDoMoi));
+      const loiCap = layLoiLenCap(capInfo.capDoMoi);
+      ketQua += `\n\n**${loiCap.tieuDe} — ${tenCap}**\n${loiCap.moTa}`;
     }
   } else if (hieu.loai === "xu") {
     await congXuVaKinhNghiem(player.id, hieu.soLuong, 0);
@@ -129,7 +132,10 @@ export async function xuLyLuyenDan(message: Message, args: string[]) {
     const capInfo = await congXuVaKinhNghiem(player.id, hieu.xu, hieu.kinhNghiem);
     ketQua = `+${hieu.kinhNghiem.toLocaleString("vi-VN")} ${EMOJI_KN} Linh Lực\n+${formatXu(hieu.xu)}`;
     if (capInfo && capInfo.capDoMoi > capInfo.capDoCu) {
-      ketQua += `\n🎉 **LÊN CẤP ${capInfo.capDoMoi}!**`;
+      const { layLoiLenCap } = await import("../utils/events");
+      const { tenCap } = await import("../data/plants").then(m => m.layThongTinCap(capInfo.capDoMoi));
+      const loiCap = layLoiLenCap(capInfo.capDoMoi);
+      ketQua += `\n\n**${loiCap.tieuDe} — ${tenCap}**\n${loiCap.moTa}`;
     }
   } else if (hieu.loai === "moRongVuon") {
     const soODatMoi = player.soODat + hieu.soODat;

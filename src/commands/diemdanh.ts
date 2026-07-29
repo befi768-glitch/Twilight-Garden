@@ -2,6 +2,7 @@ import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, congXuVaKinhNghiem } from "../database/queries";
 import { db } from "../database/db";
 import { MAU_CHINH, MAU_VANG, MAU_DO, formatXu, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
+import { layLoiDiemDanh } from "../utils/events";
 
 function tinhThuong(streak: number): { xu: number; danhHieu: string; moTa: string } {
   if (streak >= 30) return { xu: 80,  danhHieu: "👑 Thần Nông Giác Ngộ",    moTa: "30+ ngày chăm chỉ tu luyện" };
@@ -62,14 +63,8 @@ async function thucHienDiemDanh(message: Message, playerId: number, streak: numb
   );
   await congXuVaKinhNghiem(playerId, xu, 0);
 
-  const hinhAnh = streak >= 7 ? "🌕" : streak >= 3 ? "🌙" : "🌱";
-  const loiChao = [
-    `*"Linh khí buổi sáng thanh tịnh nhất — hãy tận dụng tốt ngày hôm nay~"*`,
-    `*"Mỗi ngày tu luyện, khu vườn thêm phần linh thiêng..."*`,
-    `*"Nàng Tiên Twilight gật đầu hài lòng trước sự kiên trì của bạn~"*`,
-    `*"Ánh hoàng hôn buông xuống, một ngày mới đầy linh khí bắt đầu!"*`,
-  ];
-  const loi = loiChao[Math.floor(Math.random() * loiChao.length)];
+  const hinhAnh = streak >= 30 ? "🌟" : streak >= 14 ? "🌕" : streak >= 7 ? "🌕" : streak >= 3 ? "🌙" : "🌱";
+  const loi = layLoiDiemDanh(streak);
 
   const embed = new EmbedBuilder()
     .setColor(streak >= 7 ? MAU_VANG : MAU_CHINH)
