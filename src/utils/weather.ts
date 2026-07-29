@@ -101,15 +101,15 @@ function hashString(s: string): number {
 }
 
 export function layThoiTietHomNay(guildId: string): LoaiThoiTiet {
-  const homNay = new Date();
-  const ngayKey = `${guildId}-${homNay.getFullYear()}-${homNay.getMonth()}-${homNay.getDate()}`;
-  const index = hashString(ngayKey) % danhSachThoiTiet.length;
+  const now = new Date();
+  const gioKey = `${guildId}-${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}`;
+  const index = hashString(gioKey) % danhSachThoiTiet.length;
   return danhSachThoiTiet[index];
 }
 
-// Lấy thời tiết một ngày cụ thể (dùng để hiển thị lịch)
+// Lấy thời tiết tại một thời điểm cụ thể (dùng để hiển thị lịch)
 export function layThoiTietNgay(guildId: string, date: Date): LoaiThoiTiet {
-  const ngayKey = `${guildId}-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
-  const index = hashString(ngayKey) % danhSachThoiTiet.length;
+  const gioKey = `${guildId}-${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}`;
+  const index = hashString(gioKey) % danhSachThoiTiet.length;
   return danhSachThoiTiet[index];
 }
