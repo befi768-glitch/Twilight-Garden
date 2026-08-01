@@ -12,15 +12,19 @@ export function formatThoiGian(ms: number): string {
 // Đơn vị tiền tệ: Nguyệt Thạch
 export const TEN_TIEN = "Nguyệt Thạch";
 // Emoji tiền được lưu theo từng server để không dùng nhầm ID emoji của server khác.
-export let EMOJI_TIEN = "💠";
+export const EMOJI_TIEN = "💠";
 const emojiTienTheoGuild = new Map<string, string>();
 
 export function setEmojiTien(guildId: string, emoji: string) {
-  emojiTienTheoGuild.set(guildId, emoji);
+  // Chỉ lưu emoji đã được xác nhận thuộc đúng guild; không thay đổi fallback
+  // dùng chung để tránh làm lộ raw markup `<:name:id>` ở server khác.
+  if (emoji.startsWith("<:") && emoji.endsWith(">")) {
+    emojiTienTheoGuild.set(guildId, emoji);
+  }
 }
 
 export function layEmojiTien(guildId: string | null | undefined): string {
-  return emojiTienTheoGuild.get(guildId ?? "") ?? EMOJI_TIEN;
+  return emojiTienTheoGuild.get(guildId ?? "") || EMOJI_TIEN;
 }
 
 export function formatXu(so: number, guildId?: string | null): string {

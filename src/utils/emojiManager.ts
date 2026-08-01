@@ -32,7 +32,7 @@ async function taoHoacLayEmoji(
 }
 
 export async function khoiTaoEmojiNguyetThach(client: Client): Promise<void> {
-  const imagePath = path.resolve(__dirname, "../assets/nguyet_thach.png");
+  const imagePath = path.resolve(__dirname, "../assets/emojis/nguyet_thach.png");
 
   if (!fs.existsSync(imagePath)) {
     console.warn("⚠️  Không tìm thấy ảnh Nguyệt Thạch, dùng emoji mặc định 💠");
@@ -77,13 +77,15 @@ export async function khoiTaoEmojiNguyetThach(client: Client): Promise<void> {
 }
 
 export async function khoiTaoEmojiCay(client: Client): Promise<void> {
+  let tongEmojiCay = 0;
+
   for (const [, guild] of client.guilds.cache) {
     try {
       await guild.emojis.fetch();
       const emojiCay = new Map<string, string>();
 
       for (const cay of danhSachCay) {
-        const imagePath = path.resolve(__dirname, `../assets/plants/${cay.id}.png`);
+        const imagePath = path.resolve(__dirname, `../assets/emojis/plants/${cay.id}.png`);
         if (!fs.existsSync(imagePath)) continue;
 
         const customEmoji = await taoHoacLayEmoji(
@@ -97,6 +99,7 @@ export async function khoiTaoEmojiCay(client: Client): Promise<void> {
 
       if (emojiCay.size > 0) {
         emojiCayTheoGuild.set(guild.id, emojiCay);
+        tongEmojiCay += emojiCay.size;
         console.log(`🌱 Đã sẵn sàng ${emojiCay.size}/${danhSachCay.length} emoji ảnh cây ở "${guild.name}"`);
       }
     } catch {
@@ -104,5 +107,7 @@ export async function khoiTaoEmojiCay(client: Client): Promise<void> {
     }
   }
 
-  console.warn("⚠️  Không thể tạo emoji ảnh cây, cửa hàng dùng emoji mặc định");
+  if (tongEmojiCay === 0) {
+    console.warn("⚠️  Không thể tạo emoji ảnh cây, cửa hàng dùng emoji mặc định");
+  }
 }
