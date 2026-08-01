@@ -167,19 +167,14 @@ export async function xuLyBoss(message: Message, args: string[]) {
       petBonusText = `\n${pet!.emoji} *${pet!.ten}: +${bonusSo} sát thương (${bonusPetDamage}%)*`;
     }
 
-    // Áp dụng thời tiết
+    // Áp dụng thời tiết — chỉ Cuồng Phong ảnh hưởng boss (-5%)
+    // Nguyệt Sắc & Linh Vũ chỉ buff farming, không ảnh hưởng boss
     const thoiTiet = layThoiTietHomNay(message.guildId);
     let thoiTietText = "";
     let thoiTietMod = 1.0;
-    if (thoiTiet.id === "nguyet_sac") {
-      thoiTietMod = 1.15;
-      thoiTietText = `\n${thoiTiet.emoji} *${thoiTiet.ten}: +15% sát thương!*`;
-    } else if (thoiTiet.id === "cuong_phong") {
-      thoiTietMod = 0.90;
-      thoiTietText = `\n${thoiTiet.emoji} *${thoiTiet.ten}: -10% sát thương (boss mạnh hơn trong bão!)*`;
-    } else if (thoiTiet.id === "linh_vu") {
-      thoiTietMod = 1.05;
-      thoiTietText = `\n${thoiTiet.emoji} *${thoiTiet.ten}: +5% sát thương*`;
+    if (thoiTiet.id === "cuong_phong") {
+      thoiTietMod = 0.95;
+      thoiTietText = `\n${thoiTiet.emoji} *${thoiTiet.ten}: -5% sát thương (chiến đấu trong bão!)*`;
     }
     satThuong = Math.floor(satThuong * thoiTietMod);
 
