@@ -8,6 +8,7 @@ import { MAU_CHINH, MAU_DO, MAU_XAM, formatXu } from "../utils/helpers";
 
 const COOLDOWN_PHUT = 120; // 2 tiếng
 const TY_LE_LOOT_CAY = 0.05; // Loot hạt giống chỉ có 5% mỗi chuyến
+const TY_LE_LOOT_LINH_TINH = 0.01; // Loot Linh Tinh chỉ có 1% mỗi chuyến
 
 interface PhanThuong {
   trong_so: number;
@@ -171,9 +172,9 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
       )
       .addFields(
         { name: "📖 Cách dùng", value: "`.thamhiem <tên>` — VD: `.thamhiem rungcolinh`\n`.thamhiem linhson` • `.thamhiem huyenhai` • `.thamhiem phetich` • `.thamhiem thiennhai`" },
-        { name: "🎲 Tỷ lệ & rủi ro", value: "🌱 Hạt giống: **5% mỗi chuyến**\n🧬 Linh Tinh: vật phẩm riêng của địa điểm, **luôn nhận 1 cái**\n⚠️ Có thể gặp thất bại hoặc mất Nguyệt Thạch." },
+        { name: "🎲 Tỷ lệ & rủi ro", value: "🌱 Hạt giống: **5% mỗi chuyến**\n🧬 Linh Tinh: **1% mỗi chuyến**\n⚠️ Có thể gặp thất bại hoặc mất Nguyệt Thạch." },
       )
-      .setFooter({ text: `⏳ Cooldown 2 tiếng • 🌱 Hạt giống 5% • 🔥 Streak cao → thêm Linh Tinh • 🐾 Pet → thêm loot` });
+      .setFooter({ text: `⏳ Cooldown 2 tiếng • 🌱 Hạt giống 5% • 🧬 Linh Tinh 1% • 🐾 Pet → thêm loot` });
     return message.reply({ embeds: [embed] });
   }
 
@@ -206,11 +207,10 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
   }
 
   // ─── LẤY THÔNG TIN PET & STREAK ──────────────────────────────────────────────
-  const extraRow = await db.execute<{ pet_id: string | null; streak: number }>(
-    `SELECT pet_id, COALESCE(streak, 0) as streak FROM nguoi_choi WHERE id = ${player.id}`
+  const extraRow = await db.execute<{ pet_id: string | null }>(
+    `SELECT pet_id FROM nguoi_choi WHERE id = ${player.id}`
   );
   const petId = extraRow.rows[0]?.pet_id ?? null;
-  const streak = extraRow.rows[0]?.streak ?? 0;
   const pet = petId ? petMap.get(petId) : null;
   const bonusPet = layBonusThamHiem(petId); // % tăng xu
 
@@ -257,26 +257,17 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
   } else {
     // Thất bại
     await congXuVaKinhNghiem(player.id, 0, phanThuong.kinhNghiem ?? 0);
-    moTaKetQua = `${phanThuong.emoji} ${phanThuong.moTa}\n\n*Nhưng ít nhất bạn vẫn nhặt được Linh Tinh...*`;
+    moTaKetQua = `${phanThuong.emoji} ${phanThuong.moTa}\n\n*Chuyến đi không mang về phần thưởng chính.*`;
   }
 
-  // ── LUÔN nhận Linh Tinh của địa điểm (guaranteed) ──
-  let soLinhTinh = 1;
-  // Streak bonus: 7+ ngày → +1 Linh Tinh thêm
-  if (streak >= 14) {
-    soLinhTinh = 3;
-    bonusText += `\n🔥 *Streak ${streak} ngày: nhận x3 Linh Tinh!*`;
-  } else if (streak >= 7) {
-    soLinhTinh = 2;
-    bonusText += `\n🔥 *Streak ${streak} ngày: nhận x2 Linh Tinh!*`;
+  // ── Loot Linh Tinh: chỉ có 1% mỗi chuyến ──
+  const nhanDuocLinhTinh = Math.random() < TY_LE_LOOT_LINH_TINH;
+  let soLinhTinh = 0;
+  if (nhanDuocLinhTinh) {
+    soLinhTinh = 1;
+    await themVaoTuiDo(player.id, diaDiem.linhTinhId, soLinhTinh);
+    bonusText += `\n🧬 *May mắn tìm được Linh Tinh!*`;
   }
-  // Phụng Hoàng đặc biệt: +1 Linh Tinh thêm
-  if (petId === "phung_hoang") {
-    soLinhTinh += 1;
-    bonusText += `\n🦅 *Phụng Hoàng dẫn đường: +1 Linh Tinh thêm!*`;
-  }
-
-  await themVaoTuiDo(player.id, diaDiem.linhTinhId, soLinhTinh);
   const linhTinh = vatPhamMap.get(diaDiem.linhTinhId)!;
 
   const laKetQuaBatLoi = phanThuong.loai === "that_bai" || phanThuong.loai === "bat_loi";
@@ -293,8 +284,10 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
     )
     .addFields(
       {
-        name: `🧬 Linh Tinh Thu Được`,
-        value: `${linhTinh.emoji} **${linhTinh.ten}** x${soLinhTinh}\n*Dùng để luyện đan cao cấp — xem* \`.luyendan\``,
+        name: `🧬 Linh Tinh`,
+        value: nhanDuocLinhTinh
+          ? `${linhTinh.emoji} **${linhTinh.ten}** x${soLinhTinh}\n*Dùng để luyện đan cao cấp — xem* \`.luyendan\``
+          : `Không tìm thấy Linh Tinh lần này.\n*Tỷ lệ: 1% mỗi chuyến*`,
         inline: true,
       },
       {
