@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Bot Discord trồng cây Twilight Garden 🌸",
   "main": "dist/index.js",
+  "packageManager": "pnpm@10.26.1",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc && cp -r src/assets dist/",
