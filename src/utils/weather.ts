@@ -1,4 +1,4 @@
-// Hệ thống thời tiết hàng ngày — tính từ guildId + ngày (không cần DB)
+// Hệ thống thời tiết theo giờ — tính từ guildId + ngày + giờ (không cần DB)
 
 export interface LoaiThoiTiet {
   id: string;
@@ -13,7 +13,7 @@ export interface LoaiThoiTiet {
   bonusSanLuong: number;        // +N sản lượng cộng thêm
   bonusGiaBan: number;          // % tăng giá bán (0 = không)
   // Debuff
-  tangXacSuatXau: boolean;      // tăng xác suất sự kiện xấu
+  tangXacSuatXau: number;       // số điểm phần trăm cộng thêm cho sự kiện xấu
   giamGiaBan: number;           // % giảm giá bán (0 = không)
   mauEmbed: number;
 }
@@ -29,7 +29,7 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: false,
+    tangXacSuatXau: 0,
     giamGiaBan: 0,
     mauEmbed: 0xffd700,
   },
@@ -43,7 +43,7 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     tuTuoiKhiTrong: true,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: false,
+    tangXacSuatXau: 0,
     giamGiaBan: 0,
     mauEmbed: 0x5dade2,
   },
@@ -57,7 +57,7 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: false,
+    tangXacSuatXau: 0,
     giamGiaBan: 0,
     mauEmbed: 0x95a5a6,
   },
@@ -66,12 +66,12 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     ten: "Cuồng Phong Nghịch Thiên",
     emoji: "🌪️",
     moTa: "Gió dữ từ vùng hắc ám thổi qua, âm khí bao trùm khắp Linh Địa",
-    hieu_ung: "🌪️ **Tăng 20% xác suất** sự kiện xấu khi thu hoạch + **Giảm 7% giá bán** linh thảo\n*(Sát thương boss -5% — thời tiết không thuận lợi chiến đấu)*",
+    hieu_ung: "🌪️ **+10 điểm % cơ hội** gặp sự kiện xấu khi thu hoạch + **Giảm 7% giá bán** linh thảo\n*(Sát thương boss -5% — thời tiết không thuận lợi chiến đấu)*",
     giamThoiGianTrong: 0,
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: true,
+    tangXacSuatXau: 10,
     giamGiaBan: 7,
     mauEmbed: 0xe74c3c,
   },
@@ -85,12 +85,12 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 12,
-    tangXacSuatXau: false,
+    tangXacSuatXau: 0,
     giamGiaBan: 0,
     mauEmbed: 0x7b68ee,
   },
   {
-    id: "bang_sương",
+    id: "bang_suong",
     ten: "Băng Sương Giá Buốt",
     emoji: "❄️",
     moTa: "Khí lạnh từ cõi u minh tràn vào Linh Địa, linh mạch trong đất đóng băng cứng lại",
@@ -99,7 +99,7 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: false,
+    tangXacSuatXau: 0,
     giamGiaBan: 0,
     mauEmbed: 0xaed6f1,
   },
@@ -108,14 +108,56 @@ export const danhSachThoiTiet: LoaiThoiTiet[] = [
     ten: "Âm Khí Trầm Tích",
     emoji: "🌫️",
     moTa: "Sương âm khí dày đặc phủ kín Vườn Twilight, linh thảo héo úa trong màn sương tối",
-    hieu_ung: "🌫️ **Giảm 12% giá bán** linh thảo + **Tăng 20% xác suất** sự kiện xấu khi thu hoạch",
+    hieu_ung: "🌫️ **Giảm 12% giá bán** linh thảo + **+10 điểm % cơ hội** gặp sự kiện xấu khi thu hoạch",
     giamThoiGianTrong: 0,
     tuTuoiKhiTrong: false,
     bonusSanLuong: 0,
     bonusGiaBan: 0,
-    tangXacSuatXau: true,
+    tangXacSuatXau: 10,
     giamGiaBan: 12,
     mauEmbed: 0x808b96,
+  },
+  {
+    id: "han_han",
+    ten: "Hạn Hán Linh Mạch",
+    emoji: "🏜️",
+    moTa: "Linh tuyền cạn khô, đất thiêng nứt nẻ và những mầm cây phải chống chọi với khô hạn",
+    hieu_ung: "🏜️ **Tăng 10% thời gian sinh trưởng** + **Giảm 5% giá bán** + **+8 điểm % cơ hội** gặp sự kiện xấu",
+    giamThoiGianTrong: -10,
+    tuTuoiKhiTrong: false,
+    bonusSanLuong: 0,
+    bonusGiaBan: 0,
+    tangXacSuatXau: 8,
+    giamGiaBan: 5,
+    mauEmbed: 0xd68910,
+  },
+  {
+    id: "mua_da",
+    ten: "Mưa Đá Linh Mạch",
+    emoji: "🧊",
+    moTa: "Những viên băng linh lực trút xuống, làm tổn thương mầm cây và khiến việc thu hoạch thêm rủi ro",
+    hieu_ung: "🧊 **Tăng 15% thời gian sinh trưởng** + **Giảm 5% giá bán** + **+8 điểm % cơ hội** gặp sự kiện xấu",
+    giamThoiGianTrong: -15,
+    tuTuoiKhiTrong: false,
+    bonusSanLuong: 0,
+    bonusGiaBan: 0,
+    tangXacSuatXau: 8,
+    giamGiaBan: 5,
+    mauEmbed: 0x5499c7,
+  },
+  {
+    id: "doc_vu",
+    ten: "Độc Vụ Hắc Ám",
+    emoji: "☣️",
+    moTa: "Màn sương độc len vào từng luống cây, làm linh thảo mất giá và thu hút những điềm dữ",
+    hieu_ung: "☣️ **Giảm 15% giá bán** linh thảo + **+12 điểm % cơ hội** gặp sự kiện xấu khi thu hoạch",
+    giamThoiGianTrong: 0,
+    tuTuoiKhiTrong: false,
+    bonusSanLuong: 0,
+    bonusGiaBan: 0,
+    tangXacSuatXau: 12,
+    giamGiaBan: 15,
+    mauEmbed: 0x148f77,
   },
 ];
 

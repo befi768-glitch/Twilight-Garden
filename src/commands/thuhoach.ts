@@ -53,6 +53,10 @@ async function apDungSuKien(
   return { bonusText, xuBonus, xuPhat };
 }
 
+function laSuKienBatLoi(suKien: ReturnType<typeof taoSuKien>): boolean {
+  return suKien.matXu !== undefined || suKien.matSanLuong !== undefined;
+}
+
 export async function xuLyThuHoach(message: Message, args: string[]) {
   const player = await layHoacTaoNguoiChoi(message.author.id, message.guildId!);
   const vuon = await layVuon(player.id);
@@ -77,14 +81,14 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     const cay = cayMap.get(ketQua.tenCay);
     if (!cay) return message.reply("❌ Lỗi không xác định!");
 
-    const suKien = taoSuKien(cay);
+    const suKien = taoSuKien(cay, thoiTiet);
     const ke = cay.kinhNghiem * ketQua.soLuong;
     const capInfo = await congXuVaKinhNghiem(player.id, 0, ke);
 
     const { bonusText, xuPhat } = await apDungSuKien(player.id, suKien, ketQua.soLuong, cay.id);
     const loiThoai = layLoiThoaiNgauNhien("thuhoach");
 
-    const laBatLoi = ["sau_linh", "loi_kiep", "nu_tiep_ruong"].includes(suKien.loai);
+    const laBatLoi = laSuKienBatLoi(suKien);
     const mauEmbed = laBatLoi ? MAU_DO : MAU_VANG;
 
     const embed = new EmbedBuilder()
@@ -154,9 +158,9 @@ export async function xuLyThuHoach(message: Message, args: string[]) {
     tongKe += ke;
     danhSachThuHoach.push(`${cay.emoji} **${cay.ten}** x${ketQua.soLuong}`);
 
-    const suKien = taoSuKien(cay);
+    const suKien = taoSuKien(cay, thoiTiet);
     if (suKien.loai !== "binh_thuong") {
-      const laBatLoi = ["sau_linh", "loi_kiep", "nu_tiep_ruong"].includes(suKien.loai);
+      const laBatLoi = laSuKienBatLoi(suKien);
       const { xuBonus, xuPhat } = await apDungSuKien(player.id, suKien, ketQua.soLuong, cay.id);
       tongBonus += xuBonus;
       tongPhat += xuPhat;

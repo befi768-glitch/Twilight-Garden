@@ -10,6 +10,7 @@ const DAMAGE_MIN = 80;
 const DAMAGE_MAX = 220;
 
 interface BossHienTai {
+  [key: string]: unknown;
   id: number;
   guild_id: string;
   ten: string;

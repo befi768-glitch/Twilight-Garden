@@ -1,5 +1,6 @@
 import { Cay, danhSachCay } from "../data/plants";
 import { TEN_TIEN, EMOJI_TIEN } from "./helpers";
+import type { LoaiThoiTiet } from "./weather";
 
 export interface SuKienNgauNhien {
   loai:
@@ -20,14 +21,12 @@ export interface SuKienNgauNhien {
   matSanLuong?: number; // số nguyên dương = mất đúng số đó; -1 = mất 30%
 }
 
-// ── Xác suất mỗi loại (tổng có lợi = 15%, tổng bất lợi = 15%) ──
+// ── Xác suất cơ bản: có lợi 15%, bất lợi 25%, bình thường 60% ──
 // Vùng [0, 0.05)  → Nguyệt Mãn        +1 sản lượng
 // Vùng [0.05,0.10)→ Linh Vật           +hạt giống
 // Vùng [0.10,0.15)→ Thiên Cơ           +xu
-// Vùng [0.15,0.20)→ Sâu Linh           -1 sản lượng
-// Vùng [0.20,0.25)→ Lôi Kiếp           -xu
-// Vùng [0.25,0.30)→ Cuồng Phong        -30% sản lượng
-// Vùng [0.30,1.00)→ Bình thường        (70%)
+// 25% tiếp theo chia đều cho 5 sự kiện bất lợi
+// Thời tiết xấu cộng thêm 8–10 điểm % vào nhóm bất lợi.
 
 const loiThienKhoi = [
   "Thiên địa linh khí hội tụ vào khu vườn của bạn",
@@ -43,8 +42,11 @@ const loiThoiXau = [
   "Thiên đạo vô tình, thịnh cực thì suy",
 ];
 
-export function taoSuKien(cay: Cay): SuKienNgauNhien {
+export function taoSuKien(cay: Cay, thoiTiet?: Pick<LoaiThoiTiet, "tangXacSuatXau">): SuKienNgauNhien {
   const ran = Math.random();
+  const tyLeBatLoi = Math.min(0.4, 0.25 + (thoiTiet?.tangXacSuatXau ?? 0) / 100);
+  const mocBatLoi = 0.15;
+  const buocBatLoi = tyLeBatLoi / 5;
 
   // ── CÓ LỢI (5% mỗi loại, tổng 15%) ─────────────────────────
 
@@ -78,10 +80,10 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
     };
   }
 
-  // ── BẤT LỢI (5% mỗi loại, tổng 15%) ────────────────────────
+  // ── BẤT LỢI (chia đều cho 5 loại, tổng 25% cơ bản) ──────────
 
   // 5% — Sâu Linh: mất 1 sản lượng (nếu chỉ có 1 thì không mất)
-  if (ran < 0.20) {
+  if (ran < mocBatLoi + buocBatLoi) {
     const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
       loai: "sau_linh",
@@ -91,7 +93,7 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
   }
 
   // 5% — Lôi Kiếp: mất xu bằng 20% giá bán
-  if (ran < 0.25) {
+  if (ran < mocBatLoi + buocBatLoi * 2) {
     const matXu = Math.max(5, Math.floor(cay.giaBan * 0.2));
     const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
@@ -102,7 +104,7 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
   }
 
   // 5% — Cuồng Phong: mất 30% sản lượng (tối thiểu 1)
-  if (ran < 0.30) {
+  if (ran < mocBatLoi + buocBatLoi * 3) {
     const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
       loai: "cuong_phong",
@@ -112,7 +114,7 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
   }
 
   // 5% — Hắc Sương Độc: mất xu = 50% giá bán (nặng hơn Lôi Kiếp)
-  if (ran < 0.35) {
+  if (ran < mocBatLoi + buocBatLoi * 4) {
     const matXu = Math.max(10, Math.floor(cay.giaBan * 0.5));
     const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
@@ -123,7 +125,7 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
   }
 
   // 5% — Quỷ Tinh Quấy Phá: mất thêm 2 sản lượng (nặng hơn Sâu Linh)
-  if (ran < 0.40) {
+  if (ran < mocBatLoi + tyLeBatLoi) {
     const loi = loiThoiXau[Math.floor(Math.random() * loiThoiXau.length)];
     return {
       loai: "sau_linh",
@@ -132,7 +134,7 @@ export function taoSuKien(cay: Cay): SuKienNgauNhien {
     };
   }
 
-  // 60% — Bình thường
+  // Phần còn lại — Bình thường
   return { loai: "binh_thuong", moTa: "" };
 }
 
