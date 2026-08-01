@@ -23,6 +23,8 @@ import { xuLyThoiTiet } from "./commands/thoitiet";
 import { xuLyCho } from "./commands/cho";
 import { xuLyLuyenDan } from "./commands/luyendan";
 import { xuLyProfile } from "./commands/profile";
+import { xuLyThamHiem } from "./commands/thamhiem";
+import { xuLyBoss } from "./commands/boss";
 import { db } from "./database/db";
 import { sql } from "drizzle-orm";
 
@@ -65,6 +67,37 @@ async function khoiTaoDatabase() {
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS pavuon_cooldown TIMESTAMP`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS tong_thu_hoach INTEGER NOT NULL DEFAULT 0`);
   await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS tong_ban_buon INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE nguoi_choi ADD COLUMN IF NOT EXISTS thamhiem_cooldown TIMESTAMP`);
+
+  // Bảng boss sự kiện server
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS boss_su_kien (
+      id SERIAL PRIMARY KEY,
+      guild_id TEXT NOT NULL,
+      ten TEXT NOT NULL,
+      emoji TEXT NOT NULL,
+      hp_toi_da INTEGER NOT NULL,
+      hp_hien_tai INTEGER NOT NULL,
+      phan_thuong_xu INTEGER NOT NULL DEFAULT 800,
+      phan_thuong_kn INTEGER NOT NULL DEFAULT 150,
+      trang_thai TEXT NOT NULL DEFAULT 'dang_song',
+      nguoi_tao TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW(),
+      chet_luc TIMESTAMP
+    )
+  `);
+
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS boss_tham_gia (
+      id SERIAL PRIMARY KEY,
+      boss_id INTEGER REFERENCES boss_su_kien(id) ON DELETE CASCADE,
+      nguoi_choi_id INTEGER REFERENCES nguoi_choi(id) ON DELETE CASCADE,
+      sat_thuong_gay INTEGER NOT NULL DEFAULT 0,
+      lan_tan_cong INTEGER NOT NULL DEFAULT 0,
+      last_attack TIMESTAMP,
+      UNIQUE(boss_id, nguoi_choi_id)
+    )
+  `);
 
   // Bảng chợ người chơi
   await db.execute(sql`
@@ -282,6 +315,14 @@ client.on(Events.MessageCreate, async (message) => {
       case "hs":
       case "hoso":
         await xuLyProfile(message, args);
+        break;
+      case "thamhiem":
+      case "thámhiểm":
+      case "th":
+        await xuLyThamHiem(message, args);
+        break;
+      case "boss":
+        await xuLyBoss(message, args);
         break;
       default:
         break;

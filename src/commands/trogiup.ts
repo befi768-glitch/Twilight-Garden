@@ -128,6 +128,27 @@ export async function xuLyTroGiup(message: Message, prefix: string) {
         ].join("\n"),
       },
       {
+        name: "🗺️ Thám Hiểm — Khám Phá Vùng Đất Mới",
+        value: [
+          `\`${p}thamhiem\` (hoặc \`${p}th\`) — Xem bản đồ các địa điểm thám hiểm`,
+          `\`${p}thamhiem <địa điểm>\` — Bắt đầu thám hiểm (cooldown 2 tiếng)`,
+          `🌲 **Rừng Cổ Linh** (Cấp 1) → 🏔️ **Linh Sơn Đỉnh** (Cấp 2) → 🌊 **Huyền Hải Bờ** (Cấp 3)`,
+          `⚗️ **Phế Tích Đan Lò** (Cấp 4) → 🌌 **Thiên Nhai Bình** (Cấp 6) *(hiếm nhất!)*`,
+          `💡 Tìm được hạt giống hiếm, Nguyệt Thạch và Linh Lực mà không cần mua!`,
+        ].join("\n"),
+      },
+      {
+        name: "👹 Boss Sự Kiện Server — Cùng Chiến Đấu!",
+        value: [
+          `\`${p}boss\` — Xem boss đang hoạt động`,
+          `\`${p}boss danh\` — Tấn công boss (cooldown 5 phút)`,
+          `\`${p}boss danhsach\` — Xem danh sách boss`,
+          `\`${p}boss lichsu\` — Lịch sử boss đã tiêu diệt`,
+          `\`${p}boss tao <tên>\` — Triệu hồi boss *(Admin)*`,
+          `🏆 Top 3 sát thương nhận x2.0/x1.5/x1.2 phần thưởng!`,
+        ].join("\n"),
+      },
+      {
         name: "📖 Phẩm Cấp Linh Thảo",
         value: "⬜ Phàm Phẩm → 🟦 Linh Phẩm → 🟪 Tiên Phẩm → 🟨 Thần Phẩm",
       }
