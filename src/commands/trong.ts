@@ -73,6 +73,11 @@ export async function xuLyTrong(message: Message, args: string[]) {
   if (thoiTiet.giamThoiGianTrong > 0) {
     thoiGianMocThucTe = Math.max(1, Math.round(cay.thoiGianMoc * (1 - thoiTiet.giamThoiGianTrong / 100)));
     thoiTietNote = `\n${thoiTiet.emoji} **${thoiTiet.ten}**: Giảm ${thoiTiet.giamThoiGianTrong}% thời gian!`;
+  } else if (thoiTiet.giamThoiGianTrong < 0) {
+    // Giá trị âm = tăng thời gian (debuff)
+    const phanTramTang = Math.abs(thoiTiet.giamThoiGianTrong);
+    thoiGianMocThucTe = Math.round(cay.thoiGianMoc * (1 + phanTramTang / 100));
+    thoiTietNote = `\n${thoiTiet.emoji} **${thoiTiet.ten}**: Tăng ${phanTramTang}% thời gian sinh trưởng!`;
   }
 
   // Tiêu thụ 1 hạt giống từ túi đồ
