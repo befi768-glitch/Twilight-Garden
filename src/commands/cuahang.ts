@@ -1,13 +1,14 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { danhSachCay, iconDoHiem } from "../data/plants";
-import { formatXu, MAU_CHINH, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
+import { formatXu, layEmojiTien, MAU_CHINH, TEN_TIEN } from "../utils/helpers";
+import { layEmojiCay } from "../utils/emojiManager";
 
 export async function xuLyCuaHang(message: Message) {
   const lines = danhSachCay.map((c) => {
     const thoiGian = c.thoiGianMoc < 60
       ? `${c.thoiGianMoc} phút`
       : `${Math.floor(c.thoiGianMoc / 60)} giờ`;
-    return `${iconDoHiem[c.doHiem]} ${c.emoji} **${c.ten}** [${c.doHiem}]\n┗ ID: \`${c.id}\` • Hạt: \`hat_${c.id}\`\n┗ Mua: \`${c.giaMua} ${EMOJI_TIEN}\` • Bán: \`${c.giaBan} ${EMOJI_TIEN}\` • ⏳ ${thoiGian}\n┗ *${c.moTa}*`;
+    return `${iconDoHiem[c.doHiem]} ${layEmojiCay(message.guildId, c.id, c.emoji)} **${c.ten}** [${c.doHiem}]\n┗ ID: \`${c.id}\` • Hạt: \`hat_${c.id}\`\n┗ Mua: \`${formatXu(c.giaMua, message.guildId)}\` • Bán: \`${formatXu(c.giaBan, message.guildId)}\` • ⏳ ${thoiGian}\n┗ *${c.moTa}*`;
   });
 
   const embed = new EmbedBuilder()
@@ -23,7 +24,7 @@ export async function xuLyCuaHang(message: Message) {
       value: "⬜ Phàm Phẩm  🟦 Linh Phẩm  🟪 Tiên Phẩm  🟨 Thần Phẩm",
     })
     .setFooter({
-      text: `💡 .mua <tên | id> • .trong <tên | id | hat_id> • .ban <tên | id> | Tiền tệ: ${TEN_TIEN} ${EMOJI_TIEN}`,
+      text: `💡 .mua <tên | id> • .trong <tên | id | hat_id> • .ban <tên | id> | Tiền tệ: ${TEN_TIEN} ${layEmojiTien(message.guildId)}`,
     })
     .setTimestamp();
 

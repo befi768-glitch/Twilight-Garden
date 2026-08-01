@@ -164,8 +164,9 @@ client.once(Events.ClientReady, async (readyClient) => {
   await khoiTaoDatabase();
 
   // Upload emoji Nguyệt Thạch lên server (nếu chưa có)
-  const { khoiTaoEmojiNguyetThach } = await import("./utils/emojiManager");
+  const { khoiTaoEmojiNguyetThach, khoiTaoEmojiCay } = await import("./utils/emojiManager");
   await khoiTaoEmojiNguyetThach(readyClient);
+  await khoiTaoEmojiCay(readyClient);
 
   const danhSachStatus = [
     { text: `${PREFIX}trogiup | Twilight Garden 🌸`, type: 3 },

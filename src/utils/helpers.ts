@@ -11,14 +11,20 @@ export function formatThoiGian(ms: number): string {
 
 // Đơn vị tiền tệ: Nguyệt Thạch
 export const TEN_TIEN = "Nguyệt Thạch";
-// Dùng export let để emojiManager có thể cập nhật live khi bot ready
+// Emoji tiền được lưu theo từng server để không dùng nhầm ID emoji của server khác.
 export let EMOJI_TIEN = "💠";
-export function setEmojiTien(emoji: string) {
-  EMOJI_TIEN = emoji;
+const emojiTienTheoGuild = new Map<string, string>();
+
+export function setEmojiTien(guildId: string, emoji: string) {
+  emojiTienTheoGuild.set(guildId, emoji);
 }
 
-export function formatXu(so: number): string {
-  return `${so.toLocaleString("vi-VN")} ${EMOJI_TIEN}`;
+export function layEmojiTien(guildId: string | null | undefined): string {
+  return emojiTienTheoGuild.get(guildId ?? "") ?? EMOJI_TIEN;
+}
+
+export function formatXu(so: number, guildId?: string | null): string {
+  return `${so.toLocaleString("vi-VN")} ${layEmojiTien(guildId)}`;
 }
 
 // Đơn vị linh lực (kinh nghiệm)
