@@ -5,6 +5,7 @@ import { nguoiChoi, oDat } from "../database/schema";
 import { eq, sql } from "drizzle-orm";
 import { congThucDanhSach, timCongThucTheoTen, mauDoKho } from "../data/crafting";
 import { cayMap } from "../data/plants";
+import { vatPhamMap } from "../data/vatPhamDacBiet";
 import { formatXu, MAU_CHINH, MAU_VANG, MAU_DO, EMOJI_KN, EMOJI_TIEN } from "../utils/helpers";
 
 const MAX_O_DAT = 10; // Giới hạn tối đa ô đất
@@ -19,7 +20,7 @@ export async function xuLyLuyenDan(message: Message, args: string[]) {
     const tuiDo = await layTuiDo(player.id);
     const tuiDoMap = new Map(tuiDo.map((i) => [i.tenCay, i.soLuong]));
 
-    const nhomTheoDoKho: Record<string, string[]> = { "Thường": [], "Khó": [], "Thần Phẩm": [] };
+    const nhomTheoDoKho: Record<string, string[]> = { "Thường": [], "Khó": [], "Thần Phẩm": [], "Huyền Thoại": [] };
 
     for (const ct of congThucDanhSach) {
       const duNguyenLieu = ct.nguyenLieu.every(
@@ -28,13 +29,14 @@ export async function xuLyLuyenDan(message: Message, args: string[]) {
       const checkIcon = duNguyenLieu ? "✅" : "❌";
       const nguyenLieuText = ct.nguyenLieu
         .map((nl) => {
-          const c = cayMap.get(nl.cayId);
+          const c = cayMap.get(nl.cayId) ?? vatPhamMap.get(nl.cayId);
           const coTrong = tuiDoMap.get(nl.cayId) ?? 0;
           const duRoi = coTrong >= nl.soLuong;
           return `${duRoi ? "✔️" : "☐"} ${c?.emoji ?? "🌿"} ${c?.ten ?? nl.cayId} x${nl.soLuong} *(có: ${coTrong})*`;
         })
         .join(", ");
 
+      if (!nhomTheoDoKho[ct.doKho]) nhomTheoDoKho[ct.doKho] = [];
       nhomTheoDoKho[ct.doKho].push(
         `${checkIcon} **${ct.emoji} ${ct.ten}** — ${ct.hieuUngMoTa}\n┗ *${nguyenLieuText}*`
       );
@@ -50,9 +52,11 @@ export async function xuLyLuyenDan(message: Message, args: string[]) {
     if (nhomTheoDoKho["Khó"].length)
       embed.addFields({ name: "🟪 Công Thức Khó", value: nhomTheoDoKho["Khó"].join("\n\n") });
     if (nhomTheoDoKho["Thần Phẩm"].length)
-      embed.addFields({ name: "🟨 Công Thức Thần Phẩm", value: nhomTheoDoKho["Thần Phẩm"].join("\n\n") });
+      embed.addFields({ name: "🟨 Công Thức Thần Phẩm *(cần Linh Tinh từ Thám Hiểm)*", value: nhomTheoDoKho["Thần Phẩm"].join("\n\n") });
+    if (nhomTheoDoKho["Huyền Thoại"].length)
+      embed.addFields({ name: "🔴 Công Thức Huyền Thoại *(cần Boss Hạch từ Boss Event)*", value: nhomTheoDoKho["Huyền Thoại"].join("\n\n") });
 
-    embed.setFooter({ text: "Dùng .luyendan <tên đan> để luyện — VD: .luyendan linh đan cơ sở" });
+    embed.setFooter({ text: "Dùng .luyendan <tên đan> để luyện • 🧬 Linh Tinh từ .thamhiem • 💎 Boss Hạch từ .boss" });
 
     return message.reply({ embeds: [embed] });
   }

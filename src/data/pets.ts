@@ -2,15 +2,16 @@ export interface Pet {
   id: string;
   ten: string;
   emoji: string;
-  gia: number;              // Giá mua
-  giaBanLai: number;        // Giá bán lại (50%)
-  giamThue: number;         // Số % thuế được giảm (điểm phần trăm tuyệt đối)
-  chongPhaVuon: boolean;    // Có chặn .pavuon không
+  gia: number;
+  giaBanLai: number;
+  giamThue: number;         // % thuế bán cây giảm
+  chongPhaVuon: boolean;    // chặn .pavuon
+  bonusThamHiem: number;    // % tăng loot từ thám hiểm (xu/vật phẩm)
+  bonusBossDamage: number;  // % tăng sát thương đánh boss
   moTa: string;
-  bonusMoTa: string;        // Mô tả bonus ngắn
+  bonusMoTa: string;
 }
 
-// Thuế cơ bản: 25%
 export const THUE_CO_BAN = 25;
 
 export const danhSachPet: Pet[] = [
@@ -22,8 +23,10 @@ export const danhSachPet: Pet[] = [
     giaBanLai: 5_000,
     giamThue: 0,
     chongPhaVuon: true,
+    bonusThamHiem: 10,
+    bonusBossDamage: 0,
     moTa: "Thần Rùa ngàn tuổi, mai cứng như thép, trấn giữ linh địa khỏi kẻ phá hoại",
-    bonusMoTa: "🛡️ Giảm tỷ lệ bị phá vườn từ 60% → 20% (không giảm thuế)",
+    bonusMoTa: "🛡️ Giảm tỷ lệ bị phá vườn 60%→20% • 🗺️ +10% loot thám hiểm",
   },
   {
     id: "linh_ho",
@@ -31,10 +34,12 @@ export const danhSachPet: Pet[] = [
     emoji: "🦊",
     gia: 15_000,
     giaBanLai: 7_500,
-    giamThue: 1,   // 25% → 24%
+    giamThue: 1,
     chongPhaVuon: false,
-    moTa: "Hồ ly tinh linh thoát khỏi cõi âm, mang theo phúc khí buôn bán",
-    bonusMoTa: "Giảm thuế 1% (còn 24%)",
+    bonusThamHiem: 30,
+    bonusBossDamage: 5,
+    moTa: "Hồ ly tinh linh thoát khỏi cõi âm, mang theo phúc khí buôn bán và bản năng sục sạo",
+    bonusMoTa: "💰 Giảm thuế 1% (còn 24%) • 🗺️ +30% loot thám hiểm • ⚔️ +5% sát thương boss",
   },
   {
     id: "ngoc_tho",
@@ -42,10 +47,12 @@ export const danhSachPet: Pet[] = [
     emoji: "🐇",
     gia: 25_000,
     giaBanLai: 12_500,
-    giamThue: 2,   // 25% → 23%
+    giamThue: 2,
     chongPhaVuon: false,
-    moTa: "Thỏ ngọc từ Quảng Hàn cung, nhảy xuống hạ giới mang theo phước lành",
-    bonusMoTa: "Giảm thuế 2% (còn 23%)",
+    bonusThamHiem: 20,
+    bonusBossDamage: 10,
+    moTa: "Thỏ ngọc từ Quảng Hàn cung, nhảy xuống hạ giới mang theo phước lành và đôi tai thính nhạy",
+    bonusMoTa: "💰 Giảm thuế 2% (còn 23%) • 🗺️ +20% loot thám hiểm • ⚔️ +10% sát thương boss",
   },
   {
     id: "thanh_long",
@@ -53,10 +60,12 @@ export const danhSachPet: Pet[] = [
     emoji: "🐉",
     gia: 50_000,
     giaBanLai: 25_000,
-    giamThue: 3,   // 25% → 22%
+    giamThue: 3,
     chongPhaVuon: false,
-    moTa: "Rồng xanh trấn giữ phương đông, vừa dũng mãnh vừa mang lại tài lộc",
-    bonusMoTa: "Giảm thuế 3% (còn 22%)",
+    bonusThamHiem: 15,
+    bonusBossDamage: 25,
+    moTa: "Rồng xanh trấn giữ phương đông, vừa dũng mãnh vừa mang lại tài lộc và uy lực chiến đấu",
+    bonusMoTa: "💰 Giảm thuế 3% (còn 22%) • 🗺️ +15% loot thám hiểm • ⚔️ +25% sát thương boss",
   },
   {
     id: "phung_hoang",
@@ -64,10 +73,12 @@ export const danhSachPet: Pet[] = [
     emoji: "🦅",
     gia: 100_000,
     giaBanLai: 50_000,
-    giamThue: 4,   // 25% → 21%
+    giamThue: 4,
     chongPhaVuon: false,
-    moTa: "Thần điểu bất tử, tái sinh từ tro tàn, chủ của mọi điều kỳ diệu trong Twilight Garden",
-    bonusMoTa: "Giảm thuế 4% (còn 21%)",
+    bonusThamHiem: 40,
+    bonusBossDamage: 35,
+    moTa: "Thần điểu bất tử, tái sinh từ tro tàn — chủ của mọi điều kỳ diệu, bá chủ cả thám hiểm lẫn chiến trường",
+    bonusMoTa: "💰 Giảm thuế 4% (còn 21%) • 🗺️ +40% loot thám hiểm • ⚔️ +35% sát thương boss",
   },
 ];
 
@@ -84,8 +95,6 @@ export function timPetTheoTen(query: string): Pet | undefined {
   );
 }
 
-// Tính thuế thực tế dựa theo pet (giamThue là điểm % tuyệt đối)
-// Pet không cộng dồn — chỉ dùng 1 pet tại một thời điểm
 export function tinhThue(petId: string | null): number {
   if (!petId) return THUE_CO_BAN;
   const pet = petMap.get(petId);
@@ -93,8 +102,17 @@ export function tinhThue(petId: string | null): number {
   return Math.max(1, THUE_CO_BAN - pet.giamThue);
 }
 
-// Kiểm tra pet có chặn phá vườn không
 export function coChongPhaVuon(petId: string | null): boolean {
   if (!petId) return false;
   return petMap.get(petId)?.chongPhaVuon ?? false;
+}
+
+export function layBonusThamHiem(petId: string | null): number {
+  if (!petId) return 0;
+  return petMap.get(petId)?.bonusThamHiem ?? 0;
+}
+
+export function layBonusBossDamage(petId: string | null): number {
+  if (!petId) return 0;
+  return petMap.get(petId)?.bonusBossDamage ?? 0;
 }

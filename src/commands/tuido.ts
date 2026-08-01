@@ -1,6 +1,7 @@
 import { Message, EmbedBuilder } from "discord.js";
 import { layHoacTaoNguoiChoi, layTuiDo } from "../database/queries";
 import { cayMap, layCayTuHatGiong, laHatGiong } from "../data/plants";
+import { vatPhamMap, laVatPhamDacBiet } from "../data/vatPhamDacBiet";
 import { formatXu, MAU_CHINH, TEN_TIEN, EMOJI_TIEN } from "../utils/helpers";
 
 export async function xuLyTuiDo(message: Message) {
@@ -21,30 +22,38 @@ export async function xuLyTuiDo(message: Message) {
   let tongGiaTri = 0;
   const danhSachCay: string[] = [];
   const danhSachHat: string[] = [];
+  const danhSachDacBiet: string[] = [];
 
   for (const item of tuiDo) {
-    if (laHatGiong(item.tenCay)) {
-      // Hạt giống — không bán được, chỉ dùng để trồng
+    if (laVatPhamDacBiet(item.tenCay)) {
+      // Vật phẩm đặc biệt: Linh Tinh, Boss Hạch — không bán được
+      const vp = vatPhamMap.get(item.tenCay)!;
+      danhSachDacBiet.push(
+        `${vp.emoji} **${vp.ten}** x${item.soLuong}\n┗ *${vp.moTa}*\n┗ 📍 ${vp.nguonGoc} • dùng \`.luyendan\` để xem công thức`
+      );
+    } else if (laHatGiong(item.tenCay)) {
       const cay = layCayTuHatGiong(item.tenCay);
       if (cay) {
-        danhSachHat.push(`🌱 **Hạt ${cay.ten}** x${item.soLuong}\n┗ ID: \`${item.tenCay}\` • dùng \`.trong ${cay.id}\` hoặc \`.trong ${item.tenCay}\` để gieo`);
+        danhSachHat.push(`🌱 **Hạt ${cay.ten}** x${item.soLuong}\n┗ ID: \`${item.tenCay}\` • dùng \`.trong ${cay.id}\` để gieo`);
       } else {
-        danhSachHat.push(`🌱 \`${item.tenCay}\` x${item.soLuong} *(hạt giống không xác định)*`);
+        danhSachHat.push(`🌱 \`${item.tenCay}\` x${item.soLuong}`);
       }
     } else {
-      // Cây đã thu hoạch — có thể bán
       const cay = cayMap.get(item.tenCay);
       if (!cay) {
-        danhSachCay.push(`❓ \`${item.tenCay}\` x${item.soLuong} *(không xác định)*`);
+        danhSachCay.push(`❓ \`${item.tenCay}\` x${item.soLuong}`);
         continue;
       }
       const giaTri = cay.giaBan * item.soLuong;
       tongGiaTri += giaTri;
-      danhSachCay.push(`${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ ID: \`${cay.id}\` • Trị giá: ${formatXu(giaTri)} • \`.ban ${cay.id}\``);
+      danhSachCay.push(`${cay.emoji} **${cay.ten}** [${cay.doHiem}] x${item.soLuong}\n┗ Trị giá: ${formatXu(giaTri)} • \`.ban ${cay.id}\``);
     }
   }
 
   const moTa: string[] = ["*\"Mỗi linh thảo trong Bảo Nang đều mang linh khí của người trồng...\"*"];
+  if (danhSachDacBiet.length) {
+    moTa.push("\n🧬 **Vật Phẩm Đặc Biệt (Linh Tinh & Boss Hạch — dùng Luyện Đan):**\n" + danhSachDacBiet.join("\n"));
+  }
   if (danhSachCay.length) {
     moTa.push("\n🧺 **Linh Thảo (có thể bán):**\n" + danhSachCay.join("\n"));
   }
