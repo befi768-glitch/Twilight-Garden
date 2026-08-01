@@ -1,5 +1,5 @@
 import { Message, EmbedBuilder } from "discord.js";
-import { layHoacTaoNguoiChoi, congXuVaKinhNghiem, themVaoTuiDo } from "../database/queries";
+import { layHoacTaoNguoiChoi, congXuVaKinhNghiem, themVaoTuiDo, truXu } from "../database/queries";
 import { db } from "../database/db";
 import { danhSachCay, layHatGiongId } from "../data/plants";
 import { petMap, layBonusThamHiem } from "../data/pets";
@@ -7,10 +7,11 @@ import { vatPhamMap } from "../data/vatPhamDacBiet";
 import { MAU_CHINH, MAU_DO, MAU_XAM, formatXu } from "../utils/helpers";
 
 const COOLDOWN_PHUT = 120; // 2 tiếng
+const TY_LE_LOOT_CAY = 0.05; // Loot hạt giống chỉ có 5% mỗi chuyến
 
 interface PhanThuong {
   trong_so: number;
-  loai: "xu" | "hat_giong" | "linh_tinh" | "that_bai";
+  loai: "xu" | "hat_giong" | "linh_tinh" | "that_bai" | "bat_loi";
   emoji: string;
   moTa: string;
   xuMin?: number;
@@ -20,6 +21,8 @@ interface PhanThuong {
   soLuongMin?: number;
   soLuongMax?: number;
   kinhNghiem?: number;
+  matXuMin?: number;
+  matXuMax?: number;
 }
 
 interface DiaDiem {
@@ -48,6 +51,7 @@ const danhSachDiaDiem: DiaDiem[] = [
       { trong_so: 20, loai: "xu", emoji: "💠", moTa: "Nhặt được túi Nguyệt Thạch bỏ quên", xuMin: 50, xuMax: 200, kinhNghiem: 8 },
       { trong_so: 15, loai: "hat_giong", emoji: "🌽", moTa: "Phát hiện bụi Kim Tuệ hoang dã", cayId: "kim_tue", soLuongMin: 1, soLuongMax: 2, kinhNghiem: 20 },
       { trong_so: 10, loai: "that_bai", emoji: "🌫️", moTa: "Lạc trong sương mù linh khí, quay về tay không", kinhNghiem: 5 },
+      { trong_so: 10, loai: "bat_loi", emoji: "🕸️", moTa: "Dẫm phải bẫy dây leo, đánh rơi một phần Nguyệt Thạch", matXuMin: 20, matXuMax: 60, kinhNghiem: 2 },
     ],
   },
   {
@@ -64,6 +68,7 @@ const danhSachDiaDiem: DiaDiem[] = [
       { trong_so: 18, loai: "hat_giong", emoji: "🍄", moTa: "Phát hiện Linh Chi Cổ mọc trong kẽ đá", cayId: "linh_chi", soLuongMin: 1, soLuongMax: 2, kinhNghiem: 30 },
       { trong_so: 20, loai: "xu", emoji: "💎", moTa: "Nhặt được linh thạch rơi vãi từ trên cao", xuMin: 150, xuMax: 400, kinhNghiem: 15 },
       { trong_so: 15, loai: "that_bai", emoji: "⚡", moTa: "Bị sét linh đánh trúng, bàng hoàng bỏ chạy", kinhNghiem: 8 },
+      { trong_so: 10, loai: "bat_loi", emoji: "🪨", moTa: "Trượt chân trên vách đá, đánh rơi một phần Nguyệt Thạch", matXuMin: 80, matXuMax: 180, kinhNghiem: 3 },
     ],
   },
   {
@@ -80,6 +85,7 @@ const danhSachDiaDiem: DiaDiem[] = [
       { trong_so: 20, loai: "hat_giong", emoji: "🍓", moTa: "Thu được Huyết Mai cuốn theo dòng hải lưu", cayId: "huyet_mai", soLuongMin: 2, soLuongMax: 3, kinhNghiem: 25 },
       { trong_so: 20, loai: "xu", emoji: "💠", moTa: "Tìm thấy hang san hô ẩn chứa Nguyệt Thạch", xuMin: 300, xuMax: 900, kinhNghiem: 20 },
       { trong_so: 15, loai: "that_bai", emoji: "🦑", moTa: "Bị linh mực khổng lồ đuổi, tháo chạy về", kinhNghiem: 10 },
+      { trong_so: 10, loai: "bat_loi", emoji: "🌊", moTa: "Một cơn sóng dữ cuốn mất một phần Nguyệt Thạch", matXuMin: 150, matXuMax: 350, kinhNghiem: 4 },
     ],
   },
   {
@@ -96,6 +102,7 @@ const danhSachDiaDiem: DiaDiem[] = [
       { trong_so: 20, loai: "hat_giong", emoji: "🌻", moTa: "Nhặt được hạt Nhật Thần Hoa ủ trong lò cũ", cayId: "nhat_hoa", soLuongMin: 1, soLuongMax: 2, kinhNghiem: 35 },
       { trong_so: 18, loai: "xu", emoji: "🔮", moTa: "Thu được tàn dư linh khí đan lò quy đổi thành Nguyệt Thạch", xuMin: 500, xuMax: 1500, kinhNghiem: 30 },
       { trong_so: 15, loai: "that_bai", emoji: "💥", moTa: "Vô tình kích hoạt bẫy cổ, may mắn thoát thân", kinhNghiem: 15 },
+      { trong_so: 10, loai: "bat_loi", emoji: "🔥", moTa: "Bẫy đan hỏa bùng lên, thiêu mất một phần Nguyệt Thạch", matXuMin: 300, matXuMax: 700, kinhNghiem: 5 },
     ],
   },
   {
@@ -112,6 +119,7 @@ const danhSachDiaDiem: DiaDiem[] = [
       { trong_so: 23, loai: "xu", emoji: "🌟", moTa: "Ngưng tụ linh khí trời đất thành Nguyệt Thạch", xuMin: 2000, xuMax: 6000, kinhNghiem: 60 },
       { trong_so: 20, loai: "xu", emoji: "⚡", moTa: "Thu thập sét linh quy đổi thành Nguyệt Thạch", xuMin: 1000, xuMax: 3000, kinhNghiem: 45 },
       { trong_so: 15, loai: "that_bai", emoji: "🌪️", moTa: "Bị gió linh Thiên Nhai cuốn bay, may mắn thoát về", kinhNghiem: 20 },
+      { trong_so: 10, loai: "bat_loi", emoji: "🌑", moTa: "Linh áp nghiền nát túi đồ, đánh rơi một phần Nguyệt Thạch", matXuMin: 600, matXuMax: 1400, kinhNghiem: 8 },
     ],
   },
 ];
@@ -125,10 +133,17 @@ const aliasMap: Record<string, string> = {
 };
 
 function chonPhanThuong(ds: PhanThuong[]): PhanThuong {
-  const tong = ds.reduce((s, p) => s + p.trong_so, 0);
+  const hatGiong = ds.filter((p) => p.loai === "hat_giong");
+  const khongHatGiong = ds.filter((p) => p.loai !== "hat_giong");
+
+  // Không để trọng số của nhiều loại hạt cộng dồn thành tỷ lệ loot cây cao.
+  // Trước hết kiểm tra đúng 5% cho cả nhóm hạt, sau đó mới dùng trọng số
+  // để chọn loại hạt cụ thể hoặc kết quả không phải hạt.
+  const nhomPhanThuong = Math.random() < TY_LE_LOOT_CAY ? hatGiong : khongHatGiong;
+  const tong = nhomPhanThuong.reduce((s, p) => s + p.trong_so, 0);
   let r = Math.random() * tong;
-  for (const p of ds) { r -= p.trong_so; if (r <= 0) return p; }
-  return ds[ds.length - 1];
+  for (const p of nhomPhanThuong) { r -= p.trong_so; if (r <= 0) return p; }
+  return nhomPhanThuong[nhomPhanThuong.length - 1];
 }
 
 export async function xuLyThamHiem(message: Message, args: string[]) {
@@ -156,9 +171,9 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
       )
       .addFields(
         { name: "📖 Cách dùng", value: "`.thamhiem <tên>` — VD: `.thamhiem rungcolinh`\n`.thamhiem linhson` • `.thamhiem huyenhai` • `.thamhiem phetich` • `.thamhiem thiennhai`" },
-        { name: "🧬 Linh Tinh là gì?", value: "Mỗi địa điểm có Linh Tinh riêng — luôn nhận được 1 cái sau mỗi chuyến đi!\nDùng **Linh Tinh** + cây để luyện đan cao cấp hơn. Dùng `.luyendan` để xem công thức." }
+        { name: "🎲 Tỷ lệ & rủi ro", value: "🌱 Hạt giống: **5% mỗi chuyến**\n🧬 Linh Tinh: vật phẩm riêng của địa điểm, **luôn nhận 1 cái**\n⚠️ Có thể gặp thất bại hoặc mất Nguyệt Thạch." },
       )
-      .setFooter({ text: `⏳ Cooldown 2 tiếng • 🔥 Streak cao → loot tốt hơn • 🐾 Pet → thêm loot` });
+      .setFooter({ text: `⏳ Cooldown 2 tiếng • 🌱 Hạt giống 5% • 🔥 Streak cao → thêm Linh Tinh • 🐾 Pet → thêm loot` });
     return message.reply({ embeds: [embed] });
   }
 
@@ -232,6 +247,13 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
     await congXuVaKinhNghiem(player.id, 0, phanThuong.kinhNghiem ?? 0);
     const cay = danhSachCay.find((c) => c.id === phanThuong.cayId);
     moTaKetQua = `${phanThuong.emoji} ${phanThuong.moTa}\n\n🌱 Nhận **${soLuong}x Hạt ${cay?.ten ?? phanThuong.cayId}**!${bonusText}`;
+  } else if (phanThuong.loai === "bat_loi") {
+    const xuMat = Math.floor(phanThuong.matXuMin! + Math.random() * (phanThuong.matXuMax! - phanThuong.matXuMin! + 1));
+    const daMatXu = await truXu(player.id, xuMat);
+    await congXuVaKinhNghiem(player.id, 0, phanThuong.kinhNghiem ?? 0);
+    moTaKetQua = daMatXu
+      ? `${phanThuong.emoji} ${phanThuong.moTa}\n\n💸 Mất **${formatXu(xuMat)}** Nguyệt Thạch.`
+      : `${phanThuong.emoji} ${phanThuong.moTa}\n\n💸 Túi đồ không đủ Nguyệt Thạch nên không mất thêm, nhưng chuyến đi đã thất bại.`;
   } else {
     // Thất bại
     await congXuVaKinhNghiem(player.id, 0, phanThuong.kinhNghiem ?? 0);
@@ -257,11 +279,12 @@ export async function xuLyThamHiem(message: Message, args: string[]) {
   await themVaoTuiDo(player.id, diaDiem.linhTinhId, soLinhTinh);
   const linhTinh = vatPhamMap.get(diaDiem.linhTinhId)!;
 
-  const mauEmbed = phanThuong.loai === "that_bai" ? MAU_XAM : diaDiem.mauEmbed;
+  const laKetQuaBatLoi = phanThuong.loai === "that_bai" || phanThuong.loai === "bat_loi";
+  const mauEmbed = laKetQuaBatLoi ? MAU_XAM : diaDiem.mauEmbed;
   const embed = new EmbedBuilder()
     .setColor(mauEmbed)
     .setTitle(
-      phanThuong.loai === "that_bai"
+      laKetQuaBatLoi
         ? `${diaDiem.emoji} Thám Hiểm ${diaDiem.ten} — Xui Xẻo`
         : `${diaDiem.emoji} Thám Hiểm ${diaDiem.ten} — Thành Công!`
     )
